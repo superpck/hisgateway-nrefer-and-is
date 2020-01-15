@@ -3,12 +3,15 @@
 ## Installation
 ### Fastify and TypeScript
 ```
+ติดตั้ง git ตาม website https://git-scm.com/
 ติดตั้ง nodejs ตาม website https://nodejs.org/
 npm install typescript ts-node pm2 nodemon -g
 ```
 
 ### source code
 ```
+สร้าง folder api
+cd api
 git clone https://github.com/superpck/hisgateway-nrefer-and-is his_api
 cd his_api
 npm install
