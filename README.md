@@ -4,8 +4,7 @@
 ### Fastify and TypeScript
 ```
 ติดตั้ง nodejs ตาม website https://nodejs.org/
-npm install typescript -g
-npm install ts-node pm2 nodemon -g
+npm install typescript ts-node pm2 nodemon -g
 ```
 
 ### source code
@@ -20,6 +19,7 @@ copy file config.defaul ตั้งชื่อ file เป็น config
 
 ## Running
 ```
+tsc -> compile source code
 nodemon
 open browser and go to http://localhost:<port ที่กำหนดใน config>
 ```
