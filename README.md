@@ -5,6 +5,8 @@
 ```
 ติดตั้ง git ตาม website https://git-scm.com/
 ติดตั้ง nodejs ตาม website https://nodejs.org/
+
+ติดตั้ง package ที่จำเป็น
 npm install typescript ts-node pm2 nodemon -g
 ```
 
