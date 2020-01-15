@@ -6,8 +6,9 @@ import * as fastify from 'fastify';
 import * as moment from 'moment';
 import * as HttpStatus from 'http-status-codes';
 import path = require('path');
-import { localStorage, sessionStorage } from "webstorage-node";
+// import { localStorage, sessionStorage } from "webstorage-node";
 
+let localStorage: any;
 var fs = require('fs');
 var alert = require('alert-node');
 const crypto = require('crypto');
