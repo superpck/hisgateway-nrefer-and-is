@@ -10,7 +10,7 @@ config
 .DS_Store
 .idea
 .env
-.db
+*.db
 *.sh
 *.old
 *.bak
