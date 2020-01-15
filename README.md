@@ -4,8 +4,8 @@
 ### Fastify and TypeScript
 ```
 ติดตั้ง nodejs ตาม website https://nodejs.org/
-npm i typescript -g
-npm i ts-node pm2 nodemon -g
+npm install typescript -g
+npm install ts-node pm2 nodemon -g
 ```
 
 ### source code
