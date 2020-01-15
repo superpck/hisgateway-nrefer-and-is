@@ -1,0 +1,6 @@
+[JWT]
+// สำหรับ JWT Authentication
+// REQUEST_KEY <ตั้งเอง 8-32 อักษร>
+// SECRET_KEY <ตั้งเอง 16-128 อักษร>
+REQUEST_KEY=aa9568
+SECRET_KEY=19b659cc77cec45204f00ede1f34ce0a10f5e2fa
