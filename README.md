@@ -13,7 +13,7 @@ git clone https://github.com/superpck/hisgateway-nrefer-and-is his_api
 cd his_api
 npm install
 npm audit fix --force
-copy file config.defaul ตั้งชื่อ file เป็น config
+copy file config.default ตั้งชื่อ file เป็น config
 แก้ไขข้อมูลใน file config
 ```
 
