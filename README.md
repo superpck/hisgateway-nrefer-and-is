@@ -9,7 +9,7 @@ npm i ts-node -g
 
 ### source code
 ```
-git clone https://github.com/superpck/hisgateway-nrefer-and--is his_api
+git clone https://github.com/superpck/hisgateway-nrefer-and-is his_api
 cd his_api
 npm install
 npm audit fix --force
