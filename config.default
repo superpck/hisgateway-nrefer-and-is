@@ -70,8 +70,8 @@ IS_AUTO_SEND_EVERY_MINUTE=30
 IS_AUTO_SEND_EVERY_HOUR=0
 // Server nRefer
 IS_URL=http://ae.moph.go.th:3006
-IS_MOPH_USER=<from IS>
-IS_MOPH_PASSWORD=<from IS>
+IS_MOPH_USER=ที่ได้รับจากส่วนกลาง
+IS_MOPH_PASSWORD=ที่ได้รับจากส่วนกลาง
 
 [nRefer]
 // สำหรับการรับข้อความจาก nRefer แบบ Auto
@@ -80,12 +80,12 @@ NREFER_URL1=http://203.157.103.33:8080/nrefer
 NREFER_URL=203.157.103.33
 NREFER_PORT=8080
 NREFER_PATH=/nrefer
-NREFER_APIKEY=<from nrefer>
-NREFER_SECRETKEY=<from nrefer>
+NREFER_APIKEY=ที่ได้รับจากส่วนกลาง
+NREFER_SECRETKEY=ที่ได้รับจากส่วนกลาง
 // สั่งให้ Auto Send ทำงาน 0=ไม่ส่ง Auto 1=ส่ง Auto
-NREFER_AUTO_SEND=0
+NREFER_AUTO_SEND=1
 // เวลาที่ส่ง Auto ระบุนาที (5-59) หรือ ชม. (0-23) เท่านั้น
-NREFER_AUTO_SEND_EVERY_MINUTE=30
+NREFER_AUTO_SEND_EVERY_MINUTE=15
 NREFER_AUTO_SEND_EVERY_HOUR=0
 
 [Notify]
@@ -97,7 +97,7 @@ NOTIFY_CHANNEL=<ตั้งเอง เช่น nRefer@10670>
 
 [JWT]
 // สำหรับ JWT Authentication
-// REQUEST_KEY <ตั้งเอง 8-32 อักษร>
+// REQUEST_KEY <ตั้งเอง 10-32 อักษร>
 // SECRET_KEY <ตั้งเอง 16-128 อักษร>
 REQUEST_KEY=aa9568
 SECRET_KEY=19b659cc77cec45204f00ede1f34ce0a10f5e2fa
