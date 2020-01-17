@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const moment = require("moment");
 const path = require("path");
-const webstorage_node_1 = require("webstorage-node");
+let localStorage;
 var fs = require('fs');
 var alert = require('alert-node');
 const crypto = require('crypto');
@@ -281,16 +281,16 @@ const router = (fastify, {}, next) => {
     }
     function setSession() {
         setupSession = moment().add(15 * 4 * 4, 'minute').format('YYYY-MM-DD HH:mm:ss');
-        webstorage_node_1.localStorage.setItem(`id`, process.pid + '');
-        webstorage_node_1.localStorage.setItem(`${sessionName}`, setupSession);
+        localStorage.setItem(`id`, process.pid + '');
+        localStorage.setItem(`${sessionName}`, setupSession);
         return setupSession;
     }
     function getSession() {
-        setupSession = webstorage_node_1.localStorage.getItem(sessionName) ? webstorage_node_1.localStorage.getItem(sessionName) : null;
+        setupSession = localStorage.getItem(sessionName) ? localStorage.getItem(sessionName) : null;
         return setupSession;
     }
     function removeSession() {
-        webstorage_node_1.localStorage.clear();
+        localStorage.clear();
         setupSession = null;
         return setupSession;
     }
