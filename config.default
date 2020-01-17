@@ -70,8 +70,8 @@ IS_AUTO_SEND_EVERY_MINUTE=30
 IS_AUTO_SEND_EVERY_HOUR=0
 // Server nRefer
 IS_URL=http://ae.moph.go.th:3006
-IS_MOPH_USER=ที่ได้รับจากส่วนกลาง
-IS_MOPH_PASSWORD=ที่ได้รับจากส่วนกลาง
+IS_MOPH_USER=ระบุตามที่ได้รับจากส่วนกลาง
+IS_MOPH_PASSWORD=ระบุตามที่ได้รับจากส่วนกลาง
 
 [nRefer]
 // สำหรับการรับข้อความจาก nRefer แบบ Auto
@@ -80,8 +80,8 @@ NREFER_URL1=http://203.157.103.33:8080/nrefer
 NREFER_URL=203.157.103.33
 NREFER_PORT=8080
 NREFER_PATH=/nrefer
-NREFER_APIKEY=ที่ได้รับจากส่วนกลาง
-NREFER_SECRETKEY=ที่ได้รับจากส่วนกลาง
+NREFER_APIKEY=ระบุตามที่ได้รับจากส่วนกลาง
+NREFER_SECRETKEY=ระบุตามที่ได้รับจากส่วนกลาง
 // สั่งให้ Auto Send ทำงาน 0=ไม่ส่ง Auto 1=ส่ง Auto
 NREFER_AUTO_SEND=1
 // เวลาที่ส่ง Auto ระบุนาที (5-59) หรือ ชม. (0-23) เท่านั้น
