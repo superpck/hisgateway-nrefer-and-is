@@ -51,3 +51,5 @@ git push
 ```
 - mssql ให้ติดตั้ง version 4.1.0 เท่านั้น "npm install --save mssql@4.1.0"
 ```
+
+https://docs.google.com/document/d/1jKXwA12WNyRr-phcjQXRLz9xTJz5BreTPDBy2saWpOs
