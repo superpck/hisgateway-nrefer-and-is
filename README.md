@@ -1,4 +1,4 @@
-# HIS Gateway for nRefer Client
+# HIS Gateway local installation for nRefer, ISOnline, CUP Datacenter and Quality drug store
 
 ## Installation
 ### Fastify and TypeScript
@@ -12,20 +12,27 @@ npm install typescript ts-node pm2 nodemon -g
 
 ### source code
 ```
-สร้าง folder api
-cd api
-git clone https://github.com/superpck/hisgateway-nrefer-and-is his_api
-cd his_api
+git clone -b develop https://gitlab.com/moph/hisgateway/his-gateway-api his_gateway_api
+cd his_gateway_api
 npm install
 npm audit fix --force
 copy file config.default ตั้งชื่อ file เป็น config
 แก้ไขข้อมูลใน file config
 ```
 
+## Test
+```
+nodemon
+open browser and go to http://localhost:<port ที่กำหนดใน config>
+http://localhost:<port>/his.alive
+http://localhost:<port>/setup-api
+
+```
+
 ## Running
 ```
 tsc -> compile source code
-nodemon
+pm2 start app/app.js -i 2 --name "his-gateway"
 open browser and go to http://localhost:<port ที่กำหนดใน config>
 ```
 
