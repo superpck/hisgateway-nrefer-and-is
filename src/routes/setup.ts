@@ -37,21 +37,6 @@ const router = (fastify, { }, next) => {
     reply.view('/templates/pages/login.ejs', { token: '' });
   });
 
-  fastify.post('/check-secret___', async (req: fastify.Request, reply: fastify.Reply) => {
-    const RequestKey = req.body.RequestKey;
-    const SecretKey = req.body.SecretKey;
-
-    if (RequestKey === process.env.REQUEST_KEY && SecretKey === process.env.SECRET_KEY) {
-      setSession();
-      const configs: any = await configVar();
-      reply.view('/templates/pages/setup.ejs', { token: getSession(), req: req.ip, env: process.env, configs, error: '' });
-    } else {
-      removeSession();
-      console.log('login fail!');
-      reply.view('/templates/pages/login.ejs', { id: 123 });
-    }
-  });
-
   fastify.get('/form', (req: fastify.Request, reply: fastify.Reply) => {
     const now = moment().format('YYYYMMDDHHmmss');
     let setupSess = getSession();
