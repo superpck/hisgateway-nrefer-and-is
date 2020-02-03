@@ -22,14 +22,21 @@ class PccHisJhcisModel {
             .where('visitdate', "=", date)
             .limit(maxLimit);
     }
-    getServiceByHn(db, hn, cid) {
+    getServiceByHn(db, hn, cid, date = '', visitno = '') {
         if (!hn && !cid)
             return null;
         let searchType = 'visit.pid';
         let searchValue = hn;
+        let where = {};
         if (cid) {
             let searchType = 'person.idcard';
             let searchValue = cid;
+        }
+        if (date) {
+            where.visitdate = date;
+        }
+        if (visitno) {
+            where.visitno = visitno;
         }
         return db('visit')
             .leftJoin('person', 'visit.pid', 'person.pid')
@@ -39,6 +46,7 @@ class PccHisJhcisModel {
             .select(db.raw("case when LOCATE('/', pressure) then SUBSTR(pressure,LOCATE('/', pressure)+1) else '' end as bp_diastolic"))
             .select('pulse as pr', 'respri as rr', 'temperature as tem', 'visit.bmilevel as bmi', 'visit.rightcode as pttype', 'visit.hosmain as hospmain', 'visit.hossub as hospsub', 'chospital.hosname as hospname')
             .where(searchType, searchValue)
+            .where(where)
             .limit(maxLimit);
     }
     getDiagnosisByHn(db, pid) {
@@ -59,14 +67,15 @@ class PccHisJhcisModel {
             .select('dx.*', 'dx.pcucode as hospcode', 'chospital.hosname as hospname', 'lib.diseasename as diagname', 'lib.diseasenamethai as diagnamethai', 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
             .where('dx.visitno', "=", visitNo)
             .orderBy('visit.visitdate', 'desc')
-            .orderBy('visit.timestart', 'desc');
+            .orderBy('visit.timestart', 'desc')
+            .orderBy('dx.dxtype');
     }
     getDrug(db, visitNo) {
         return db('visitdrug as drug')
             .innerJoin('visit', 'drug.visitno', 'visit.visitno')
             .leftJoin('cdrug as lib', 'drug.drugcode', 'lib.drugcode')
             .leftJoin('chospital', 'visit.pcucode', 'chospital.hoscode')
-            .select('drug.*', 'drug.pcucode as hospcode', 'chospital.hosname as hospname', 'lib.drugname', 'visit.visitdate as date_serv', 'visit.timestart as time_serv', 'lib.pack', 'lib.unitsell as unit', 'lib.unitusage as unit_use', 'lib.cost', 'lib.sell as price', 'lib.drugcaution as caution', 'lib.drugcode24 as code24', 'lib.tcode as tmt', 'lib.drugproperties as comment')
+            .select('drug.*', 'drug.pcucode as hospcode', 'chospital.hosname as hospname', 'lib.drugname', 'visit.visitdate as date_serv', 'visit.timestart as time_serv', 'lib.pack', 'lib.unitsell as unit_sell', 'lib.unitusage as unit_use', 'lib.cost', 'lib.sell as price', 'lib.drugcaution as caution', 'lib.drugcode24 as code24', 'lib.tcode as tmt', 'lib.drugproperties as comment')
             .where('drug.visitno', "=", visitNo)
             .where('lib.drugtype', "=", '01')
             .orderBy('visit.visitdate', 'desc')

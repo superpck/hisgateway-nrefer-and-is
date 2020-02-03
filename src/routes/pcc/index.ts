@@ -212,10 +212,12 @@ const router = (fastify, { }, next) => {
     const hospcode = req.body.hospcode;
     const hn = req.body.hn;
     const cid = req.body.cid;
+    const visitNo = req.body.visitNo;
+    const date = req.body.date;
 
     if (hn + cid) {
       try {
-        const result = await pccHisModel.getServiceByHn(dbHIS, hn, cid);
+        const result = await pccHisModel.getServiceByHn(dbHIS, hn, cid, date, visitNo);
         if (result) {
           reply.status(HttpStatus.OK).send({
             statusCode: HttpStatus.OK,

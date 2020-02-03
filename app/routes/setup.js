@@ -11,12 +11,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const moment = require("moment");
 const path = require("path");
-let localStorage;
 var fs = require('fs');
 var alert = require('alert-node');
 const crypto = require('crypto');
 const configFileName = 'config';
-let setupSession = null;
+let shell = require("shelljs");
+let setupSession = '';
 const router = (fastify, {}, next) => {
     const sessionName = 'admin-session';
     var db = fastify.knex;
@@ -34,22 +34,22 @@ const router = (fastify, {}, next) => {
         removeSession();
         reply.view('/templates/pages/login.ejs', { token: '' });
     });
-    fastify.post('/check-secret', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    fastify.post('/check-secret___', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         const RequestKey = req.body.RequestKey;
         const SecretKey = req.body.SecretKey;
         if (RequestKey === process.env.REQUEST_KEY && SecretKey === process.env.SECRET_KEY) {
-            setupSession = setSession();
+            setSession();
             const configs = yield configVar();
             reply.view('/templates/pages/setup.ejs', { token: getSession(), req: req.ip, env: process.env, configs, error: '' });
         }
         else {
-            setupSession = 0;
+            removeSession();
             console.log('login fail!');
             reply.view('/templates/pages/login.ejs', { id: 123 });
         }
     }));
     fastify.get('/form', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
-        const now = moment().format('YYYY-MM-DD HH:mm:ss');
+        const now = moment().format('YYYYMMDDHHmmss');
         let setupSess = getSession();
         let isLogin = setupSess > now;
         if (!isLogin) {
@@ -57,8 +57,7 @@ const router = (fastify, {}, next) => {
             const secretKey = req.query && req.query.SecretKey ? req.query.SecretKey : null;
             if (requestKey && secretKey &&
                 requestKey === process.env.REQUEST_KEY && secretKey === process.env.SECRET_KEY) {
-                setupSess = setSession();
-                console.log('login success.', setupSession, getSession());
+                setSession();
                 isLogin = true;
             }
         }
@@ -280,19 +279,38 @@ const router = (fastify, {}, next) => {
         }));
     }
     function setSession() {
-        setupSession = moment().add(15 * 4 * 4, 'minute').format('YYYY-MM-DD HH:mm:ss');
-        localStorage.setItem(`id`, process.pid + '');
-        localStorage.setItem(`${sessionName}`, setupSession);
+        setupSession = moment().add(15 * 4 * 4, 'minute').format('YYYYMMDDHHmmss');
+        fastify.setupSession = setupSession;
         return setupSession;
     }
     function getSession() {
-        setupSession = localStorage.getItem(sessionName) ? localStorage.getItem(sessionName) : null;
         return setupSession;
     }
     function removeSession() {
-        localStorage.clear();
-        setupSession = null;
+        setupSession = '';
+        fastify.setupSession = null;
         return setupSession;
+    }
+    function reloadPM2(api) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                const pm2Name = api.PM2_NAME === '' ? '' : api.PM2_NAME;
+                const pm2Instance = +api.PM2_INSTANCE > 0 ? +api.PM2_INSTANCE : 1;
+                console.log(' ====> restart PM2:', pm2Name, moment().locale('th').format('HH:mm:ss.SS'));
+                yield shell.exec('tsc');
+                yield shell.exec("find ./app -name '*.map' -type f -delete");
+                yield shell.exec('pm2 flush');
+                const shellExecute1 = `pm2 scale ${pm2Name} ${pm2Instance}`;
+                yield shell.exec(shellExecute1, (err, r) => {
+                    console.log(' ====> shellScaling', shellExecute1, r, moment().locale('th').format('HH:mm:ss.SS'));
+                });
+                const shellExecute2 = `pm2 restart ${pm2Name}`;
+                shell.exec(shellExecute2, (err, shellCode) => {
+                    console.log(' ====> shellCode', shellExecute2, shellCode, err, moment().locale('th').format('HH:mm:ss.SS'));
+                    resolve(true);
+                });
+            }));
+        });
     }
     next();
 };

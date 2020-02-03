@@ -436,7 +436,7 @@ class HisHosxpv4Model {
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
         return db('view_lab_result')
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
+            .select('view_lab_result.*')
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
     }
@@ -959,7 +959,7 @@ class HisHosxpv4Model {
     getAppointment(db, visitNo, hospCode = hcode) {
         return db('view_opd_fu')
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
+            .select('view_opd_fu.*')
             .where('vn', "=", visitNo)
             .limit(maxLimit);
     }
@@ -1049,14 +1049,14 @@ class HisHosxpv4Model {
     getClinicalRefer(db, referNo, hospCode = hcode) {
         return db('view_clinical_refer')
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
+            .select('view_clinical_refer.*')
             .where('refer_no', "=", referNo)
             .limit(maxLimit);
     }
     getInvestigationRefer(db, referNo, hospCode = hcode) {
         return db('view_investigation_refer')
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
+            .select('view_investigation_refer.*')
             .where('refer_no', "=", referNo)
             .limit(maxLimit);
     }
@@ -1088,7 +1088,7 @@ class HisHosxpv4Model {
     getReferResult(db, hospDestination, referNo, hospCode = hcode) {
         return db('view_refer_result')
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
+            .select('view_refer_result.*')
             .where('refer_hcode', "=", hospDestination)
             .where('refer_no', "=", referNo)
             .limit(maxLimit);
@@ -1131,7 +1131,7 @@ class HisHosxpv4Model {
     getData(db, tableName, columnName, searchNo, hospCode = hcode) {
         return db(tableName)
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
+            .select(tableName + '.*')
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
     }

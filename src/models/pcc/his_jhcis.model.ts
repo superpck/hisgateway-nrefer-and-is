@@ -29,14 +29,21 @@ export class PccHisJhcisModel {
             .limit(maxLimit);
     }
 
-    getServiceByHn(db: Knex, hn, cid) {
+    getServiceByHn(db: Knex, hn, cid, date = '', visitno = '') {
         if (!hn && !cid) return null;
 
         let searchType = 'visit.pid';
         let searchValue = hn;
+        let where: any = {};
         if (cid) {
             let searchType = 'person.idcard';
             let searchValue = cid;
+        }
+        if (date) {
+            where.visitdate = date;
+        }
+        if (visitno) {
+            where.visitno = visitno;
         }
 
         return db('visit')
@@ -52,6 +59,7 @@ export class PccHisJhcisModel {
                 'visit.rightcode as pttype', 'visit.hosmain as hospmain',
                 'visit.hossub as hospsub', 'chospital.hosname as hospname')
             .where(searchType, searchValue)
+            .where(where)
             .limit(maxLimit);
     }
 
@@ -78,7 +86,8 @@ export class PccHisJhcisModel {
                 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
             .where('dx.visitno', "=", visitNo)
             .orderBy('visit.visitdate', 'desc')
-            .orderBy('visit.timestart', 'desc');
+            .orderBy('visit.timestart', 'desc')
+            .orderBy('dx.dxtype');
     }
 
     getDrug(db: Knex, visitNo) {
@@ -88,7 +97,7 @@ export class PccHisJhcisModel {
             .leftJoin('chospital', 'visit.pcucode', 'chospital.hoscode')
             .select('drug.*', 'drug.pcucode as hospcode', 'chospital.hosname as hospname'
                 , 'lib.drugname', 'visit.visitdate as date_serv', 'visit.timestart as time_serv'
-                , 'lib.pack', 'lib.unitsell as unit', 'lib.unitusage as unit_use', 'lib.cost', 'lib.sell as price'
+                , 'lib.pack', 'lib.unitsell as unit_sell', 'lib.unitusage as unit_use', 'lib.cost', 'lib.sell as price'
                 , 'lib.drugcaution as caution', 'lib.drugcode24 as code24'
                 , 'lib.tcode as tmt', 'lib.drugproperties as comment')
             .where('drug.visitno', "=", visitNo)
