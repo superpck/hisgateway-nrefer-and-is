@@ -24,7 +24,7 @@ copy file config.default ตั้งชื่อ file เป็น config
 ```
 nodemon
 open browser and go to http://localhost:<port ที่กำหนดใน config>
-http://localhost:<port>/his.alive
+http://localhost:<port>/his/alive
 http://localhost:<port>/setup-api
 
 ```
