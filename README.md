@@ -12,7 +12,7 @@ npm install typescript ts-node pm2 nodemon -g
 
 ### source code
 ```
-git clone https://gitlab.com/moph/hisgateway/his-gateway-api his_api
+git clone https://github.com/superpck/hisgateway-nrefer-and-is his_api
 cd his_api
 npm install
 npm audit fix --force
