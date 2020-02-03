@@ -21,6 +21,7 @@ import { HisPmkModel } from './../../models/isonline/his_pmk.model';
 import { HisJhosModel } from './../../models/isonline/his_jhos.model';
 import { IsLoginModel } from './../../models/isonline/login';
 import { HisMedical2020Model } from '../../models/isonline/his_medical2020.model';
+import { HisKpstatModel } from '../../models/refer/his_kpstat';
 
 const loginModel = new IsLoginModel();
 const hisModels = {
@@ -85,6 +86,9 @@ switch (provider) {
     break;
   case 'meedee':
     hisModel = new HisMdModel();
+    break;
+  case 'kpstat':
+    hisModel = new HisKpstatModel();
     break;
   case 'spdc':
     hisModel = new HisSpdcModel();

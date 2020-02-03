@@ -27,6 +27,7 @@ const his_pmk_model_1 = require("./../../models/isonline/his_pmk.model");
 const his_jhos_model_1 = require("./../../models/isonline/his_jhos.model");
 const login_1 = require("./../../models/isonline/login");
 const his_medical2020_model_1 = require("../../models/isonline/his_medical2020.model");
+const his_kpstat_1 = require("../../models/refer/his_kpstat");
 const loginModel = new login_1.IsLoginModel();
 const hisModels = {
     ezhosp: new his_ezhosp_model_1.HisEzhospModel(),
@@ -88,6 +89,9 @@ switch (provider) {
         break;
     case 'meedee':
         hisModel = new his_md_model_1.HisMdModel();
+        break;
+    case 'kpstat':
+        hisModel = new his_kpstat_1.HisKpstatModel();
         break;
     case 'spdc':
         hisModel = new his_spdc_model_1.HisSpdcModel();

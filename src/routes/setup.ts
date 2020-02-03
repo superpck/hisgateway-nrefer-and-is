@@ -52,7 +52,7 @@ const router = (fastify, { }, next) => {
     }
   });
 
-  fastify.get('/form', async (req: fastify.Request, reply: fastify.Reply) => {
+  fastify.get('/form', (req: fastify.Request, reply: fastify.Reply) => {
     const now = moment().format('YYYYMMDDHHmmss');
     let setupSess = getSession();
     let isLogin = setupSess > now;
@@ -67,8 +67,14 @@ const router = (fastify, { }, next) => {
     }
 
     if (isLogin) {
-      const configs: any = await configVar();
-      reply.view('/templates/pages/setup.ejs', { token: setupSess, req: req.ip, env: process.env, configs, error: '' });
+      // const configs: any = configVar();
+      configVar()
+        .then((configs) => {
+          reply.view('/templates/pages/setup.ejs', { token: getSession(), req: req.ip, env: process.env, configs, error: '' });
+        })
+        .catch((error) => {
+          reply.view('/templates/pages/login.ejs', { token: '', req: req.ip, env: process.env });
+        });
     } else {
       reply.view('/templates/pages/login.ejs', { token: '', req: req.ip, env: process.env });
     }

@@ -48,7 +48,7 @@ const router = (fastify, {}, next) => {
             reply.view('/templates/pages/login.ejs', { id: 123 });
         }
     }));
-    fastify.get('/form', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
+    fastify.get('/form', (req, reply) => {
         const now = moment().format('YYYYMMDDHHmmss');
         let setupSess = getSession();
         let isLogin = setupSess > now;
@@ -62,13 +62,18 @@ const router = (fastify, {}, next) => {
             }
         }
         if (isLogin) {
-            const configs = yield configVar();
-            reply.view('/templates/pages/setup.ejs', { token: setupSess, req: req.ip, env: process.env, configs, error: '' });
+            configVar()
+                .then((configs) => {
+                reply.view('/templates/pages/setup.ejs', { token: getSession(), req: req.ip, env: process.env, configs, error: '' });
+            })
+                .catch((error) => {
+                reply.view('/templates/pages/login.ejs', { token: '', req: req.ip, env: process.env });
+            });
         }
         else {
             reply.view('/templates/pages/login.ejs', { token: '', req: req.ip, env: process.env });
         }
-    }));
+    });
     fastify.post('/save', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         const dataInput = req.body;
         const configs = yield resetVar();
