@@ -12,8 +12,8 @@ npm install typescript ts-node pm2 nodemon -g
 
 ### source code
 ```
-git clone https://gitlab.com/moph/hisgateway/his-gateway-api his_gateway_api
-cd his_gateway_api
+git clone https://gitlab.com/moph/hisgateway/his-gateway-api his_api
+cd his_api
 npm install
 npm audit fix --force
 copy file config.default ตั้งชื่อ file เป็น config
