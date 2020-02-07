@@ -16,5 +16,6 @@ config
 *.bak
 *.test
 *.tmp
+*.sql
 null
 sent_result.txt
