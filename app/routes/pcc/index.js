@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const HttpStatus = require("http-status-codes");
+var crypto = require('crypto');
 const his_jhcis_model_1 = require("../../models/pcc/his_jhcis.model");
 const his_ezhosp_model_1 = require("../../models/pcc/his_ezhosp.model");
 const his_ezhosp_1 = require("../../models/refer/his_ezhosp");
@@ -78,6 +79,25 @@ switch (hisProvider) {
 }
 const router = (fastify, {}, next) => {
     var dbHIS = fastify.dbHIS;
+    fastify.post('/check-requestkey', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
+        let requestKey = req.body.requestKey || '??';
+        const isEncode = req.body.md5;
+        if (isEncode == 0) {
+            requestKey = crypto.createHash('md5').update(requestKey).digest('hex');
+        }
+        const defaultKey = crypto.createHash('md5').update(process.env.REQUEST_KEY).digest('hex');
+        if (requestKey !== defaultKey) {
+            console.log('invalid key', requestKey);
+            reply.send({
+                statusCode: HttpStatus.UNAUTHORIZED,
+                message: HttpStatus.getStatusText(HttpStatus.UNAUTHORIZED) + ' or invalid key'
+            });
+        }
+        reply.status(HttpStatus.OK).send({
+            statusCode: HttpStatus.OK,
+            skey: requestKey
+        });
+    }));
     fastify.post('/person', { preHandler: [fastify.serviceMonitoring, fastify.checkRequestKey] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         const hospcode = req.body.hospcode;
         const searchType = req.body.searchType;

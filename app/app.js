@@ -70,7 +70,7 @@ app.decorate("checkRequestKey", (request, reply) => __awaiter(void 0, void 0, vo
     }
     var requestKey = crypto.createHash('md5').update(process.env.REQUEST_KEY).digest('hex');
     if (!skey || skey !== requestKey) {
-        console.log('invalid key');
+        console.log('invalid key', requestKey);
         reply.send({
             statusCode: HttpStatus.UNAUTHORIZED,
             message: HttpStatus.getStatusText(HttpStatus.UNAUTHORIZED) + ' or invalid key'

@@ -3,6 +3,7 @@
 import * as Knex from 'knex';
 import * as fastify from 'fastify';
 import * as HttpStatus from 'http-status-codes';
+var crypto = require('crypto');
 
 import { PccHisJhcisModel } from '../../models/pcc/his_jhcis.model';
 import { PccHisEzhospModel } from '../../models/pcc/his_ezhosp.model';
@@ -85,6 +86,29 @@ switch (hisProvider) {
 
 const router = (fastify, { }, next) => {
   var dbHIS: Knex = fastify.dbHIS;
+
+  fastify.post('/check-requestkey', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    let requestKey = req.body.requestKey || '??';
+    const isEncode = req.body.md5;
+
+    if (isEncode == 0) {
+      requestKey = crypto.createHash('md5').update(requestKey).digest('hex');
+    }
+    const defaultKey = crypto.createHash('md5').update(process.env.REQUEST_KEY).digest('hex');
+
+    if (requestKey !== defaultKey) {
+      console.log('invalid key', requestKey);
+      reply.send({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: HttpStatus.getStatusText(HttpStatus.UNAUTHORIZED) + ' or invalid key'
+      });
+    }
+
+    reply.status(HttpStatus.OK).send({
+      statusCode: HttpStatus.OK,
+      skey: requestKey
+    });
+  })
 
   fastify.post('/person', { preHandler: [fastify.serviceMonitoring, fastify.checkRequestKey] }, async (req: fastify.Request, reply: fastify.Reply) => {
     const hospcode = req.body.hospcode;
