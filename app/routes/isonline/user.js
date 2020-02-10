@@ -75,14 +75,18 @@ const router = (fastify, {}, next) => {
         verifyToken(req, res);
         let id = req.body.id;
         let data = req.body.data;
-        userModel.saveUser(db, id, data)
-            .then((results) => {
+        try {
+            const result = yield userModel.saveUser(db, id, data);
             console.log("\save: user id: " + id);
-            res.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            res.send({ ok: false, error: error });
-        });
+            res.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error,
+                message: error.message
+            });
+        }
     }));
     fastify.post('/remove', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, res);

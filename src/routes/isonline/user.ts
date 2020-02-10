@@ -77,14 +77,17 @@ const router = (fastify, { }, next) => {
     let id = req.body.id;
     let data = req.body.data;
 
-    userModel.saveUser(db, id, data)
-      .then((results: any) => {
-        console.log("\save: user id: " + id);
-        res.send({ ok: true, rows: results[0] });
-      })
-      .catch(error => {
-        res.send({ ok: false, error: error })
+    try {
+      const result: any = await userModel.saveUser(db, id, data);
+      console.log("\save: user id: " + id);
+      res.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+    } catch (error) {
+      res.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        ok: false, error: error,
+        message: error.message
       });
+    }
   })
 
   fastify.post('/remove', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {

@@ -251,14 +251,17 @@ const router = (fastify, {}, next) => {
             reply.send({ ok: false, error: 'token error' });
             return false;
         }
-        isModel.saveIs(db, ref, data)
-            .then((results) => {
+        try {
+            const result = yield isModel.saveIs(db, ref, data);
             console.log("save: iswin ref: " + ref);
-            reply.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            reply.send({ ok: false, error: error });
-        });
+            reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+        }
+        catch (error) {
+            reply.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/save-map-point', { preHandler: [fastify.authenticate] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let ref = req.body.ref;
@@ -268,15 +271,18 @@ const router = (fastify, {}, next) => {
             reply.send({ ok: false, error: 'token error' });
             return false;
         }
-        isModel.saveMapPoint(db, ref, formInput)
-            .then((results) => {
+        try {
+            const result = yield isModel.saveMapPoint(db, ref, formInput);
             console.log("save map point: " + ref);
             isModel.saveMapPointIs(db, formInput);
-            reply.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            reply.send({ ok: false, error: error });
-        });
+            reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+        }
+        catch (error) {
+            reply.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/save-lib', { preHandler: [fastify.authenticate] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let saveType = req.body.saveType;
@@ -286,14 +292,17 @@ const router = (fastify, {}, next) => {
             reply.send({ ok: false, error: 'token error' });
             return false;
         }
-        isModel.saveLib(db, saveType, formInput)
-            .then((results) => {
+        try {
+            const result = yield isModel.saveLib(db, saveType, formInput);
             console.log("save lib_code: " + formInput.code);
-            reply.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            reply.send({ ok: false, error: error });
-        });
+            reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+        }
+        catch (error) {
+            reply.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/report-agegroup', { preHandler: [fastify.authenticate] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let reportType = req.body.reportType;

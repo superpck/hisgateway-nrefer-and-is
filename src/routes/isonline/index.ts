@@ -11,11 +11,11 @@ const router = (fastify, { }, next) => {
   var db: Knex = fastify.dbISOnline;
 
   fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
-    reply.send({ 
+    reply.send({
       statusCode: 200,
-      apiCode: 'ISOnline', 
+      apiCode: 'ISOnline',
       version: '3.1.0',
-      subVersion: '2019-08-31-01' 
+      subVersion: '2019-08-31-01'
     });
   })
 
@@ -252,14 +252,17 @@ const router = (fastify, { }, next) => {
       reply.send({ ok: false, error: 'token error' });
       return false;
     }
-    isModel.saveIs(db, ref, data)
-      .then((results: any) => {
-        console.log("save: iswin ref: " + ref);
-        reply.send({ ok: true, rows: results[0] });
-      })
-      .catch(error => {
-        reply.send({ ok: false, error: error })
+
+    try {
+      const result: any = await isModel.saveIs(db, ref, data);
+      console.log("save: iswin ref: " + ref);
+      reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+    } catch (error) {
+      reply.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        ok: false, error: error, message: error.message
       });
+    }
   })
 
   fastify.post('/save-map-point', { preHandler: [fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
@@ -270,15 +273,18 @@ const router = (fastify, { }, next) => {
       reply.send({ ok: false, error: 'token error' });
       return false;
     }
-    isModel.saveMapPoint(db, ref, formInput)
-      .then((results: any) => {
-        console.log("save map point: " + ref);
-        isModel.saveMapPointIs(db, formInput);
-        reply.send({ ok: true, rows: results[0] });
-      })
-      .catch(error => {
-        reply.send({ ok: false, error: error })
+
+    try {
+      const result: any = await isModel.saveMapPoint(db, ref, formInput);
+      console.log("save map point: " + ref);
+      isModel.saveMapPointIs(db, formInput);
+      reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+    } catch (error) {
+      reply.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        ok: false, error: error, message: error.message
       });
+    }
   })
 
   fastify.post('/save-lib', { preHandler: [fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
@@ -289,14 +295,16 @@ const router = (fastify, { }, next) => {
       reply.send({ ok: false, error: 'token error' });
       return false;
     }
-    isModel.saveLib(db, saveType, formInput)
-      .then((results: any) => {
-        console.log("save lib_code: " + formInput.code);
-        reply.send({ ok: true, rows: results[0] });
-      })
-      .catch(error => {
-        reply.send({ ok: false, error: error })
+    try {
+      const result: any = await isModel.saveLib(db, saveType, formInput);
+      console.log("save lib_code: " + formInput.code);
+      reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+    } catch (error) {
+      reply.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        ok: false, error: error, message: error.message
       });
+    }
   })
 
   fastify.post('/report-agegroup', { preHandler: [fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
