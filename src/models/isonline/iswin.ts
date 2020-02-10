@@ -181,11 +181,9 @@ export class IswinModel {
   saveIs(knex: Knex, ref: number, arrData: IisStructure) {
     if (ref > 0) {
       return knex('is').update(arrData)
-          .where('ref', '=', ref)
-          .returning(['ref']);
+          .where('ref', '=', ref);
     } else {
-        return knex('is').insert(arrData, 'ref')
-            .returning(['ref']);
+        return knex('is').insert(arrData, 'ref');
     }
   }
 
@@ -201,22 +199,18 @@ export class IswinModel {
   saveMapPoint(knex: Knex, ref, arrData) {
     if (ref > 0) {
         return knex('accident_location').update(arrData)
-            .where('id', '=', ref)
-            .returning(['id']);
+            .where('id', '=', ref);
     } else {
-        return knex('accident_location').insert(arrData, 'id')
-            .returning(['id']);
+        return knex('accident_location').insert(arrData, 'id');
     }
   }
 
   saveLib(knex: Knex, saveType: string, arrData) {
     if (saveType == 'UPDATE') {
         return knex('lib_code').update(arrData)
-            .where('code', '=', arrData.code)
-            .returning(['code']);
+            .where('code', '=', arrData.code);
     } else {
-        return knex('lib_code').insert(arrData, 'code')
-            .returning(['code']);
+        return knex('lib_code').insert(arrData, 'code');
     }
   }
 

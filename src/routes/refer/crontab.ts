@@ -178,17 +178,27 @@ async function getReferOut(db, date) {
 async function sendReferOut(row, sentResult) {
   const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
   if (row) {
+
+    const hcode = row.HOSPCODE || row.hospcode;
+    const referId = row.REFERID || row.referid;
+    const referProvId = hcode + referId;
+    const dServe = row.DATETIME_SERV || row.REFER_DATE || row.refer_date;
+    const dAdmit = row.DATETIME_ADMIT || row.datetime_admit || '';
+    const dRefer = row.DATETIME_REFER || row.REFER_DATE || row.refer_date || '';
+    const cid = row.CID || row.cid;
+    const destHosp = row.HOSP_DESTINATION || row.hosp_destination;
+
     const data: any = await {
-      HOSPCODE: row.HOSPCODE || row.hospcode,
-      REFERID: row.REFERID || row.referid,
+      HOSPCODE: hcode,
+      REFERID: referId,
       PID: row.PID || row.pid || row.HN || row.hn,
       SEQ: row.SEQ || row.seq || '',
       AN: row.AN || row.an || '',
-      CID: row.CID || row.cid,
-      DATETIME_SERV: row.DATETIME_SERV || row.REFER_DATE || row.refer_date,
-      DATETIME_ADMIT: row.DATETIME_ADMIT || row.datetime_admit || '',
-      DATETIME_REFER: row.DATETIME_REFER || row.REFER_DATE || row.refer_date || '',
-      HOSP_DESTINATION: row.HOSP_DESTINATION || row.hosp_destination,
+      CID: cid,
+      DATETIME_SERV: moment(dServe).format('YYYY-MM-DD'),
+      DATETIME_ADMIT: moment(dAdmit).format('YYYY-MM-DD'),
+      DATETIME_REFER: moment(dRefer).format('YYYY-MM-DD'),
+      HOSP_DESTINATION: destHosp,
       REFERID_ORIGIN: row.REFERID_ORIGIN || row.referid_origin || '',
       HOSPCODE_ORIGIN: row.HOSPCODE_ORIGIN || row.hospcode_origin || '',
       CLINIC_REFER: row.CLINIC_REFER || row.clinic_refer || '',
@@ -203,11 +213,12 @@ async function sendReferOut(row, sentResult) {
       CAUSEOUT: row.CAUSEOUT || row.causeout || '',
       REQUEST: row.REQUEST || row.request || '',
       PROVIDER: row.PROVIDER || row.provider || '',
+      REFERID_PROVINCE: referProvId,
       D_UPDATE: row.D_UPDATE || row.d_update || d_update,
       his: his,
       typesave: 'autosent'
     }
-    data.REFERID_PROVINCE = data.HOSPCODE + data.REFERID;
+    
     const saveResult: any = await referSending('/save-refer-history', data);
     // console.log('sent refer result', data.REFERID, saveResult);
     if (saveResult.statusCode === 200) {

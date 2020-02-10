@@ -60,18 +60,11 @@ class IsUserModel {
     }
     saveUser(knex, id, arrData) {
         if (id > 0) {
-            console.log(knex('is_user').update(arrData)
-                .where('id', '=', id)
-                .returning(['id']).toString());
             return knex('is_user').update(arrData)
-                .where('id', '=', id)
-                .returning(['id']);
+                .where('id', '=', id);
         }
         else {
-            console.log(knex('is_user').insert(arrData, 'id')
-                .returning(['id']).toString());
-            return knex('is_user').insert(arrData, 'id')
-                .returning(['id']);
+            return knex('is_user').insert(arrData, 'id');
         }
     }
     remove(knex, id) {

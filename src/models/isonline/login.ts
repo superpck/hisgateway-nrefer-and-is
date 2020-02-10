@@ -49,8 +49,7 @@ export class IsLoginModel {
 */
   saveToken(knex: Knex, tokenInfo) {
     return knex('is_token')
-      .insert(tokenInfo)
-      .returning('ref');
+      .insert(tokenInfo);
   }
 
 

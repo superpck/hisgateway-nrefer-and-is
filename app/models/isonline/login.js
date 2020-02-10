@@ -23,8 +23,7 @@ class IsLoginModel {
     }
     saveToken(knex, tokenInfo) {
         return knex('is_token')
-            .insert(tokenInfo)
-            .returning('ref');
+            .insert(tokenInfo);
     }
 }
 exports.IsLoginModel = IsLoginModel;
