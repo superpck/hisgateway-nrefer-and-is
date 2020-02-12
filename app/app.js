@@ -175,11 +175,13 @@ else {
 cron.schedule(timingSch, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const minuteNow = +moment().get('minute') == 0 ? 60 : +moment().get('minute');
     const hourNow = +moment().get('hour');
+    console.log('now', moment().format('H:m:s'));
     if (timingSchedule['nrefer'].autosend && timingSchedule['nrefer'].minute + timingSchedule['nrefer'].hour > 0 &&
         ((timingSchedule['nrefer'].minute > 0 && minuteNow % timingSchedule['nrefer'].minute == 0) ||
             (timingSchedule['nrefer'].hour > 0 && minuteNow == 0 && hourNow % timingSchedule['nrefer'].hour == 0))) {
         doAutoSend(req, res, 'nrefer', './routes/refer/crontab');
     }
+    console.log('isonline.autosend', timingSchedule['isonline']['autosend'], timingSchedule['isonline'].minute, timingSchedule['isonline'].hour, minuteNow);
     if (timingSchedule['isonline']['autosend'] && timingSchedule['isonline'].minute + timingSchedule['isonline'].hour > 0 &&
         ((timingSchedule['isonline'].minute > 0 && minuteNow % timingSchedule['isonline'].minute == 0) ||
             (timingSchedule['isonline'].hour > 0 && minuteNow == 0 && hourNow % timingSchedule['isonline'].hour == 0))) {

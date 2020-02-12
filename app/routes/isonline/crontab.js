@@ -28,8 +28,10 @@ function getIsToken() {
             username: process.env.IS_MOPH_USER,
             password: process.env.IS_MOPH_PASSWORD
         });
+        const url = process.env.IS_URL.split(':');
         const options = {
-            hostname: process.env.IS_URL,
+            hostname: url[0] + ':' + url[1],
+            port: +url[2],
             path: '/isonline/token',
             method: 'POST',
             headers: {

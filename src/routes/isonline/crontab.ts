@@ -9,7 +9,7 @@ let crontabConfig: any;
 async function sendMoph(req, reply, db) {
   console.log('Crontab IS-Online', moment().locale('th').format('HH:mm:ss.SSS'));
   console.log(crontabConfig);
-  
+
   const token = await getIsToken();
   console.log('token', token);
 
@@ -22,8 +22,10 @@ async function getIsToken() {
     password: process.env.IS_MOPH_PASSWORD
   });
 
+  const url = process.env.IS_URL.split(':');
   const options = {
-    hostname: process.env.IS_URL,
+    hostname: url[0] + ':' + url[1],
+    port: +url[2],
     path: '/isonline/token',
     method: 'POST',
     headers: {

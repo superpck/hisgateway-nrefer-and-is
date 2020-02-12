@@ -13,7 +13,6 @@ const moment = require("moment");
 var fs = require('fs');
 var http = require('http');
 var querystring = require('querystring');
-const request = require('request');
 const his_ezhosp_1 = require("../../models/refer/his_ezhosp");
 const his_thiades_1 = require("../../models/refer/his_thiades");
 const his_hosxpv3_1 = require("../../models/refer/his_hosxpv3");

@@ -434,11 +434,7 @@ class HisHosxpv4Model {
     }
     getLabResult(db, columnName, searchNo, hospCode = hcode) {
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        return db('view_lab_result')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('view_lab_result.*')
-            .where(columnName, "=", searchNo)
-            .limit(maxLimit);
+        return [];
     }
     getDrugOpd(db, visitNo, hospCode = hcode) {
         return __awaiter(this, void 0, void 0, function* () {

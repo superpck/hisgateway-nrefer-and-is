@@ -1,13 +1,10 @@
 /// <reference path="./../../../typings.d.ts" />
 
-import * as Knex from 'knex';
 import * as fastify from 'fastify';
-import * as HttpStatus from 'http-status-codes';
 import * as moment from 'moment';
 var fs = require('fs');
 var http = require('http');
 var querystring = require('querystring');
-const request = require('request');
 
 import { HisEzhospModel } from '../../models/refer/his_ezhosp';
 import { HisThiadesModel } from '../../models/refer/his_thiades';
