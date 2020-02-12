@@ -167,7 +167,7 @@ function sendReferOut(row, sentResult) {
             const referId = row.REFERID || row.referid;
             const referProvId = hcode + referId;
             const dServe = row.DATETIME_SERV || row.REFER_DATE || row.refer_date;
-            const dAdmit = row.DATETIME_ADMIT || row.datetime_admit || '';
+            const dAdmit = moment(row.DATETIME_ADMIT || row.datetime_admit || '').format('YYYY-MM-DD');
             const dRefer = row.DATETIME_REFER || row.REFER_DATE || row.refer_date || '';
             const cid = row.CID || row.cid;
             const destHosp = row.HOSP_DESTINATION || row.hosp_destination;
