@@ -10,10 +10,9 @@ class HisHosxpv3Model {
     }
     getPerson(knex, columnName, searchText) {
         return knex
-            .select('patient.hn', 'patient.cid', 'patient.pname as prename', 'patient.fname', 'patient.lname', 'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road', 'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip', 'lib_occupation.is_code as occupation')
+            .select('patient.hn', 'patient.cid', 'patient.pname as prename', 'patient.fname', 'patient.lname', 'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road', 'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip')
             .select(knex.raw("CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode"))
             .from('patient')
-            .leftJoin(`lib_occupation`, function () { this.on('lib_occupation.occ_code', '=', 'patient.occupation'); })
             .where(columnName, "=", searchText);
     }
     getOpdService(knex, hn, date) {
