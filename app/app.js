@@ -147,15 +147,10 @@ timingSchedule['nrefer'] = {};
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;
 timingSchedule['isonline'].minute = process.env.IS_AUTO_SEND_EVERY_MINUTE ? parseInt(process.env.IS_AUTO_SEND_EVERY_MINUTE) : 0;
 timingSchedule['isonline'].hour = process.env.IS_AUTO_SEND_EVERY_HOUR ? parseInt(process.env.IS_AUTO_SEND_EVERY_HOUR) : 0;
-if (timingSchedule['isonline'].minute > 0) {
-    timingSchedule['isonline'].minute = timingSchedule['isonline'].minute < 5 ? 5 : timingSchedule['isonline'].minute;
-    timingSchedule['isonline'].minute = timingSchedule['isonline'].minute > 60 ? (timingSchedule['isonline'].minute % 60) : timingSchedule['isonline'].minute;
-    timingSchedule['isonline'].hour = 0;
-}
-else if (timingSchedule['isonline'].hour > 0) {
-    timingSchedule['isonline'].hour = timingSchedule['isonline'].hour > 23 ? (timingSchedule['isonline'].hour % 23) : timingSchedule['isonline'].hour;
-}
-else {
+timingSchedule['isonline'].minute = timingSchedule['isonline'].minute < 5 ? 5 : timingSchedule['isonline'].minute;
+timingSchedule['isonline'].minute = timingSchedule['isonline'].minute >= 60 ? (timingSchedule['isonline'].minute % 60) : timingSchedule['isonline'].minute;
+timingSchedule['isonline'].hour = timingSchedule['isonline'].hour > 23 ? (timingSchedule['isonline'].hour % 23) : timingSchedule['isonline'].hour;
+if (timingSchedule['isonline'].hour == 0 && timingSchedule['isonline'].minute == 0) {
     timingSchedule['isonline'].autosend = false;
 }
 timingSchedule['nrefer'].autosend = +process.env.NREFER_AUTO_SEND === 1 || false;
@@ -175,16 +170,20 @@ else {
 cron.schedule(timingSch, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const minuteNow = +moment().get('minute') == 0 ? 60 : +moment().get('minute');
     const hourNow = +moment().get('hour');
-    console.log('now', moment().format('H:m:s'));
-    if (timingSchedule['nrefer'].autosend && timingSchedule['nrefer'].minute + timingSchedule['nrefer'].hour > 0 &&
-        ((timingSchedule['nrefer'].minute > 0 && minuteNow % timingSchedule['nrefer'].minute == 0) ||
-            (timingSchedule['nrefer'].hour > 0 && minuteNow == 0 && hourNow % timingSchedule['nrefer'].hour == 0))) {
+    if (timingSchedule['nrefer']['autosend'] &&
+        ((timingSchedule['nrefer'].hour > 0 &&
+            hourNow % timingSchedule['nrefer'].hour == 0 &&
+            minuteNow == timingSchedule['nrefer'].minute) ||
+            (timingSchedule['nrefer'].minute > 0 &&
+                minuteNow % timingSchedule['nrefer'].minute == 0))) {
         doAutoSend(req, res, 'nrefer', './routes/refer/crontab');
     }
-    console.log('isonline.autosend', timingSchedule['isonline']['autosend'], timingSchedule['isonline'].minute, timingSchedule['isonline'].hour, minuteNow);
-    if (timingSchedule['isonline']['autosend'] && timingSchedule['isonline'].minute + timingSchedule['isonline'].hour > 0 &&
-        ((timingSchedule['isonline'].minute > 0 && minuteNow % timingSchedule['isonline'].minute == 0) ||
-            (timingSchedule['isonline'].hour > 0 && minuteNow == 0 && hourNow % timingSchedule['isonline'].hour == 0))) {
+    if (timingSchedule['isonline']['autosend'] &&
+        ((timingSchedule['isonline'].hour > 0 &&
+            hourNow % timingSchedule['isonline'].hour == 0 &&
+            minuteNow == timingSchedule['isonline'].minute) ||
+            (timingSchedule['isonline'].minute > 0 &&
+                minuteNow % timingSchedule['isonline'].minute == 0))) {
         doAutoSend(req, res, 'isonline', './routes/isonline/crontab');
     }
 }));

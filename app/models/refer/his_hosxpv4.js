@@ -26,8 +26,8 @@ class HisHosxpv4Model {
         return __awaiter(this, void 0, void 0, function* () {
             const sql = `
             select 
-                (select hospitalcode from opdconfig) as hospcode,
-                refer.refer_hospcode as hosp_destination,
+                (select hospitalcode from opdconfig) as HOSPCODE,
+                refer.refer_hospcode as HOSP_DESTINATION,
                 refer.refer_date as refer_date,
                 refer.refer_number as referid,
                 refer.hn as hn,
@@ -426,15 +426,22 @@ class HisHosxpv4Model {
     }
     getLabRequest(db, columnName, searchNo, hospCode = hcode) {
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        return db('view_lab_request_item as lab')
-            .select(db.raw('"' + hcode + '" as hospcode'))
+        return db('lab_order as o')
+            .leftJoin('lab_order_service as s', 'o.lab_order_number', 's.lab_order_number')
+            .select(db.raw(`"${hospCode}" as hospcode`))
             .select('vn as visitno', 'lab.hn as hn', 'lab.an as an', 'lab.lab_no as request_id', 'lab.lab_code as lab_code', 'lab.lab_name as lab_name', 'lab.loinc as loinc', 'lab.icdcm as icdcm', 'lab.standard as cgd', 'lab.cost as cost', 'lab.lab_price as price', 'lab.date as request_date')
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
     }
-    getLabResult(db, columnName, searchNo, hospCode = hcode) {
+    getLabResult(db, columnName, searchNo, referID = '', hospCode = hcode) {
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        return [];
+        return db('lab_order as o')
+            .leftJoin('lab_order_service as s', 'o.lab_order_number', 's.lab_order_number')
+            .select(db.raw(`"${hospCode}" as HOSPCODE`))
+            .select('vn as visitno', 'o.lab_order_number as INVESTCODE', 'o.lab_items_code as LOCALCODE', 'o.lab_items_name_ref as INVESTNAME', 'o.lab_order_result as INVESTRESULT', 'o.lab_items_normal_value_ref as UNIT', 'o.update_datetime as DATETIME_REPORT')
+            .where(columnName, "=", searchNo)
+            .where('confirm', "=", 'Y')
+            .limit(maxLimit);
     }
     getDrugOpd(db, visitNo, hospCode = hcode) {
         return __awaiter(this, void 0, void 0, function* () {

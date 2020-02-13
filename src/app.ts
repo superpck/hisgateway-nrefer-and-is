@@ -170,13 +170,13 @@ timingSchedule['nrefer'] = {};
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;
 timingSchedule['isonline'].minute = process.env.IS_AUTO_SEND_EVERY_MINUTE ? parseInt(process.env.IS_AUTO_SEND_EVERY_MINUTE) : 0;
 timingSchedule['isonline'].hour = process.env.IS_AUTO_SEND_EVERY_HOUR ? parseInt(process.env.IS_AUTO_SEND_EVERY_HOUR) : 0;
-if (timingSchedule['isonline'].minute > 0) {
-  timingSchedule['isonline'].minute = timingSchedule['isonline'].minute < 5 ? 5 : timingSchedule['isonline'].minute;
-  timingSchedule['isonline'].minute = timingSchedule['isonline'].minute>60 ? (timingSchedule['isonline'].minute%60) : timingSchedule['isonline'].minute;
-  timingSchedule['isonline'].hour = 0;
-} else if (timingSchedule['isonline'].hour > 0) {
-  timingSchedule['isonline'].hour = timingSchedule['isonline'].hour > 23 ? (timingSchedule['isonline'].hour % 23) : timingSchedule['isonline'].hour;
-} else {
+
+
+timingSchedule['isonline'].minute = timingSchedule['isonline'].minute < 5 ? 5 : timingSchedule['isonline'].minute;
+timingSchedule['isonline'].minute = timingSchedule['isonline'].minute >= 60 ? (timingSchedule['isonline'].minute % 60) : timingSchedule['isonline'].minute;
+timingSchedule['isonline'].hour = timingSchedule['isonline'].hour > 23 ? (timingSchedule['isonline'].hour % 23) : timingSchedule['isonline'].hour;
+
+if (timingSchedule['isonline'].hour == 0 && timingSchedule['isonline'].minute == 0) {
   timingSchedule['isonline'].autosend = false;
 }
 
@@ -186,7 +186,7 @@ timingSchedule['nrefer'].minute = process.env.NREFER_AUTO_SEND_EVERY_MINUTE ? pa
 timingSchedule['nrefer'].hour = process.env.NREFER_AUTO_SEND_EVERY_HOUR ? parseInt(process.env.NREFER_AUTO_SEND_EVERY_HOUR) : 0;
 if (timingSchedule['nrefer'].minute > 0) {
   timingSchedule['nrefer'].minute = timingSchedule['nrefer'].minute < 5 ? 5 : timingSchedule['nrefer'].minute;
-  timingSchedule['nrefer'].minute = timingSchedule['nrefer'].minute>60 ? (timingSchedule['nrefer'].minute%60) : timingSchedule['nrefer'].minute;
+  timingSchedule['nrefer'].minute = timingSchedule['nrefer'].minute > 60 ? (timingSchedule['nrefer'].minute % 60) : timingSchedule['nrefer'].minute;
   timingSchedule['nrefer'].hour = 0;
 } else if (+timingSchedule['nrefer'].hour > 0) {
   timingSchedule['nrefer'].hour = timingSchedule['nrefer'].hour > 23 ? (timingSchedule['nrefer'].hour % 23) : timingSchedule['nrefer'].hour;
@@ -194,56 +194,26 @@ if (timingSchedule['nrefer'].minute > 0) {
   timingSchedule['nrefer'].autosend = false;
 }
 
-// cron.schedule(timingSch, async (req, res) => {
-//   if (ifAutoSend) {
-//     let firstProcess: any = { pid: -1 };
-//     if (process.env.START_TOOL === 'nodemon') {
-//       firstProcess.pid = process.pid;
-//     } else {
-//       var jlist: any = await shell.exec('pm2 jlist');
-//       let pm2Process = jlist && jlist !== '' ? JSON.parse(jlist) : [];
-
-//       let processList = [];
-//       for (let p of pm2Process) {
-//         if (p.name === process.env.PM2_NAME) {
-//           await processList.push(p);
-//         }
-//       }
-
-//       if (processList.length) {
-//         firstProcess = processList[0];
-//       }
-//     }
-
-//     if (firstProcess.pid === process.pid) {
-//       noAutoStart += 1;
-//       console.log(moment().locale('th').format('HH:mm:ss'), 'start cronjob:', noAutoStart, ' on PID', process.pid);
-//       await require('./routes/refer/crontab')(req, res, app.dbHIS);
-//     }
-//   }
-// });
-
 // ตรวจสอบการ start ด้วยเวลาที่กำหนด
 cron.schedule(timingSch, async (req, res) => {
   const minuteNow = +moment().get('minute') == 0 ? 60 : +moment().get('minute');
   const hourNow = +moment().get('hour');
-  console.log('now',moment().format('H:m:s'));
-  if (timingSchedule['nrefer'].autosend && timingSchedule['nrefer'].minute + timingSchedule['nrefer'].hour > 0 &&
-    ((timingSchedule['nrefer'].minute > 0 && minuteNow % timingSchedule['nrefer'].minute == 0) ||
-      (timingSchedule['nrefer'].hour > 0 && minuteNow == 0 && hourNow % timingSchedule['nrefer'].hour == 0))
-  ) {
-    doAutoSend(req, res, 'nrefer', './routes/refer/crontab');
 
+  if (timingSchedule['nrefer']['autosend'] &&
+    ((timingSchedule['nrefer'].hour > 0 &&
+      hourNow % timingSchedule['nrefer'].hour == 0 &&
+      minuteNow == timingSchedule['nrefer'].minute) ||
+      (timingSchedule['nrefer'].minute > 0 &&
+        minuteNow % timingSchedule['nrefer'].minute == 0))) {
+    doAutoSend(req, res, 'nrefer', './routes/refer/crontab');
   }
 
-  console.log('isonline.autosend', timingSchedule['isonline']['autosend'], 
-    timingSchedule['isonline'].minute,
-    timingSchedule['isonline'].hour, minuteNow
-    );
-  if (timingSchedule['isonline']['autosend'] && timingSchedule['isonline'].minute + timingSchedule['isonline'].hour > 0 &&
-    ((timingSchedule['isonline'].minute > 0 && minuteNow % timingSchedule['isonline'].minute == 0) ||
-      (timingSchedule['isonline'].hour > 0 && minuteNow == 0 && hourNow % timingSchedule['isonline'].hour == 0))
-  ) {
+  if (timingSchedule['isonline']['autosend'] &&
+    ((timingSchedule['isonline'].hour > 0 &&
+      hourNow % timingSchedule['isonline'].hour == 0 &&
+      minuteNow == timingSchedule['isonline'].minute) ||
+      (timingSchedule['isonline'].minute > 0 &&
+        minuteNow % timingSchedule['isonline'].minute == 0))) {
     doAutoSend(req, res, 'isonline', './routes/isonline/crontab');
   }
 });
@@ -394,21 +364,21 @@ async function testOracleConn(db) {
 async function doAutoSend(req, res, serviceName, functionName) {
   let firstProcess: any = { pid: -1 };
   if (process.env.START_TOOL === 'nodemon') {
-      firstProcess.pid = process.pid;
+    firstProcess.pid = process.pid;
   } else {
-      var jlist: any = await shell.exec('pm2 jlist');
-      let pm2Process = jlist && jlist !== '' ? JSON.parse(jlist) : [];
+    var jlist: any = await shell.exec('pm2 jlist');
+    let pm2Process = jlist && jlist !== '' ? JSON.parse(jlist) : [];
 
-      let processList = [];
-      for (let p of pm2Process) {
-        if (p.name === process.env.PM2_NAME) {
-          await processList.push(p);
-        }
+    let processList = [];
+    for (let p of pm2Process) {
+      if (p.name === process.env.PM2_NAME) {
+        await processList.push(p);
       }
+    }
 
-      if (processList.length) {
-        firstProcess = processList[0];
-      }
+    if (processList.length) {
+      firstProcess = processList[0];
+    }
   }
 
   if (firstProcess.pid === process.pid) {

@@ -141,7 +141,7 @@ function getReferOut(db, date) {
                 const ipd = yield getAdmission(db, seq);
                 const an = ipd && ipd.length ? ipd[0].an : '';
                 const procedureIpd = yield getProcedureIpd(db, an);
-                const investigation_refer = yield getLabResult(db, seq, referid);
+                const investigation_refer = yield getLabResult(db, row);
                 index += 1;
                 if (referout.length <= index) {
                     sentContent += moment().locale('th').format('HH:mm:ss.SSS') + ' crontab finished...\r\r';
@@ -167,8 +167,8 @@ function sendReferOut(row, sentResult) {
             const referId = row.REFERID || row.referid;
             const referProvId = hcode + referId;
             const dServe = row.DATETIME_SERV || row.REFER_DATE || row.refer_date;
-            const dAdmit = moment(row.DATETIME_ADMIT || row.datetime_admit || '').format('YYYY-MM-DD');
-            const dRefer = row.DATETIME_REFER || row.REFER_DATE || row.refer_date || '';
+            const dAdmit = row.DATETIME_ADMIT || row.datetime_admit || null;
+            const dRefer = row.DATETIME_REFER || row.REFER_DATE || row.refer_date || dServe || null;
             const cid = row.CID || row.cid;
             const destHosp = row.HOSP_DESTINATION || row.hosp_destination;
             const data = yield {
@@ -482,8 +482,10 @@ function getDrugOpd(db, visitNo, sentResult) {
         return rows;
     });
 }
-function getLabResult(db, visitNo, referID = 'SEQ' + visitNo) {
+function getLabResult(db, row) {
     return __awaiter(this, void 0, void 0, function* () {
+        const visitNo = row.seq || row.SEQ;
+        const referID = row.REFERID || row.referid;
         const rows = yield hisModel.getLabResult(db, 'visitNo', visitNo, referID, hcode);
         let rowsSave = [];
         const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
@@ -497,7 +499,7 @@ function getLabResult(db, visitNo, referID = 'SEQ' + visitNo) {
                     REFERID: referID,
                     REFERID_PROVINCE: cHOSPCODE + referID,
                     PID: row.PID || row.pid || row.HN || row.hn,
-                    SEQ: row.SEQ || row.seq || '',
+                    SEQ: visitNo,
                     AN: row.AN || row.an || '',
                     DATETIME_INVEST: row.DATETIME_INVEST || row.datetime_invest || '',
                     INVESTTYPE: row.INVESTTYPE || row.investtype || 'LAB',
@@ -506,7 +508,7 @@ function getLabResult(db, visitNo, referID = 'SEQ' + visitNo) {
                     LOINC: row.LOINC || row.loinc || '',
                     INVESTNAME: row.INVESTNAME || row.investname || '',
                     DATETIME_REPORT: row.DATETIME_REPORT || row.datetime_report || '',
-                    INVESTVALUE: row.INVESTVALUE || row.investvalue || '',
+                    INVESTVALUE: investresult.toString(),
                     LH: row.LH || row.lh || '',
                     UNIT: row.UNIT || row.unit || '',
                     NORMAL_MIN: row.NORMAL_MIN || row.normal_min || '',

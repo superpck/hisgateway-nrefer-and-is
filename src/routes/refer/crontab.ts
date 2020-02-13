@@ -154,7 +154,7 @@ async function getReferOut(db, date) {
 
       // const drug_ipd = await getDrugIpd(db, an);
 
-      const investigation_refer = await getLabResult(db, seq, referid);
+      const investigation_refer = await getLabResult(db, row);
 
       index += 1;
       if (referout.length <= index) {
@@ -180,8 +180,8 @@ async function sendReferOut(row, sentResult) {
     const referId = row.REFERID || row.referid;
     const referProvId = hcode + referId;
     const dServe = row.DATETIME_SERV || row.REFER_DATE || row.refer_date;
-    const dAdmit = moment(row.DATETIME_ADMIT || row.datetime_admit || '').format('YYYY-MM-DD');
-    const dRefer = row.DATETIME_REFER || row.REFER_DATE || row.refer_date || '';
+    const dAdmit = row.DATETIME_ADMIT || row.datetime_admit || null;
+    const dRefer = row.DATETIME_REFER || row.REFER_DATE || row.refer_date || dServe || null;
     const cid = row.CID || row.cid;
     const destHosp = row.HOSP_DESTINATION || row.hosp_destination;
 
@@ -490,7 +490,9 @@ async function getDrugOpd(db, visitNo, sentResult) {
   return rows;
 }
 
-async function getLabResult(db, visitNo, referID = 'SEQ' + visitNo) {
+async function getLabResult(db, row) {
+  const visitNo = row.seq || row.SEQ;
+  const referID = row.REFERID || row.referid;
   const rows = await hisModel.getLabResult(db, 'visitNo', visitNo, referID, hcode);
   let rowsSave = [];
   const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
@@ -504,7 +506,7 @@ async function getLabResult(db, visitNo, referID = 'SEQ' + visitNo) {
         REFERID: referID,
         REFERID_PROVINCE: cHOSPCODE + referID,
         PID: row.PID || row.pid || row.HN || row.hn,
-        SEQ: row.SEQ || row.seq || '',
+        SEQ: visitNo,
         AN: row.AN || row.an || '',
         DATETIME_INVEST: row.DATETIME_INVEST || row.datetime_invest || '',
         INVESTTYPE: row.INVESTTYPE || row.investtype || 'LAB',
@@ -513,7 +515,7 @@ async function getLabResult(db, visitNo, referID = 'SEQ' + visitNo) {
         LOINC: row.LOINC || row.loinc || '',
         INVESTNAME: row.INVESTNAME || row.investname || '',
         DATETIME_REPORT: row.DATETIME_REPORT || row.datetime_report || '',
-        INVESTVALUE: row.INVESTVALUE || row.investvalue || '',
+        INVESTVALUE: investresult.toString(),
         LH: row.LH || row.lh || '',
         UNIT: row.UNIT || row.unit || '',
         NORMAL_MIN: row.NORMAL_MIN || row.normal_min || '',
