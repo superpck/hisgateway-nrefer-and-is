@@ -28,8 +28,8 @@ const router = (fastify, {}, next) => {
             apiCode: 'HISGATEWAY',
             apiName: 'HIS-Gateway',
             apiDesc: 'API for IS-Online, nRefer, PCC, CMI',
-            version: "2.2.0",
-            subVersion: "63.01.11-01",
+            version: "2.2.1",
+            subVersion: "63.02.13-01",
             serviceName: "isonline",
             his_provider: process.env.HIS_PROVIDER,
             hospcode: process.env.HOSPCODE
