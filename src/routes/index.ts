@@ -109,6 +109,7 @@ const router = (fastify, { }, next) => {
       console.log('====> resultSaveConfig', resultSaveConfig, moment().locale('th').format('HH:mm:ss.SS'));
 
       if (+body.api.AUTO_RESTART === 1 && body.api.START_TOOL === 'pm2') {
+
         reloadPM2(body.api)
           .then(resultRestartPm2 => {
             console.log('====> resultRestartPM2', resultRestartPm2, moment().locale('th').format('HH:mm:ss.SS'));
@@ -118,6 +119,7 @@ const router = (fastify, { }, next) => {
             console.log('====> resultRestartPM2', err, moment().locale('th').format('HH:mm:ss.SS'));
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, message: err })
           });
+          
       } else {
         reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK })
       }

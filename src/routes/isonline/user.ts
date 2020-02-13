@@ -3,7 +3,6 @@
 import * as Knex from 'knex';
 import * as fastify from 'fastify';
 import * as HttpStatus from 'http-status-codes';
-import * as moment from 'moment';
 
 import { IsUserModel } from '../../models/isonline/users';
 const userModel = new IsUserModel;
@@ -14,44 +13,65 @@ const router = (fastify, { }, next) => {
   fastify.post('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     verifyToken(req, res);
     let id: number = req.body.idSeach;
-    userModel.list(db, id)
-      .then((results: any) => {
-        if (id > 0) {
-          console.log("is_user id: " + id);
-          res.send({ ok: true, rows: results[0] });
-        } else {
-          console.log("is_user. " + results.length + ' record<s> founded.');
-          res.send({ ok: true, rows: results });
-        }
-      })
-      .catch(error => {
-        res.send({ ok: false, error: error })
+
+    try {
+      const result: any = await userModel.list(db, id);
+      if (id > 0) {
+        console.log("is_user id: " + id);
+        res.send({
+          statusCode: HttpStatus.OK,
+          ok: true, rows: result[0]
+        });
+      } else {
+        console.log("is_user. " + result.length + ' record<s> founded.');
+        res.send({
+          statusCode: HttpStatus.OK,
+          ok: true, rows: result
+        });
+      }
+    } catch (error) {
+      res.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        ok: false, error: error, message: error.message
       });
+    }
   })
 
   fastify.post('/getbyid', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     verifyToken(req, res);
     let id: number = req.body.idSeach;
-    userModel.getByID(db, id)
-      .then((results: any) => {
-        console.log("user id: " + id + ', ' + results.length + ' record<s> founded.');
-        res.send({ ok: true, rows: results[0] });
-      })
-      .catch(error => {
-        res.send({ ok: false, error: error })
+
+    try {
+      const result: any = await userModel.getByID(db, id);
+      console.log("user id: " + id + ', ' + result.length + ' record<s> founded.');
+      res.send({
+        statusCode: HttpStatus.OK,
+        ok: true, rows: result[0]
       });
+    } catch (error) {
+      res.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        ok: false, error: error, message: error.message
+      });
+    }
   })
 
   fastify.post('/getbyusername', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     verifyToken(req, res);
     let userName: string = req.body.userName;
-    userModel.getByUserName(db, userName)
-      .then((results: any) => {
-        res.send({ ok: true, rows: results[0] });
-      })
-      .catch(error => {
-        res.send({ ok: false, error: error })
+
+    try {
+      const result = await userModel.getByUserName(db, userName)
+      res.send({
+        statusCode: HttpStatus.OK,
+        ok: true, rows: result[0]
       });
+    } catch (error) {
+      res.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        ok: false, error: error, message: error.message
+      });
+    }
   })
 
   fastify.post('/selectData', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
@@ -62,14 +82,19 @@ const router = (fastify, { }, next) => {
     let groupBy = req.body.groupBy;
     let orderText = req.body.orderText;
 
-    userModel.selectSql(db, tableName, selectText, whereText, groupBy, orderText)
-      .then((results: any) => {
-        console.log("\nget: " + tableName + ' = ' + results[0].length + ' record<s> founded.');
-        res.send({ ok: true, rows: results[0] });
-      })
-      .catch(error => {
-        res.send({ ok: false, error: error })
+    try {
+      const result = await userModel.selectSql(db, tableName, selectText, whereText, groupBy, orderText)
+      console.log("\nget: " + tableName + ' = ' + result[0].length + ' record<s> founded.');
+      res.send({
+        statusCode: HttpStatus.OK,
+        ok: true, rows: result[0]
       });
+    } catch (error) {
+      res.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        ok: false, error: error, message: error.message
+      });
+    }
   })
 
   fastify.post('/save', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
@@ -94,14 +119,19 @@ const router = (fastify, { }, next) => {
     verifyToken(req, res);
     let id = req.body.id;
 
-    userModel.remove(db, id)
-      .then((results: any) => {
-        console.log("\delete: user id: " + id);
-        res.send({ ok: true, id: id });
-      })
-      .catch(error => {
-        res.send({ ok: false, error: error })
+    try {
+      const result: any = await userModel.remove(db, id);
+      console.log("\delete: user id: " + id);
+      res.send({
+        statusCode: HttpStatus.OK,
+        ok: true, id: id
       });
+    } catch (error) {
+      res.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        ok: false, error: error, message: error.message
+      });
+    }
   })
 
   async function verifyToken(req, res) {
