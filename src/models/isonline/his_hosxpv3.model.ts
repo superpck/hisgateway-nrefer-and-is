@@ -17,7 +17,7 @@ export class HisHosxpv3Model {
                 'patient.fname', 'patient.lname',
                 'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road',
                 'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip',
-                'occupation.zip09_code as occupation')
+                'occupation.nhso_code as occupation')
             .select(knex.raw("CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode"))
             .where(columnName, "=", searchText);
     }
