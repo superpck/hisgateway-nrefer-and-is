@@ -30,14 +30,20 @@ const router = (fastify, {}, next) => {
             res.send({ ok: false, error: 'token error' });
             return false;
         }
-        isModel.getByRef(db, refSeach, hospCode)
-            .then((results) => {
-            console.log("ref: " + refSeach + " hcode: " + hospCode + ' result: ' + results[0].length + ' record<s>');
-            res.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            res.send({ ok: false, error: error });
-        });
+        try {
+            const result = yield isModel.getByRef(db, refSeach, hospCode);
+            console.log("ref: " + refSeach + " hcode: " + hospCode + ' result: ' + result[0].length + ' record<s>');
+            res.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/get-libs', { preHandler: [fastify.authenticate] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         let groupCode = req.body.groupCode;
@@ -47,14 +53,20 @@ const router = (fastify, {}, next) => {
             res.send({ ok: false, error: 'token error' });
             return false;
         }
-        isModel.getLibs(db, hospCode, groupCode)
-            .then((results) => {
-            console.log("lib code: " + groupCode + ' result: ' + results[0].length + ' record<s>');
-            res.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            res.send({ ok: false, error: error });
-        });
+        try {
+            const result = yield isModel.getLibs(db, hospCode, groupCode);
+            console.log("lib code: " + groupCode + ' result: ' + result[0].length + ' record<s>');
+            res.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/get-lib', { preHandler: [fastify.authenticate] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let columnsName = req.body.columnsName;
@@ -65,14 +77,20 @@ const router = (fastify, {}, next) => {
             reply.send({ ok: false, error: 'token error' });
             return false;
         }
-        isModel.getLib(db, hospCode, 'lib_code', columnsName, textSearch)
-            .then((results) => {
-            console.log("lib " + columnsName + ": " + textSearch + ' result: ' + results[0].length + ' record<s>');
-            reply.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            reply.send({ ok: false, error: error });
-        });
+        try {
+            const result = yield isModel.getLib(db, hospCode, 'lib_code', columnsName, textSearch);
+            console.log("lib " + columnsName + ": " + textSearch + ' result: ' + result[0].length + ' record<s>');
+            reply.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            reply.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/get-office', { preHandler: [fastify.authenticate] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let textSearch = req.body.textSearch;
@@ -82,14 +100,20 @@ const router = (fastify, {}, next) => {
             reply.send({ ok: false, error: 'token error' });
             return false;
         }
-        isModel.getOffices(db, hospCode, textSearch)
-            .then((results) => {
-            console.log("lib office: " + textSearch + ' result: ' + results[0].length + ' record<s>');
-            reply.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            reply.send({ ok: false, error: error });
-        });
+        try {
+            const result = yield isModel.getOffices(db, hospCode, textSearch);
+            console.log("lib office: " + textSearch + ' result: ' + result[0].length + ' record<s>');
+            reply.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            reply.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/getbydate', { preHandler: [fastify.authenticate] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         let dDate = req.body.date;
@@ -175,13 +199,19 @@ const router = (fastify, {}, next) => {
             reply.send({ ok: false, error: 'token error' });
             return false;
         }
-        isModel.getByID(db, id, hospCode)
-            .then((results) => {
-            reply.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            reply.send({ ok: false, error: error });
-        });
+        try {
+            const result = yield isModel.getByID(db, id, hospCode);
+            reply.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            reply.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/getbyname', { preHandler: [fastify.authenticate] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let id = req.body.idSeach;
@@ -193,14 +223,20 @@ const router = (fastify, {}, next) => {
             reply.send({ ok: false, error: 'token error' });
             return false;
         }
-        isModel.getByName(db, typeSearch, valSearch, hospCode)
-            .then((results) => {
-            console.log(typeSearch + ": " + valSearch + " hcode: " + hospCode + ' result: ' + results[0].length + ' record<s>');
-            reply.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            reply.send({ ok: false, error: error });
-        });
+        try {
+            const result = yield isModel.getByName(db, typeSearch, valSearch, hospCode);
+            console.log(typeSearch + ": " + valSearch + " hcode: " + hospCode + ' result: ' + result[0].length + ' record<s>');
+            reply.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            reply.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/selectData', { preHandler: [fastify.authenticate] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         let tableName = req.body.tableName;
@@ -309,14 +345,20 @@ const router = (fastify, {}, next) => {
         let date1 = req.body.date1;
         let date2 = req.body.date2;
         let hospCode = req.body.hospCode;
-        isModel.reportAgeGroup1(db, date1, date2, hospCode)
-            .then((results) => {
+        try {
+            const result = yield isModel.reportAgeGroup1(db, date1, date2, hospCode);
             console.log("report age group 1: " + date1 + ' ' + date2);
-            reply.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            reply.send({ ok: false, error: error });
-        });
+            reply.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            reply.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/save-to-csv', { preHandler: [fastify.authenticate] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let tokenKey = req.body.tokenKey;
@@ -368,14 +410,20 @@ const router = (fastify, {}, next) => {
         let id = req.body.id;
         let ref = req.body.ref;
         let hospCode = req.body.hospCode;
-        isModel.remove(db, ref)
-            .then((results) => {
+        try {
+            const result = yield isModel.remove(db, ref);
             console.log("delete: user id: " + id);
-            reply.send({ ok: true, id: id });
-        })
-            .catch(error => {
-            reply.send({ ok: false, error: error });
-        });
+            reply.send({
+                statusCode: HttpStatus.OK,
+                ok: true, id: id, result
+            });
+        }
+        catch (error) {
+            reply.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     function verifyToken(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

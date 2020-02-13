@@ -17,43 +17,64 @@ const router = (fastify, {}, next) => {
     fastify.post('/', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, res);
         let id = req.body.idSeach;
-        userModel.list(db, id)
-            .then((results) => {
+        try {
+            const result = yield userModel.list(db, id);
             if (id > 0) {
                 console.log("is_user id: " + id);
-                res.send({ ok: true, rows: results[0] });
+                res.send({
+                    statusCode: HttpStatus.OK,
+                    ok: true, rows: result[0]
+                });
             }
             else {
-                console.log("is_user. " + results.length + ' record<s> founded.');
-                res.send({ ok: true, rows: results });
+                console.log("is_user. " + result.length + ' record<s> founded.');
+                res.send({
+                    statusCode: HttpStatus.OK,
+                    ok: true, rows: result
+                });
             }
-        })
-            .catch(error => {
-            res.send({ ok: false, error: error });
-        });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/getbyid', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, res);
         let id = req.body.idSeach;
-        userModel.getByID(db, id)
-            .then((results) => {
-            console.log("user id: " + id + ', ' + results.length + ' record<s> founded.');
-            res.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            res.send({ ok: false, error: error });
-        });
+        try {
+            const result = yield userModel.getByID(db, id);
+            console.log("user id: " + id + ', ' + result.length + ' record<s> founded.');
+            res.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/getbyusername', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, res);
         let userName = req.body.userName;
-        userModel.getByUserName(db, userName)
-            .then((results) => {
-            res.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            res.send({ ok: false, error: error });
-        });
+        try {
+            const result = yield userModel.getByUserName(db, userName);
+            res.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/selectData', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, res);
@@ -62,14 +83,20 @@ const router = (fastify, {}, next) => {
         let whereText = req.body.whereText;
         let groupBy = req.body.groupBy;
         let orderText = req.body.orderText;
-        userModel.selectSql(db, tableName, selectText, whereText, groupBy, orderText)
-            .then((results) => {
-            console.log("\nget: " + tableName + ' = ' + results[0].length + ' record<s> founded.');
-            res.send({ ok: true, rows: results[0] });
-        })
-            .catch(error => {
-            res.send({ ok: false, error: error });
-        });
+        try {
+            const result = yield userModel.selectSql(db, tableName, selectText, whereText, groupBy, orderText);
+            console.log("\nget: " + tableName + ' = ' + result[0].length + ' record<s> founded.');
+            res.send({
+                statusCode: HttpStatus.OK,
+                ok: true, rows: result[0]
+            });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     fastify.post('/save', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, res);
@@ -91,14 +118,20 @@ const router = (fastify, {}, next) => {
     fastify.post('/remove', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, res);
         let id = req.body.id;
-        userModel.remove(db, id)
-            .then((results) => {
+        try {
+            const result = yield userModel.remove(db, id);
             console.log("\delete: user id: " + id);
-            res.send({ ok: true, id: id });
-        })
-            .catch(error => {
-            res.send({ ok: false, error: error });
-        });
+            res.send({
+                statusCode: HttpStatus.OK,
+                ok: true, id: id
+            });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                ok: false, error: error, message: error.message
+            });
+        }
     }));
     function verifyToken(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
