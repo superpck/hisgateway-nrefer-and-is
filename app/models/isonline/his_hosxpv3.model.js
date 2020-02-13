@@ -8,11 +8,11 @@ class HisHosxpv3Model {
             .from('information_schema.tables')
             .where('TABLE_SCHEMA', '=', dbName);
     }
-    getPerson(knex, columnName, searchText) {
-        return knex
-            .select('patient.hn', 'patient.cid', 'patient.pname as prename', 'patient.fname', 'patient.lname', 'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road', 'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip')
+    getPerson(db, columnName, searchText) {
+        return db('patient')
+            .leftJoin(`occupation`, 'occupation.occupation', 'patient.occupation')
+            .select('patient.hn', 'patient.cid', 'patient.pname as prename', 'patient.fname', 'patient.lname', 'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road', 'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip', 'occupation.zip09_code as occupation')
             .select(knex.raw("CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode"))
-            .from('patient')
             .where(columnName, "=", searchText);
     }
     getOpdService(knex, hn, date) {

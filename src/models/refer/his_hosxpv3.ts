@@ -419,32 +419,39 @@ export class HisHosxpv3Model {
     }
 
     getLabRequest(db, columnName, searchNo, hospCode=hcode) {
-        return [];
-        // columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        // return db('view_lab_request_item as lab')
-        //     .select(db.raw('"' + hcode + '" as hospcode'))
-        //     .select('vn as visitno', 'lab.hn as hn', 'lab.an as an',
-        //         'lab.lab_no as request_id',
-        //         'lab.lab_code as lab_code',
-        //         'lab.lab_name as lab_name',
-        //         'lab.loinc as loinc',
-        //         'lab.icdcm as icdcm',
-        //         'lab.standard as cgd',
-        //         'lab.cost as cost',
-        //         'lab.lab_price as price',
-        //         'lab.date as request_date')
-        //     .where(columnName, "=", searchNo)
-        //     .limit(maxLimit);
+        columnName = columnName === 'visitNo' ? 'vn' : columnName;
+        return db('lab_order as o')
+            .leftJoin('lab_order_service as s', 'o.lab_order_number', 's.lab_order_number')
+            .select(db.raw(`"${hospCode}" as hospcode`))
+            .select('vn as visitno', 'lab.hn as hn', 'lab.an as an',
+                'lab.lab_no as request_id',
+                'lab.lab_code as lab_code',
+                'lab.lab_name as lab_name',
+                'lab.loinc as loinc',
+                'lab.icdcm as icdcm',
+                'lab.standard as cgd',
+                'lab.cost as cost',
+                'lab.lab_price as price',
+                'lab.date as request_date')
+            .where(columnName, "=", searchNo)
+            .limit(maxLimit);
     }
 
-    getLabResult(db, columnName, searchNo, hospCode=hcode) {
-        return [];
-        // columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        // return db('view_lab_result')
-        //     .select(db.raw('"' + hcode + '" as hospcode'))
-        //     .select('*')
-        //     .where(columnName, "=", searchNo)
-        //     .limit(maxLimit);
+    getLabResult(db, columnName, searchNo, referID='', hospCode=hcode) {
+        columnName = columnName === 'visitNo' ? 'vn' : columnName;
+        return db('lab_order as o')
+            .leftJoin('lab_order_service as s', 'o.lab_order_number', 's.lab_order_number')
+            .select(db.raw(`"${hospCode}" as HOSPCODE`))
+            .select('vn as visitno', 
+                'o.lab_order_number as INVESTCODE',
+                'o.lab_items_code as LOCALCODE',
+                'o.lab_items_name_ref as INVESTNAME',
+                'o.lab_order_result as INVESTRESULT',
+                'o.lab_items_normal_value_ref as UNIT',
+                'o.update_datetime as DATETIME_REPORT')
+            .where(columnName, "=", searchNo)
+            .where('confirm', "=", 'Y')
+            .limit(maxLimit);
     }
 
     async getDrugOpd(db: Knex, visitNo, hospCode=hcode) {
