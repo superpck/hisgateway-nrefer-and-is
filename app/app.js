@@ -147,7 +147,6 @@ timingSchedule['nrefer'] = {};
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;
 timingSchedule['isonline'].minute = process.env.IS_AUTO_SEND_EVERY_MINUTE ? parseInt(process.env.IS_AUTO_SEND_EVERY_MINUTE) : 0;
 timingSchedule['isonline'].hour = process.env.IS_AUTO_SEND_EVERY_HOUR ? parseInt(process.env.IS_AUTO_SEND_EVERY_HOUR) : 0;
-timingSchedule['isonline'].minute = timingSchedule['isonline'].minute < 5 ? 5 : timingSchedule['isonline'].minute;
 timingSchedule['isonline'].minute = timingSchedule['isonline'].minute >= 60 ? (timingSchedule['isonline'].minute % 60) : timingSchedule['isonline'].minute;
 timingSchedule['isonline'].hour = timingSchedule['isonline'].hour > 23 ? (timingSchedule['isonline'].hour % 23) : timingSchedule['isonline'].hour;
 if (timingSchedule['isonline'].hour == 0 && timingSchedule['isonline'].minute == 0) {
@@ -330,8 +329,9 @@ function doAutoSend(req, res, serviceName, functionName) {
             }
         }
         if (firstProcess.pid === process.pid) {
+            const db = serviceName == 'isonline' ? app.dbISOnline : app.dbHIS;
             console.log(moment().locale('th').format('HH:mm:ss'), `start cronjob '${serviceName}' on PID ${process.pid}`);
-            yield require(functionName)(req, res, app.dbHIS, timingSchedule[serviceName]);
+            yield require(functionName)(req, res, db, timingSchedule[serviceName]);
         }
     });
 }

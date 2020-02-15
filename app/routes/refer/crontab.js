@@ -23,6 +23,7 @@ const his_kpstat_1 = require("../../models/refer/his_kpstat");
 const his_mkhospital_1 = require("../../models/refer/his_mkhospital");
 const his_1 = require("../../models/refer/his");
 const his_nemo_1 = require("../../models/refer/his_nemo");
+const his_pmk_1 = require("../../models/refer/his_pmk");
 const hisProvider = process.env.HIS_PROVIDER;
 let hisModel;
 switch (hisProvider) {
@@ -63,6 +64,7 @@ switch (hisProvider) {
     case 'jhos':
         break;
     case 'pmk':
+        hisModel = new his_pmk_1.HisPmkModel();
         break;
     case 'md':
         hisModel = new his_md_1.HisMdModel();
@@ -109,10 +111,10 @@ function sendMoph(req, reply, db) {
 function startSending(req, reply, db, date) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
-        const referOut = yield getReferOut(db, date);
+        const referOut = yield getRefer_out(db, date);
     });
 }
-function getReferOut(db, date) {
+function getRefer_out(db, date) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const referout = yield hisModel.getReferOut(db, date, hcode);

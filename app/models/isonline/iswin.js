@@ -80,20 +80,24 @@ class IswinModel {
         let sql = 'select * from `is` limit ' + offset + ',' + limit;
         return knex.raw(sql);
     }
-    getByDatet(knex, typeSearch, dateSearch1, dateSearch2, HospCode) {
-        let date1 = dateSearch1 + ' 00:00:00';
-        let date2 = dateSearch2 + ' 23:59:59';
+    getByDatet(knex, typeSearch, dateStart, dateEnd, HospCode) {
+        if (dateStart.length < 13) {
+            dateStart = dateStart + ' 00:00:00';
+            dateEnd = dateEnd + ' 23:59:59';
+        }
         return knex('is')
-            .whereBetween(typeSearch, [date1, date2])
+            .whereBetween(typeSearch, [dateStart, dateEnd])
             .where('hosp', HospCode)
             .orderBy(typeSearch, 'DESC');
     }
-    getByDate(db, typeDate, dateSearch1, dateSearch2, HospCode = defaultHCode) {
+    getByDate(db, typeDate, dateStart, dateEnd, HospCode = defaultHCode) {
         return __awaiter(this, void 0, void 0, function* () {
-            dateSearch1 += ' 00:00:00';
-            dateSearch2 += ' 23:59:59';
+            if (dateStart.length < 13) {
+                dateStart = dateStart + ' 00:00:00';
+                dateEnd = dateEnd + ' 23:59:59';
+            }
             return db('is')
-                .whereBetween(typeDate, [dateSearch1, dateSearch2])
+                .whereBetween(typeDate, [dateStart, dateEnd])
                 .where('hosp', HospCode)
                 .orderBy(typeDate, 'desc')
                 .limit(2500);

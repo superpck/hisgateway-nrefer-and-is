@@ -16,6 +16,7 @@ import { HisKpstatModel } from '../../models/refer/his_kpstat';
 import { HisMkhospitalModel } from '../../models/refer/his_mkhospital';
 import { HisModel } from '../../models/refer/his';
 import { HisNemoModel } from '../../models/refer/his_nemo';
+import { HisPmkModel } from '../../models/refer/his_pmk';
 
 const hisProvider = process.env.HIS_PROVIDER;
 let hisModel: any;
@@ -64,7 +65,7 @@ switch (hisProvider) {
     // hisModel = new HisJhosModel();
     break;
   case 'pmk':
-    // hisModel = new HisPmkModel();
+    hisModel = new HisPmkModel();
     break;
   case 'md':
     hisModel = new HisMdModel();
@@ -116,10 +117,10 @@ async function sendMoph(req, reply, db) {
 
 async function startSending(req, reply, db, date) {
   console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
-  const referOut: any = await getReferOut(db, date);
+  const referOut: any = await getRefer_out(db, date);
 }
 
-async function getReferOut(db, date) {
+async function getRefer_out(db, date) {
   // sentContent += 'REFERID,HN,SEQ,REFER_DATE\r';
   try {
     const referout = await hisModel.getReferOut(db, date, hcode);
