@@ -32,8 +32,8 @@ function sendMoph(req, reply, db) {
                 delete row.ref;
                 delete row.lastupdate;
                 row.his = row.his ? row.his : process.env.HIS_PROVIDER;
-                const sentResult = yield sendingData(row, token);
-                console.log('sentResult ', ref, sentResult);
+                const sentResult = yield sendData(row, token);
+                console.log('sentResult ', sentResult);
             }
         }
         else {
@@ -86,20 +86,16 @@ function sendingData(dataArray, token) {
 function sendData(row, tokenKey) {
     return __awaiter(this, void 0, void 0, function* () {
         const request = require('request');
-        const postData = querystring.stringify({
-            data: row, tokenKey
-        });
+        const bodyContent = { data: row, token: tokenKey };
         const options = {
             url: process.env.IS_URL + '/isonline/put-is',
             json: true,
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': `Bearer ${tokenKey}`,
-                'Content-Length': Buffer.byteLength(postData)
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(JSON.stringify(bodyContent))
             },
-            body: {
-                data: row, tokenKey
-            }
+            body: bodyContent
         };
         return new Promise((resolve, reject) => {
             request.post(options, (error, res, body) => {

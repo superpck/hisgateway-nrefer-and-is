@@ -27,8 +27,8 @@ async function sendMoph(req, reply, db) {
       delete row.lastupdate;
       row.his = row.his ? row.his : process.env.HIS_PROVIDER;
 
-      const sentResult: any = await sendingData(row, token);
-      console.log('sentResult ', ref, sentResult);
+      const sentResult: any = await sendData(row, token);
+      console.log('sentResult ', sentResult);
     }
   } else {
     console.log('ISOnline not found any record updated.');
@@ -83,21 +83,18 @@ async function sendingData(dataArray, token) {
 
 async function sendData(row, tokenKey) {
   const request = require('request');
-  const postData = querystring.stringify({
-    data: row, tokenKey
-  });
+  const bodyContent = { data: row, token: tokenKey };
 
   const options = {
     url: process.env.IS_URL + '/isonline/put-is',
     json: true,
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      // 'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': `Bearer ${tokenKey}`,
-      'Content-Length': Buffer.byteLength(postData)
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(JSON.stringify(bodyContent))
     },
-    body: {
-      data: row, tokenKey
-    }
+    body: bodyContent
   };
 
   return new Promise((resolve, reject) => {
