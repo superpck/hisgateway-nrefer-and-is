@@ -15,12 +15,32 @@ var http = require('http');
 var querystring = require('querystring');
 var iswin = new iswin_1.IswinModel();
 let crontabConfig;
+let sentContent = '';
+let tokenType = 'IS';
 function sendMoph(req, reply, db) {
     return __awaiter(this, void 0, void 0, function* () {
-        const token = yield getToken();
-        if (!token) {
-            console.log(`IS autosend 'fail' invalid config.`);
-            return false;
+        const dateNow = moment().locale('th').format('YYYY-MM-DD');
+        let token = null;
+        let result = yield getIsToken();
+        console.log('IS token', token);
+        if (!result || result.statusCode !== 200) {
+            const apiKey = process.env.NREFER_APIKEY || 'api-key';
+            const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
+            sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
+            const resultToken = yield getNReferToken(apiKey, secretKey);
+            console.log('Refer token', resultToken);
+            if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
+                token = resultToken.token;
+                sentContent += `token ${resultToken.token}\r`;
+                tokenType = 'NREFER';
+            }
+            else {
+                console.log(`IS autosend 'fail' invalid config.`);
+                return false;
+            }
+        }
+        else {
+            token = result.token;
         }
         const dateStart = moment().subtract(4, 'hours').format('YYYY-MM-DD HH:mm:ss');
         const dateEnd = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -123,19 +143,19 @@ function getToken() {
         return new Promise((resolve, reject) => {
             request.post(options, (err, res, body) => {
                 if (err) {
-                    reject(null);
+                    reject({ statusCode: 400 });
                 }
                 if (body.statusCode == 200 && body.token) {
                     resolve(body.token);
                 }
                 else {
-                    reject(null);
+                    reject({ statusCode: 400 });
                 }
             });
         });
     });
 }
-function getIsToken() {
+function getIsToken_() {
     return __awaiter(this, void 0, void 0, function* () {
         const request = require('request');
         const options = {
@@ -157,6 +177,81 @@ function getIsToken() {
             else {
                 return null;
             }
+        });
+    });
+}
+function getIsToken() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const isUrl = process.env.IS_URL.split(':');
+        const postData = querystring.stringify({
+            username: process.env.IS_MOPH_USER,
+            password: process.env.IS_MOPH_PASSWORD
+        });
+        const options = {
+            hostname: isUrl[1].substr(2),
+            port: +isUrl[2],
+            path: '/isonline/token',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+        console.log(options);
+        let ret = '';
+        return new Promise((resolve, reject) => {
+            const req = http.request(options, (res) => {
+                res.setEncoding('utf8');
+                res.on('data', (chunk) => {
+                    ret += chunk;
+                });
+                res.on('end', () => {
+                    const data = JSON.parse(ret);
+                    resolve(data);
+                });
+            });
+            req.on('error', (e) => {
+                reject(e);
+            });
+            req.write(postData);
+            req.end();
+        });
+    });
+}
+function getNReferToken(apiKey, secretKey) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let url = process.env.NREFER_URL1;
+        url += url.substr(-1, 1) === '/' ? '' : '/';
+        const postData = querystring.stringify({
+            apiKey: apiKey, secretKey: secretKey
+        });
+        const options = {
+            hostname: process.env.NREFER_URL,
+            port: process.env.NREFER_PORT,
+            path: process.env.NREFER_PATH + '/login/api-key',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+        let ret = '';
+        return new Promise((resolve, reject) => {
+            const req = http.request(options, (res) => {
+                res.setEncoding('utf8');
+                res.on('data', (chunk) => {
+                    ret += chunk;
+                });
+                res.on('end', () => {
+                    const data = JSON.parse(ret);
+                    resolve(data);
+                });
+            });
+            req.on('error', (e) => {
+                reject(e);
+            });
+            req.write(postData);
+            req.end();
         });
     });
 }
