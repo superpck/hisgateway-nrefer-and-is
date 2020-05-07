@@ -231,7 +231,8 @@ class PccHisJhcisModel {
         columnName = columnName === 'cid' ? 'idcard' : columnName;
         columnName = columnName === 'hn' ? 'pid' : columnName;
         return db('person')
-            .select('pid as hn', 'idcard as cid', 'prename', 'fname', 'lname', 'birth as dob', 'sex', 'hnomoi as address', 'mumoi as moo', 'roadmoi as road', 'telephoneperson as tel', 'postcodemoi as zip', 'occupa as occupation')
+            .leftJoin('ctitle', 'person.prename', 'ctitle.titlecode')
+            .select('pid as hn', 'idcard as cid', 'prename', 'ctitle.titlename', 'fname', 'lname', 'birth as dob', 'sex', 'hnomoi as address', 'mumoi as moo', 'roadmoi as road', 'telephoneperson as tel', 'postcodemoi as zip', 'occupa as occupation')
             .select(db.raw('concat(provcodemoi, distcodemoi, subdistcodemoi) as addcode'))
             .where(columnName, "=", searchText);
     }

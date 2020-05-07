@@ -17,6 +17,8 @@ const serveStatic = require('serve-static');
 var crypto = require('crypto');
 require('dotenv').config({ path: path.join(__dirname, '../config') });
 const helmet = require("fastify-helmet");
+const fastifySession = require('fastify-session');
+const fastifyCookie = require('fastify-cookie');
 var cron = require('node-cron');
 var shell = require("shelljs");
 const app = fastify({
@@ -40,6 +42,7 @@ app.register(require('point-of-view'), {
         ejs: require('ejs')
     }
 });
+app.register(fastifyCookie);
 app.register(require('fastify-jwt'), {
     secret: process.env.SECRET_KEY
 });

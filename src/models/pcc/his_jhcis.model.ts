@@ -299,12 +299,12 @@ export class PccHisJhcisModel {
 
 
 
-
     getPerson(db: Knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'idcard' : columnName;
         columnName = columnName === 'hn' ? 'pid' : columnName;
         return db('person')
-            .select('pid as hn', 'idcard as cid', 'prename',
+            .leftJoin('ctitle', 'person.prename', 'ctitle.titlecode')
+            .select('pid as hn', 'idcard as cid', 'prename', 'ctitle.titlename',
                 'fname', 'lname',
                 'birth as dob', 'sex', 'hnomoi as address', 'mumoi as moo',
                 'roadmoi as road',

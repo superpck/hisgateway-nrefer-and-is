@@ -673,7 +673,7 @@ async function getNReferToken(apiKey, secretKey) {
       'Content-Length': Buffer.byteLength(postData)
     }
   };
-console.log(options);
+
   let ret = '';
   return new Promise((resolve, reject) => {
     const req = http.request(options, (res) => {

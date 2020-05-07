@@ -2,6 +2,9 @@
 
 import * as Knex from 'knex';
 import * as fastify from 'fastify';
+const fastifySession = require('fastify-session')
+const fastifyCookie = require('fastify-cookie')
+
 import * as moment from 'moment'
 import * as HttpStatus from 'http-status-codes';
 let shell = require("shelljs");
@@ -11,25 +14,29 @@ var http = require('http');
 
 import { UserModel } from '../models/user';
 const hisProvider = process.env.HIS_PROVIDER;
-const userModel = new UserModel();
 const resultText = './sent_result.txt';
 
 const router = (fastify, { }, next) => {
-
-  var db: Knex = fastify.knex;
   var startServer = fastify.startServerTime;
 
-  fastify.get('/', async (req: fastify.Request, reply: fastify.Reply) => {
+  fastify.register(require('fastify-cookie'), {
+    secret: process.env.SECRET_KEY,
+    parseOptions: {}
+  })
+
+  fastify.get('/', async (req, reply: fastify.Reply) => {
+    const cookieValue = req.cookies;
     reply.send({
       ok: true,
       apiCode: 'HISGATEWAY',
       apiName: 'HIS-Gateway',
       apiDesc: 'API for IS-Online, nRefer, PCC, CMI',
       version: "2.2.1",
-      subVersion: "63.02.13-01",
+      subVersion: "63.02.13-02",
       serviceName: "isonline",   // for isonline only
       his_provider: process.env.HIS_PROVIDER,
-      hospcode: process.env.HOSPCODE
+      hospcode: process.env.HOSPCODE,
+      session: cookieValue
     });
   })
 

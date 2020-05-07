@@ -12,6 +12,8 @@ require('dotenv').config({ path: path.join(__dirname, '../config') });
 import { Server, IncomingMessage, ServerResponse } from 'http';
 
 import helmet = require('fastify-helmet');
+const fastifySession = require('fastify-session');
+const fastifyCookie = require('fastify-cookie');
 var cron = require('node-cron');
 var shell = require("shelljs");
 
@@ -42,6 +44,9 @@ app.register(require('point-of-view'), {
     ejs: require('ejs')
   }
 })
+
+app.register(fastifyCookie);
+// app.register(fastifySession, { secret: process.env.SECRET_KEY });
 
 app.register(require('fastify-jwt'), {
   secret: process.env.SECRET_KEY
@@ -382,7 +387,7 @@ async function doAutoSend(req, res, serviceName, functionName) {
   }
 
   if (firstProcess.pid === process.pid) {
-    const db = serviceName=='isonline' ? app.dbISOnline : app.dbHIS;
+    const db = serviceName == 'isonline' ? app.dbISOnline : app.dbHIS;
     console.log(moment().locale('th').format('HH:mm:ss')
       , `start cronjob '${serviceName}' on PID ${process.pid}`);
     await require(functionName)(req, res, db, timingSchedule[serviceName]);
