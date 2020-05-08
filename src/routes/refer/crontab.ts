@@ -687,7 +687,7 @@ async function referSending(path, dataArray) {
       'Content-Length': Buffer.byteLength(dataSending)
     }
   };
-  console.log(process.env.NREFER_URL, process.env.NREFER_PORT, process.env.NREFER_PATH + path);
+
   let ret = '';
   return new Promise((resolve, reject) => {
     const req = http.request(options, (res) => {
