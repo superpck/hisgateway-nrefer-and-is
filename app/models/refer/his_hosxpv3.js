@@ -22,33 +22,28 @@ class HisHosxpv3Model {
     }
     getReferOut(db, date, hospCode = hcode) {
         return __awaiter(this, void 0, void 0, function* () {
-            const sql = `
-            select 
-                (select hospitalcode from opdconfig) as hospcode,
-                concat(refer.refer_date,' ',refer.refer_time) as refer_date,
-                refer.refer_number as referid,
-                refer.refer_hospcode as hosp_destination,
-                refer.hn as hn,
-                pt.cid as cid,
-                os.seq_id as seq,
-                o.an as an,
-                pt.pname as prename,
-                pt.fname as fname,
-                pt.lname as lname,
-                pt.birthday as dob,
-                pt.sex as sex,
-                refer.pdx as dx,o.vn
-            from
-                referout as refer
-                left join patient pt on refer.hn = pt.hn
-                left join ovst o ON o.vn=refer.vn or o.an=refer.vn
-                left join ovst_seq os on os.vn = o.vn
-            where                 
-                refer.refer_date="${date}" and os.seq_id  is not null
-
-            order by 
-                refer_date            
-        `;
+            const sql = `SELECT (SELECT hospitalcode FROM opdconfig ) AS hospcode,
+        concat(r.refer_date, ' ', r.refer_time) AS refer_date,
+        r.refer_number AS referid,
+        r.refer_hospcode AS hosp_destination,
+        r.hn AS hn,
+        pt.cid AS cid,
+        IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,(SELECT vn from ovst WHERE an=r.vn),r.vn) as vn,
+        IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,(SELECT seq_id from ovst_seq WHERE vn=((SELECT vn from ovst WHERE an=r.vn))),(SELECT seq_id from ovst_seq WHERE vn=r.vn)) as seq,
+        pt.pname AS prename,
+        pt.fname AS fname,
+        pt.lname AS lname,
+        pt.birthday AS dob,
+        pt.sex AS sex,
+        r.pdx AS dx,
+        IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,r.vn,null) as an
+            FROM
+                referout r
+            INNER JOIN patient pt ON pt.hn = r.hn
+            WHERE
+                r.refer_date = "${date}"
+            ORDER BY
+                r.refer_date`;
             const result = yield db.raw(sql);
             return result[0];
         });

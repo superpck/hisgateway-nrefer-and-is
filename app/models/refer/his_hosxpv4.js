@@ -90,7 +90,7 @@ class HisHosxpv4Model {
             const sql = `
             select distinct 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id), 6),pt.hn) as pid,
+                pt.hn as pid,
                 if(p.person_id = '' or p.person_id is null,'2','1') as addresstype,
                 concat(if(pt.chwpart is null or pt.chwpart = '','00',pt.chwpart),if(pt.amppart is null or pt.amppart = '','00',pt.amppart),if(pt.tmbpart is null or pt.tmbpart = '','00',pt.tmbpart),'00') as house_id,
                 (select case 
@@ -144,7 +144,7 @@ class HisHosxpv4Model {
             const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id), 6),pt.hn) as pid,
+                pt.hn as pid,
                 o.hn as hn,
                 os.seq_id as seq,
                 if(
@@ -232,7 +232,7 @@ class HisHosxpv4Model {
             const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id), 6),pt.hn) as pid,
+                pt.hn as pid,
                 os.seq_id as seq,
                 if(
                     o.vstdate  is null 
@@ -275,7 +275,7 @@ class HisHosxpv4Model {
             const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 os.seq_id as seq,
                 if(o.vstdate is null or trim(o.vstdate)='' or o.vstdate like '0000-00-00%','',date_format(o.vstdate,'%Y-%m-%d')) as date_serv,
                 sp.provis_code as clinic,
@@ -311,7 +311,7 @@ class HisHosxpv4Model {
             
             select distinct
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 os.seq_id as seq,
                 if(o.vstdate is null or trim(o.vstdate)='' or o.vstdate like '0000-00-00%','',date_format(o.vstdate,'%Y-%m-%d')) as date_serv,
                 sp.provis_code as clinic,
@@ -344,7 +344,7 @@ class HisHosxpv4Model {
             
             select distinct
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 os.seq_id as seq,
                 if(r.vstdate is null or trim(r.vstdate)='' or r.vstdate like '0000-00-00%','',date_format(r.vstdate,'%Y-%m-%d')) as date_serv,
                 sp.provis_code as clinic, 
@@ -382,7 +382,7 @@ class HisHosxpv4Model {
             const sql = `
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 os.seq_id as seq,
                 if(
                     concat(ovst.vstdate) is null 
@@ -448,7 +448,7 @@ class HisHosxpv4Model {
             const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id), 6),pt.hn) as pid,
+                pt.hn as pid,
                 os.seq_id as seq,
                 if(
                     opi.vstdate  is null 
@@ -501,7 +501,7 @@ class HisHosxpv4Model {
             const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 os.seq_id as seq,
                 ipt.an as an,
                 if(
@@ -622,7 +622,7 @@ class HisHosxpv4Model {
             const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 if(
                     concat(ipt.regdate,' ',ipt.regtime) is null 
                         or trim(concat(ipt.regdate,' ',ipt.regtime)) = '' 
@@ -654,7 +654,7 @@ class HisHosxpv4Model {
             const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 ipt.an,
                 if(
                     concat(ipt.regdate,' ',ipt.regtime) is null 
@@ -706,7 +706,7 @@ class HisHosxpv4Model {
 
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 ipt.an,
                 if(
                     concat(ipt.regdate,' ',ipt.regtime) is null 
@@ -758,7 +758,7 @@ class HisHosxpv4Model {
             const sql = `
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 o.an as an,
                 if(
                     concat(ipt.regdate,' ',ipt.regtime) is null 
@@ -806,7 +806,7 @@ class HisHosxpv4Model {
             const sql = `
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 ipt.an,
                 if(
                     concat(ipt.regdate,' ',ipt.regtime) is null 
@@ -853,7 +853,7 @@ class HisHosxpv4Model {
             const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                pt.hn as pid,
                 os.seq_id as seq,
                 if(er.enter_er_time is null or trim(er.enter_er_time)='' or er.enter_er_time like '0000-00-00%','',date_format(er.enter_er_time,'%Y-%m-%d %H:%i:%s')) as datetime_serv,
                 if(er.enter_er_time is null or trim(er.enter_er_time)='' or er.enter_er_time like '0000-00-00%','',date_format(er.enter_er_time,'%Y-%m-%d %H:%i:%s')) as datetime_ae,
@@ -915,7 +915,7 @@ class HisHosxpv4Model {
             const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id), 6),pt.hn) as pid,
+                pt.hn as pid,
                 if(
                     oe.report_date is null 
                         or trim(oe.report_date)=' ' 
@@ -975,7 +975,7 @@ class HisHosxpv4Model {
                 (select hospitalcode from opdconfig) as hospcode,
                 ro.refer_number as referid,
                 '' as referid_province,
-                ifnull(right(concat('000000', ps.person_id), 6),pt.hn) as pid,
+                pt.hn as pid,
                 os.seq_id as seq,
                 '' as an,
                 '' as referid_origin,

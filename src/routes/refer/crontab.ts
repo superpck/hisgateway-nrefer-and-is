@@ -131,6 +131,7 @@ async function getRefer_out(db, date) {
     let sentResult: any = {
       referout: { success: 0, fail: 0 },
       person: { success: 0, fail: 0 },
+      address: { success: 0, fail: 0 },
       service: { success: 0, fail: 0 },
       diagnosisOpd: { success: 0, fail: 0 },
       procedureOpd: { success: 0, fail: 0 },
@@ -144,6 +145,7 @@ async function getRefer_out(db, date) {
 
       const saverefer = await sendReferOut(row, sentResult);
       const person = await getPerson(db, hn, sentResult);
+      const address = await getAddress(db, hn, sentResult);
       const service = await getService(db, seq, sentResult);
       const diagnosisopd = await getDiagnosisOpd(db, seq, sentResult);
       const procedureopd = await getProcedureOpd(db, seq, sentResult);
@@ -366,6 +368,45 @@ async function getPerson(db, pid, sentResult) {
   return rows;
 }
 
+async function getAddress(db, pid, sentResult) {
+  const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+  const rows = await hisModel.getAddress(db, 'hn', pid, hcode);
+  sentContent += '  - address = ' + rows.length + '\r';
+  if (rows && rows.length) {
+    for (const row of rows) {
+      const address = await {
+        HOSPCODE: row.HOSPCODE || row.hospcode,
+        PID: row.PID || row.pid || row.HN || row.hn,
+        ADDRESSTYPE: row.ADDRESSTYPE || row.addresstype,
+        ROOMNO: row.ROOMNO || row.roomno,
+        HOUSENO: row.HOUSENO || row.HOUSENO,
+        CONDO: row.CONDO || row.condo || '',
+        SOIMAIN: row.SOIMAIN || row.soimain,
+        ROAD: row.ROAD || row.road,
+        VILLANAME: row.VILLANAME || row.villaname,
+        VILLAGE: row.VILLAGE || row.village,
+        TAMBON: row.TAMBON || row.tambon,
+        AMPUR: row.AMPUR || row.ampur,
+        CHANGWAT: row.CHANGWAT || row.changwat,
+        TELEPHONE: row.TELEPHONE || row.telephone || '',
+        MOBILE: row.MOBILE || row.mobile || '',
+        D_UPDATE: row.D_UPDATE || row.d_update || d_update,
+      }
+
+      const saveResult: any = await referSending('/save-address', address);
+      console.log('save address', saveResult);
+      if (saveResult.statusCode === 200) {
+        sentResult.address.success += 1;
+      } else {
+        sentResult.address.fail += 1;
+        console.log('save address', address.PID, saveResult);
+      }
+      sentContent += '    -- PID ' + address.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
+    }
+  }
+  return rows;
+}
+
 async function getService(db, visitNo, sentResult) {
   const rows = await hisModel.getService(db, 'visitNo', visitNo, hcode);
   sentContent += '  - service = ' + rows.length + '\r';
@@ -425,12 +466,27 @@ async function getDiagnosisOpd(db, visitNo, sentResult) {
   const rows = await hisModel.getDiagnosisOpd(db, visitNo, hcode);
   sentContent += '  - diagnosis_opd = ' + rows.length + '\r';
   if (rows && rows.length) {
+    let r = [];
     for (const row of rows) {
-      delete row.codeset;
-      delete row.hn;
-      delete row.cid;
+      await r.push({
+        HOSPCODE: row.HOSPCODE || row.hospcode ,
+        PID: row.PID.toString() || row.pid.toString() ,
+        SEQ: row.SEQ || row.seq ,
+        DATE_SERV: row.DATE_SERV || row.date_serv ,
+        DIAGTYPE: row.DIAGTYPE || row.diagtype ,
+        DIAGCODE: row.DIAGCODE || row.diagcode ,
+        DIAGNAME: row.DIAGNAME || row.diagname || '',
+        CLINIC: row.CLINIC || row.clinic || '',
+        PROVIDER: row.PROVIDER || row.provider || '',
+        D_UPDATE: row.D_UPDATE || row.d_update,
+        ID: row.ID || row.id || '' ,
+        BR: row.BR || row.br || '' ,
+        AIS: row.AIS || row.ais || '' ,
+        CID: row.CID || row.cid || ''
+      });
     }
-    const saveResult: any = await referSending('/save-diagnosis-opd', rows);
+
+    const saveResult: any = await referSending('/save-diagnosis-opd', r);
     sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
     if (saveResult.statusCode === 200) {
       sentResult.diagnosisOpd.success += 1;
@@ -631,6 +687,7 @@ async function referSending(path, dataArray) {
       'Content-Length': Buffer.byteLength(dataSending)
     }
   };
+  console.log(process.env.NREFER_URL, process.env.NREFER_PORT, process.env.NREFER_PATH + path);
   let ret = '';
   return new Promise((resolve, reject) => {
     const req = http.request(options, (res) => {

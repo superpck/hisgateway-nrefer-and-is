@@ -124,6 +124,7 @@ function getRefer_out(db, date) {
             let sentResult = {
                 referout: { success: 0, fail: 0 },
                 person: { success: 0, fail: 0 },
+                address: { success: 0, fail: 0 },
                 service: { success: 0, fail: 0 },
                 diagnosisOpd: { success: 0, fail: 0 },
                 procedureOpd: { success: 0, fail: 0 },
@@ -136,6 +137,7 @@ function getRefer_out(db, date) {
                 sentContent += (index + 1) + '. refer no.' + row.referid + ', hn ' + row.hn + ', seq ' + row.seq + '\r';
                 const saverefer = yield sendReferOut(row, sentResult);
                 const person = yield getPerson(db, hn, sentResult);
+                const address = yield getAddress(db, hn, sentResult);
                 const service = yield getService(db, seq, sentResult);
                 const diagnosisopd = yield getDiagnosisOpd(db, seq, sentResult);
                 const procedureopd = yield getProcedureOpd(db, seq, sentResult);
@@ -352,6 +354,46 @@ function getPerson(db, pid, sentResult) {
         return rows;
     });
 }
+function getAddress(db, pid, sentResult) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const rows = yield hisModel.getAddress(db, 'hn', pid, hcode);
+        sentContent += '  - address = ' + rows.length + '\r';
+        if (rows && rows.length) {
+            for (const row of rows) {
+                const address = yield {
+                    HOSPCODE: row.HOSPCODE || row.hospcode,
+                    PID: row.PID || row.pid || row.HN || row.hn,
+                    ADDRESSTYPE: row.ADDRESSTYPE || row.addresstype,
+                    ROOMNO: row.ROOMNO || row.roomno,
+                    HOUSENO: row.HOUSENO || row.HOUSENO,
+                    CONDO: row.CONDO || row.condo || '',
+                    SOIMAIN: row.SOIMAIN || row.soimain,
+                    ROAD: row.ROAD || row.road,
+                    VILLANAME: row.VILLANAME || row.villaname,
+                    VILLAGE: row.VILLAGE || row.village,
+                    TAMBON: row.TAMBON || row.tambon,
+                    AMPUR: row.AMPUR || row.ampur,
+                    CHANGWAT: row.CHANGWAT || row.changwat,
+                    TELEPHONE: row.TELEPHONE || row.telephone || '',
+                    MOBILE: row.MOBILE || row.mobile || '',
+                    D_UPDATE: row.D_UPDATE || row.d_update || d_update,
+                };
+                const saveResult = yield referSending('/save-address', address);
+                console.log('save address', saveResult);
+                if (saveResult.statusCode === 200) {
+                    sentResult.address.success += 1;
+                }
+                else {
+                    sentResult.address.fail += 1;
+                    console.log('save address', address.PID, saveResult);
+                }
+                sentContent += '    -- PID ' + address.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
+            }
+        }
+        return rows;
+    });
+}
 function getService(db, visitNo, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
         const rows = yield hisModel.getService(db, 'visitNo', visitNo, hcode);
@@ -413,12 +455,26 @@ function getDiagnosisOpd(db, visitNo, sentResult) {
         const rows = yield hisModel.getDiagnosisOpd(db, visitNo, hcode);
         sentContent += '  - diagnosis_opd = ' + rows.length + '\r';
         if (rows && rows.length) {
+            let r = [];
             for (const row of rows) {
-                delete row.codeset;
-                delete row.hn;
-                delete row.cid;
+                yield r.push({
+                    HOSPCODE: row.HOSPCODE || row.hospcode,
+                    PID: row.PID.toString() || row.pid.toString(),
+                    SEQ: row.SEQ || row.seq,
+                    DATE_SERV: row.DATE_SERV || row.date_serv,
+                    DIAGTYPE: row.DIAGTYPE || row.diagtype,
+                    DIAGCODE: row.DIAGCODE || row.diagcode,
+                    DIAGNAME: row.DIAGNAME || row.diagname || '',
+                    CLINIC: row.CLINIC || row.clinic || '',
+                    PROVIDER: row.PROVIDER || row.provider || '',
+                    D_UPDATE: row.D_UPDATE || row.d_update,
+                    ID: row.ID || row.id || '',
+                    BR: row.BR || row.br || '',
+                    AIS: row.AIS || row.ais || '',
+                    CID: row.CID || row.cid || ''
+                });
             }
-            const saveResult = yield referSending('/save-diagnosis-opd', rows);
+            const saveResult = yield referSending('/save-diagnosis-opd', r);
             sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
             if (saveResult.statusCode === 200) {
                 sentResult.diagnosisOpd.success += 1;
@@ -626,6 +682,7 @@ function referSending(path, dataArray) {
                 'Content-Length': Buffer.byteLength(dataSending)
             }
         };
+        console.log(process.env.NREFER_URL, process.env.NREFER_PORT, process.env.NREFER_PATH + path);
         let ret = '';
         return new Promise((resolve, reject) => {
             const req = http.request(options, (res) => {
