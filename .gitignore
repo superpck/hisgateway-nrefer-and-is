@@ -1,5 +1,6 @@
 node_modules/*
 typings/*
+app/*
 npm-debug.log
 package-lock.json
 .settings/*
