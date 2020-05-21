@@ -11,6 +11,7 @@ export class HisHosxpv3Model {
     }
 
     getPerson(db: Knex, columnName, searchText) {
+        console.log(columnName, searchText);
         const sql = db('patient')
             .leftJoin(`occupation`, 'occupation.occupation', 'patient.occupation')
             .select('patient.hn', 'patient.cid', 'patient.pname as prename',
