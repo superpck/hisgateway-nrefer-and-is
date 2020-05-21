@@ -11,7 +11,7 @@ export class HisHosxpv3Model {
     }
 
     getPerson(db: Knex, columnName, searchText) {
-        return db('patient')
+        const sql = db('patient')
             .leftJoin(`occupation`, 'occupation.occupation', 'patient.occupation')
             .select('patient.hn', 'patient.cid', 'patient.pname as prename',
                 'patient.fname', 'patient.lname',
@@ -20,6 +20,8 @@ export class HisHosxpv3Model {
                 'occupation.nhso_code as occupation')
             .select(knex.raw("CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode"))
             .where(columnName, "=", searchText);
+        console.log(sql.toString());
+        return sql;
     }
 
     // getPerson(knex: Knex, columnName, searchText) {
