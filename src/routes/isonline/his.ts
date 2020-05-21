@@ -202,7 +202,7 @@ const router = (fastify, { }, next) => {
           rows: result
         });
       } catch (error) {
-        console.log('person', error.message, error);
+        console.log('person', error.message);
         res.send({
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message
