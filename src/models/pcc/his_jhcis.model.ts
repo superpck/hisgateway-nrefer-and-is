@@ -307,7 +307,8 @@ export class PccHisJhcisModel {
             .select('pid as hn', 'idcard as cid', 'prename', 'ctitle.titlename',
                 'fname', 'lname',
                 'birth as dob', 'sex', 'hnomoi as address', 'mumoi as moo',
-                'roadmoi as road',
+                'roadmoi as road','provcodemoi as province',
+                'distcodemoi as district','subdistcodemoi as subdistrict',
                 'telephoneperson as tel', 'postcodemoi as zip',
                 'occupa as occupation')
             .select(db.raw('concat(provcodemoi, distcodemoi, subdistcodemoi) as addcode'))
