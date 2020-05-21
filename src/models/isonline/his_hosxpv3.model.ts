@@ -11,8 +11,7 @@ export class HisHosxpv3Model {
     }
 
     // getPerson(db: Knex, columnName, searchText) {
-    //     console.log(columnName, searchText);
-    //     const sql = db('patient')
+    //     return db('patient')
     //         .leftJoin(`occupation`, 'occupation.occupation', 'patient.occupation')
     //         .select('patient.hn', 'patient.cid', 'patient.pname as prename',
     //             'patient.fname', 'patient.lname',
@@ -21,8 +20,6 @@ export class HisHosxpv3Model {
     //             'occupation.nhso_code as occupation')
     //         .select(knex.raw("CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode"))
     //         .where(columnName, "=", searchText);
-    //     console.log(sql.toString());
-    //     return sql;
     // }
 
     getPerson(knex: Knex, columnName, searchText) {
@@ -31,7 +28,8 @@ export class HisHosxpv3Model {
                 'patient.fname', 'patient.lname',
                 'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road',
                 'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip',
-                'lib_occupation.is_code as occupation')
+                'lib_occupation.is_code as occupation',
+                `chwpart as province`,`amppart as district`,`tmbpart as subdistrict`)
             .select(knex.raw("CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode"))
             .from('patient')
             .leftJoin(`lib_occupation`, function () { this.on('lib_occupation.occ_code', '=', 'patient.occupation') })
