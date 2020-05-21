@@ -10,33 +10,33 @@ export class HisHosxpv3Model {
             .where('TABLE_SCHEMA', '=', dbName);
     }
 
-    getPerson(db: Knex, columnName, searchText) {
-        console.log(columnName, searchText);
-        const sql = db('patient')
-            .leftJoin(`occupation`, 'occupation.occupation', 'patient.occupation')
-            .select('patient.hn', 'patient.cid', 'patient.pname as prename',
-                'patient.fname', 'patient.lname',
-                'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road',
-                'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip',
-                'occupation.nhso_code as occupation')
-            .select(knex.raw("CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode"))
-            .where(columnName, "=", searchText);
-        console.log(sql.toString());
-        return sql;
-    }
-
-    // getPerson(knex: Knex, columnName, searchText) {
-    //     return knex
+    // getPerson(db: Knex, columnName, searchText) {
+    //     console.log(columnName, searchText);
+    //     const sql = db('patient')
+    //         .leftJoin(`occupation`, 'occupation.occupation', 'patient.occupation')
     //         .select('patient.hn', 'patient.cid', 'patient.pname as prename',
     //             'patient.fname', 'patient.lname',
     //             'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road',
     //             'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip',
-    //             'lib_occupation.is_code as occupation')
+    //             'occupation.nhso_code as occupation')
     //         .select(knex.raw("CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode"))
-    //         .from('patient')
-    //         .leftJoin(`lib_occupation`, function () { this.on('lib_occupation.occ_code', '=', 'patient.occupation') })
     //         .where(columnName, "=", searchText);
+    //     console.log(sql.toString());
+    //     return sql;
     // }
+
+    getPerson(knex: Knex, columnName, searchText) {
+        return knex
+            .select('patient.hn', 'patient.cid', 'patient.pname as prename',
+                'patient.fname', 'patient.lname',
+                'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road',
+                'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip',
+                'lib_occupation.is_code as occupation')
+            .select(knex.raw("CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode"))
+            .from('patient')
+            .leftJoin(`lib_occupation`, function () { this.on('lib_occupation.occ_code', '=', 'patient.occupation') })
+            .where(columnName, "=", searchText);
+    }
 
     getOpdService(knex, hn, date) {
         return knex
