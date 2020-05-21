@@ -12,31 +12,32 @@ export class HisJhcisModel {
         return knex
             .select('TABLE_NAME')
             .from('information_schema.tables')
-            .where('TABLE_SCHEMA','=',dbName);
+            .where('TABLE_SCHEMA', '=', dbName);
     }
-    
+
     getPerson(knex: Knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'idcard' : columnName;
         columnName = columnName === 'hn' ? 'pid' : columnName;
-        return knex
-            .select('pid as hn','idcard as cid','prename',
-            'fname', 'lname',
-            'birth as dob', 'sex', 'hnomoi as address','mumoi as moo',
-            'roadmoi as road',
-            'telephoneperson as tel','postcodemoi as zip',
-            'occupa as occupation')
+        return knex('person')
+            .leftJoin('ctitle', 'person.prename', 'ctitle.titlecode')
+            .select('pid as hn', 'idcard as cid', 'prename','ctitle.titlename',
+                'fname', 'lname',
+                'birth as dob', 'sex', 'hnomoi as address', 'mumoi as moo',
+                'roadmoi as road','provcodemoi as province',
+                'distcodemoi as district','subdistcodemoi as subdistrict',
+                'telephoneperson as tel', 'postcodemoi as zip',
+                'occupa as occupation')
             .select(knex.raw('concat(provcodemoi, distcodemoi, subdistcodemoi) as addcode'))
-            .from('person')
             .where(columnName, "=", searchText);
     }
 
     getOpdService(knex, hn, date) {
         return knex
-            .select('pid as hn', 'visitno', 'visitdate as date', 
+            .select('pid as hn', 'visitno', 'visitdate as date',
                 'timestart as time')
             .select(knex.raw("case when LOCATE('/', pressure) then SUBSTR(pressure,1,LOCATE('/', pressure)-1) else '' end as bp_systolic"))
             .select(knex.raw("case when LOCATE('/', pressure) then SUBSTR(pressure,LOCATE('/', pressure)+1) else '' end as bp_diastolic"))
-            .select('pulse as pr' , 'respri as rr', 'weight', 'height',
+            .select('pulse as pr', 'respri as rr', 'weight', 'height',
                 'waist', 'temperature as tem')
             .from('visit')
             .where('pid', "=", hn)
@@ -46,7 +47,7 @@ export class HisJhcisModel {
     getDiagnosisOpd(knex, visitno) {
         return knex
             .select('vn as visitno', 'diag as diagcode',
-            'type as diag_type')
+                'type as diag_type')
             .from('opd_dx')
             .where('vn', "=", visitno);
     }

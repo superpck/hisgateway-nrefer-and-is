@@ -14,10 +14,10 @@ class HisJhcisModel {
     getPerson(knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'idcard' : columnName;
         columnName = columnName === 'hn' ? 'pid' : columnName;
-        return knex
-            .select('pid as hn', 'idcard as cid', 'prename', 'fname', 'lname', 'birth as dob', 'sex', 'hnomoi as address', 'mumoi as moo', 'roadmoi as road', 'telephoneperson as tel', 'postcodemoi as zip', 'occupa as occupation')
+        return knex('person')
+            .leftJoin('ctitle', 'person.prename', 'ctitle.titlecode')
+            .select('pid as hn', 'idcard as cid', 'prename', 'ctitle.titlename', 'fname', 'lname', 'birth as dob', 'sex', 'hnomoi as address', 'mumoi as moo', 'roadmoi as road', 'provcodemoi as province', 'distcodemoi as district', 'subdistcodemoi as subdistrict', 'telephoneperson as tel', 'postcodemoi as zip', 'occupa as occupation')
             .select(knex.raw('concat(provcodemoi, distcodemoi, subdistcodemoi) as addcode'))
-            .from('person')
             .where(columnName, "=", searchText);
     }
     getOpdService(knex, hn, date) {
