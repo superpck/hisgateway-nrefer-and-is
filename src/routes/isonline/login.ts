@@ -78,6 +78,7 @@ const router = (fastify, { }, next) => {
         })
         .catch(err => {
           console.log('login', err.message);
+          console.log('Error:', err);
           res.send({
             statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
             status: 500,
