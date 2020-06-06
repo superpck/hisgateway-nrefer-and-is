@@ -470,7 +470,7 @@ async function getDiagnosisOpd(db, visitNo, sentResult) {
     for (const row of rows) {
       await r.push({
         HOSPCODE: row.HOSPCODE || row.hospcode ,
-        PID: row.PID.toString() || row.pid.toString() ,
+        PID: row.PID || row.pid ,
         SEQ: row.SEQ || row.seq ,
         DATE_SERV: row.DATE_SERV || row.date_serv ,
         DIAGTYPE: row.DIAGTYPE || row.diagtype ,
@@ -673,7 +673,8 @@ async function getProcedureIpd(db, an) {
 
 async function referSending(path, dataArray) {
   const dataSending = querystring.stringify({
-    hospcode: hcode, data: JSON.stringify(dataArray)
+    hospcode: hcode, data: JSON.stringify(dataArray),
+    processPid: process.pid
   });
 
   const options = {

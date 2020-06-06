@@ -62,10 +62,14 @@ export class HisEzhospModel {
     }
 
     getAddress(db, columnName, searchNo, hospCode = hcode) {
-        columnName = columnName === 'cid' ? 'no_card' : columnName;
-        return db('view_address')
-            .select('*')    // ตาม 43 แฟ้ม
+        columnName = columnName === 'cid' ? 'CID' : columnName;
+        return db('view_address_hdc')
             .select(db.raw('"' + hcode + '" as hospcode'))
+            .select(`PID`, `ADDRESSTYPE`, `HOUSE_ID`, `HOUSETYPE`,
+                `ROOMNO`, `CONDO`, `HOUSENO`, `SOISUB`,
+                `SOIMAIN`, `ROAD`, `VILLANAME`, `VILLAGE`,
+                `TAMBON`, `AMPUR`, `CHANGWAT`, `TELEPHONE`,
+                `MOBILE`, `D_UPDATE`)
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
     }
