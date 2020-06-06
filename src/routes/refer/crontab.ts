@@ -109,19 +109,21 @@ async function sendMoph(req, reply, db) {
   if (hourNow < 8 || hourNow === 12 ||
     hourNow === 18 || hourNow === 22) {
     const date = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
-    await startSending(req, reply, db, date);
+    await getRefer_out(db, date);
+    // await startSending(req, reply, db, date);
   }
 
-  await startSending(req, reply, db, dateNow);
+  return await getRefer_out(db, dateNow);
+  // return await startSending(req, reply, db, dateNow);
 }
 
-async function startSending(req, reply, db, date) {
-  console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
-  const referOut: any = await getRefer_out(db, date);
-}
+// async function startSending(req, reply, db, date) {
+//   console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
+//   const referOut: any = await getRefer_out(db, date);
+// }
 
 async function getRefer_out(db, date) {
-  // sentContent += 'REFERID,HN,SEQ,REFER_DATE\r';
+  console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
   try {
     const referout = await hisModel.getReferOut(db, date, hcode);
     sentContent += `\rsave refer_history ${date} \r`;
@@ -138,7 +140,7 @@ async function getRefer_out(db, date) {
       procedureOpd: { success: 0, fail: 0 },
       drugOpd: { success: 0, fail: 0 },
     };
-    for (const row of referout) {
+    for (let row of referout) {
       const hn = row.hn || row.HN;
       const seq = row.seq || row.SEQ;
       const referid = row.REFERID || row.referid;
@@ -335,9 +337,9 @@ async function getPerson(db, pid, sentResult) {
       const person = await {
         HOSPCODE: row.HOSPCODE || row.hospcode,
         CID: row.CID || row.cid,
-        PID: row.PID || row.pid || row.HN || row.hn,
+        PID: row.HN || row.hn || row.PID || row.pid,
         HID: row.HID || row.hid || '',
-        HN: row.PID || row.pid || row.HN || row.hn,
+        HN: row.HN || row.hn || row.PID || row.pid,
         PRENAME: row.PRENAME || row.prename,
         NAME: row.NAME || row.name,
         LNAME: row.LNAME || row.lname,

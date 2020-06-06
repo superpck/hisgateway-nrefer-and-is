@@ -131,7 +131,7 @@ export class HisHosxpv3Model {
                 left join person_labor_type pl on pl.person_labor_type_id=p.person_labor_type_id   
                 left join (select hn,cid as pt_cid from patient) pt ON pt.pt_cid=p.cid
 
-            where ${columnName}="${searchText}"
+            where pt.${columnName}="${searchText}"
         `;
         const result = await db.raw(sql);
         return result[0];
