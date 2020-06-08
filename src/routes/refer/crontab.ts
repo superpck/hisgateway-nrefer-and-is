@@ -160,7 +160,7 @@ async function getRefer_out(db, date) {
 
       // const drug_ipd = await getDrugIpd(db, an);
 
-      const investigation_refer = await getLabResult(db, row);
+      await getLabResult(db, row);
 
       index += 1;
       if (referout.length <= index) {
@@ -570,6 +570,7 @@ async function getLabResult(db, row) {
         INVESTTYPE: row.INVESTTYPE || row.investtype || 'LAB',
         INVESTCODE: row.INVESTCODE || row.investcode || row.LOCALCODE || row.localcode || '',
         LOCALCODE: row.LOCALCODE || row.localcode || '',
+        ICDCM: row.ICDCM || row.icdcm || '',
         LOINC: row.LOINC || row.loinc || '',
         INVESTNAME: row.INVESTNAME || row.investname || '',
         DATETIME_REPORT: row.DATETIME_REPORT || row.datetime_report || '',
