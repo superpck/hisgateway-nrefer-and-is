@@ -21,6 +21,7 @@ export class HisHosxpv3Model {
         concat(r.refer_date, ' ', r.refer_time) AS refer_date,
         r.refer_number AS referid,
         r.refer_hospcode AS hosp_destination,
+        r.hn AS pid,
         r.hn AS hn,
         pt.cid AS cid,
         IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,(SELECT vn from ovst WHERE an=r.vn),r.vn) as vn,
