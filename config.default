@@ -1,6 +1,7 @@
 [Hospital]
 API_LEVEL=hospital
 HOSPCODE=00000
+HN_LENGTH=0
 
 [API]
 HTTPS=0

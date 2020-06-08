@@ -188,7 +188,6 @@ async function sendReferOut(row, sentResult) {
     const dServe = row.DATETIME_SERV || row.REFER_DATE || row.refer_date;
     const dAdmit = row.DATETIME_ADMIT || row.datetime_admit || null;
     const dRefer = row.DATETIME_REFER || row.REFER_DATE || row.refer_date || dServe || null;
-    const cid = row.CID || row.cid;
     const destHosp = row.HOSP_DESTINATION || row.hosp_destination;
 
     const data: any = await {
@@ -197,7 +196,7 @@ async function sendReferOut(row, sentResult) {
       PID: row.PID || row.pid || row.HN || row.hn,
       SEQ: row.SEQ || row.seq || '',
       AN: row.AN || row.an || '',
-      CID: cid,
+      CID: row.CID || row.cid,
       DATETIME_SERV: moment(dServe).format('YYYY-MM-DD'),
       DATETIME_ADMIT: moment(dAdmit).format('YYYY-MM-DD'),
       DATETIME_REFER: moment(dRefer).format('YYYY-MM-DD'),
