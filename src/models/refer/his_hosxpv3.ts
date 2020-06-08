@@ -86,14 +86,14 @@ export class HisHosxpv3Model {
                 ,pt.hn HN
                 ,pt.hn PID
                 ,p.sex SEX
-                ,formatdate(p.birthdate) BIRTH
+                ,p.birthdate BIRTH
                 ,if(p.marrystatus in (1,2,3,4,5,6),p.marrystatus,'9') MSTATUS
                 ,ifnull(o.occupation,'000') OCCUPATION_OLD
                 ,ifnull(o.nhso_code,'9999') OCCUPATION_NEW
                 ,ifnull(nt0.nhso_code,'099') RACE
                 ,ifnull(nt1.nhso_code,'099') NATION
                 ,ifnull(p.religion,'01') RELIGION
-                ,zero(if(e.provis_code is null,'9',e.provis_code)) EDUCATION
+                ,if(e.provis_code is null,'9',e.provis_code) EDUCATION
                 ,if(p.person_house_position_id=1,'1','2') FSTATUS
                 ,p.father_cid FATHER
                 ,p.mother_cid MOTHER
@@ -106,9 +106,9 @@ export class HisHosxpv3Model {
                     when (select person_duty_id from person_village_duty where person_id =p.person_id) in ('7','8','9') then '5'
                     else '5' 
                 end) VSTATUS
-                ,formatdate(p.movein_date) MOVEIN
+                ,p.movein_date MOVEIN
                 ,ifnull(p.person_discharge_id,'9') DISCHARGE
-                ,formatdate(p.discharge_date) DDISCHARGE
+                ,p.discharge_date DDISCHARGE
                 ,case 
                     when @blood='A' then '1'
                     when @blood='B' then '2'
@@ -120,7 +120,7 @@ export class HisHosxpv3Model {
                 ,pl.nhso_code LABOR
                 ,space(8) PASSPORT
                 ,if(p.house_regist_type_id in (1,2,3,4),p.house_regist_type_id,'4') TYPEAREA
-                ,formatdatetime(p.last_update) D_UPDATE
+                ,p.last_update D_UPDATE
             
             from person p
                 left join house h on p.house_id=h.house_id
@@ -144,7 +144,8 @@ export class HisHosxpv3Model {
         const sql = `
             SELECT
                 (SELECT	hospitalcode FROM	opdconfig) AS hospcode,
-                ifnull(p.person_id, '') pid,
+                pt.cid,
+                pt.hn, pt.hn as pid,
                 IF (p.house_regist_type_id IN (1, 2),'1','2') addresstype,
                 ifnull(h.census_id,'') house_id,
                 IF(p.house_regist_type_id IN (4),'9',h.house_type_id) housetype,
@@ -159,8 +160,7 @@ export class HisHosxpv3Model {
                 IF(p.house_regist_type_id IN (4),pt.tmbpart,t.tmbpart) tambon,
                 IF(p.house_regist_type_id IN (4),pt.amppart,t.amppart) ampur,
                 IF(p.house_regist_type_id IN (4),pt.chwpart,t.chwpart) changwat,
-                ifnull(date_format(p.last_update,'%Y%m%d%H%i%s'),'') D_Update,
-                pt.cid
+                p.last_update D_Update
             FROM
                 person p
                 LEFT JOIN patient pt ON p.cid = pt.cid
@@ -176,15 +176,14 @@ export class HisHosxpv3Model {
     }
     async getService(db: Knex, columnName, searchText, hospCode = hcode) {
         //columnName = visitNo, hn
-        columnName = columnName === 'visitNo' ? 'os.seq_id' : columnName;
+        columnName = columnName === 'visitNo' ? 'os.vn' : columnName;
+        columnName = columnName === 'seq' ? 'os.seq_id' : columnName;
         columnName = columnName === 'hn' ? 'o.hn' : columnName;
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as HOSPCODE,
                 ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as PID2,
-                pt.hn as PID,
-                o.hn as HN,
-                os.seq_id as SEQ,
+                pt.hn as PID, o.hn as HN, pt.CID, os.seq_id as SEQ, os.vn as VN,
                 if(
                     o.vstdate  is null 
                         or trim(o.vstdate )='' 
@@ -238,8 +237,7 @@ export class HisHosxpv3Model {
                     '',
                     date_format(concat(o.vstdate,' ',o.vsttime) ,'%Y-%m-%d %H:%i:%s')
                 ) as D_UPDATE,
-                vn.hospsub as hsub,
-                pt.CID
+                vn.hospsub as hsub
                 
             from  
                 ovst o 
@@ -267,15 +265,16 @@ export class HisHosxpv3Model {
                     FROM
                         opdconfig
                 ) AS HOSPCODE,
-                ifnull(p.person_id, o.hn) PID,
-                q.seq_id SEQ,
-                formatdate (o.vstdate) DATE_SERV,
+                pt.cid CID,
+                o.hn PID,
+                o.hn,
+                q.seq_id, q.vn SEQ, q.vn as VN,
+                o.vstdate DATE_SERV,
                 ifnull(odx.diagtype, '') DIAGTYPE,
                 odx.icd10 DIAGCODE,
                 ifnull(s.provis_code, '') CLINIC,
-                provider (d. CODE, 'doctor') PROVIDER,
-                formatdatetime (q.update_datetime) D_UPDATE,
-                pt.cid CID
+                d.CODE PROVIDER,
+                q.update_datetime D_UPDATE
             FROM
                 ovst o
             LEFT JOIN ovst_seq q ON q.vn = o.vn
@@ -285,7 +284,7 @@ export class HisHosxpv3Model {
             LEFT JOIN spclty s ON s.spclty = o.spclty
             LEFT JOIN doctor d ON d. CODE = o.doctor
             WHERE
-                q.seq_id = "${visitNo}"
+                q.vn = "${visitNo}"
                 AND odx.icd10 REGEXP '[A-Z]'               
             `;
         const result = await db.raw(sql);
@@ -298,7 +297,7 @@ export class HisHosxpv3Model {
                 (select hospitalcode from opdconfig) as hospcode,
                 ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
-                os.seq_id as seq,
+                os.seq_id, os.vn as seq, os.vn,
                 if(o.vstdate is null or trim(o.vstdate)='' or o.vstdate like '0000-00-00%','',date_format(o.vstdate,'%Y-%m-%d')) as date_serv,
                 sp.provis_code as clinic,
                 h3.icd10tm as procedcode,
@@ -327,7 +326,7 @@ export class HisHosxpv3Model {
                 h3.icd10tm  is not null  
                 and v.cid is not null 
                 and v.cid <>''
-                and os.seq_id = "${visitNo}"
+                and os.vn = "${visitNo}"
                 
             union all
                 
@@ -335,7 +334,7 @@ export class HisHosxpv3Model {
                 (select hospitalcode from opdconfig) as hospcode,
                 ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
-                os.seq_id as seq,
+                os.seq_id, os.vn as seq, os.vn,
                 if(o.vstdate is null or trim(o.vstdate)='' or o.vstdate like '0000-00-00%','',date_format(o.vstdate,'%Y-%m-%d')) as date_serv,
                 sp.provis_code as clinic,
                 if(e.icd10tm is null or e.icd10tm = '',e.icd9cm,e.icd10tm) as procedcode,
@@ -361,7 +360,7 @@ export class HisHosxpv3Model {
                 e.icd9cm <>'' 
                 and v.cid is not null 
                 and v.cid <>''
-                and os.seq_id = "${visitNo}"
+                and os.vn = "${visitNo}"
                 
             union all
                 
@@ -369,7 +368,7 @@ export class HisHosxpv3Model {
                 (select hospitalcode from opdconfig) as hospcode,
                 ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
-                os.seq_id as seq,
+                os.seq_id, os.vn as seq, os.vn,
                 if(r.vstdate is null or trim(r.vstdate)='' or r.vstdate like '0000-00-00%','',date_format(r.vstdate,'%Y-%m-%d')) as date_serv,
                 sp.provis_code as clinic, 
                 if(e.icd10tm_operation_code is null or e.icd10tm_operation_code= '',e.icd9cm,e.icd10tm_operation_code) as procedcode,
@@ -395,7 +394,7 @@ export class HisHosxpv3Model {
                 v.cid is not null 
                 and v.cid <>'' 
                 and e.icd10tm_operation_code is not null
-                and os.seq_id = "${visitNo}"
+                and os.vn = "${visitNo}"
             `;
         const result = await db.raw(sql);
         return result[0];
@@ -407,7 +406,7 @@ export class HisHosxpv3Model {
                 (select hospitalcode from opdconfig) as hospcode,
                 ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
-                os.seq_id as seq,
+                os.seq_id, os.vn as seq, os.vn,
                 if(
                     concat(ovst.vstdate) is null 
                         or trim(concat(ovst.vstdate)) = '' 
@@ -417,7 +416,7 @@ export class HisHosxpv3Model {
                 ) as date_serv,
                 if (sp.provis_code is null or sp.provis_code ='' ,'00100',sp.provis_code ) as clinic,
                 o.income as chargeitem,
-                if(d.charge_list_id is null or d.charge_list_id ='' ,'0000000',right(concat('00000000',d.charge_list_id),${hn_len})) as chargelist,
+                if(d.charge_list_id is null or d.charge_list_id ='' ,'0000000',right(concat('00000000',d.charge_list_id), 6)) as chargelist,
                 o.qty as quantity,
                 if (p2.pttype_std_code is null or p2.pttype_std_code ='' ,'9100',p2.pttype_std_code) as instype,
                 format(o.cost,2) as cost,
@@ -442,7 +441,7 @@ export class HisHosxpv3Model {
                 left join drugitems_charge_list d on d.icode = o.icode
                 
             where 
-                os.seq_id = "${visitNo}"
+                os.vn = "${visitNo}"
             `;
         const result = await db.raw(sql);
         return result[0];
@@ -455,42 +454,58 @@ export class HisHosxpv3Model {
             .select(db.raw(`"${hospCode}" as hospcode`))
             .select('vn as visitno', 'lab.hn as hn', 'lab.an as an',
                 'lab.lab_no as request_id',
-                'lab.lab_code as lab_code',
-                'lab.lab_name as lab_name',
+                'lab.lab_code as LOCALCODE',
+                'lab.lab_name as INVESTNAME',
                 'lab.loinc as loinc',
                 'lab.icdcm as icdcm',
                 'lab.standard as cgd',
                 'lab.cost as cost',
                 'lab.lab_price as price',
-                'lab.date as request_date')
+                'lab.date as DATETIME_REPORT')
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
     }
 
     getLabResult(db, columnName, searchNo, referID = '', hospCode = hcode) {
-        columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        return db('lab_order as o')
-            .leftJoin('lab_order_service as s', 'o.lab_order_number', 's.lab_order_number')
-            .select(db.raw(`"${hospCode}" as HOSPCODE`))
-            .select('vn as visitno',
-                'o.lab_order_number as INVESTCODE',
-                'o.lab_items_code as LOCALCODE',
-                'o.lab_items_name_ref as INVESTNAME',
-                'o.lab_order_result as INVESTRESULT',
-                'o.lab_items_normal_value_ref as UNIT',
-                'o.update_datetime as DATETIME_REPORT')
-            .where(columnName, "=", searchNo)
-            .where('confirm', "=", 'Y')
-            .limit(maxLimit);
+        columnName = columnName === 'visitNo' ? 'lab.vn' : columnName;
+        const sql = `
+            SELECT "${hospCode}" as HOSPCODE,
+                lab.vn as visitno, lab.vn, lab.vn as seq, ovst.hn as hn, patient.cid,
+                o.lab_order_number as request_id,
+                lab.lab_code as LOCALCODE,
+                lab.lab_name as lab_group, o.lab_items_name_ref as INVESTNAME,
+                o.lab_order_result as INVESTRESULT,
+                o.lab_items_normal_value_ref as UNIT,
+                lab.icode as ICDCM, lab.date as DATETIME_REPORT,
+                concat(ovst.vstdate,' ',ovst.vsttime) as DATETIME_INVEST
+            FROM lab_order as o
+                left Join lab_order_service as lab on o.lab_order_number=lab.lab_order_number
+                left Join ovst on lab.vn=ovst.vn
+                left Join patient on ovst.hn=patient.hn
+            WHERE ${columnName}='${searchNo}' and o.confirm='Y'
+            LIMIT ${maxLimit}`;
+        return db.raw(sql);
+        // return db('lab_order as o')
+        //     .leftJoin('lab_order_service as s', 'o.lab_order_number', 's.lab_order_number')
+        //     .select(db.raw(`"${hospCode}" as HOSPCODE`))
+        //     .select('vn as visitno',
+        //         'o.lab_order_number as INVESTCODE',
+        //         'o.lab_items_code as LOCALCODE',
+        //         'o.lab_items_name_ref as INVESTNAME',
+        //         'o.lab_order_result as INVESTRESULT',
+        //         'o.lab_items_normal_value_ref as UNIT',
+        //         'o.update_datetime as DATETIME_REPORT')
+        //     .where(columnName, "=", searchNo)
+        //     .where('confirm', "=", 'Y')
+        //     .limit(maxLimit);
     }
 
     async getDrugOpd(db: Knex, visitNo, hospCode = hcode) {
         const sql = `
-            select 
-                (select hospitalcode from opdconfig) as hospcode,
+            SELECT (select hospitalcode from opdconfig) as HOSPCODE,
                 ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
-                pt.hn as pid,
-                os.seq_id as seq,
+                pt.hn as PID, pt.cid as CID,
+                os.seq_id, os.vn as SEQ, os.vn,
                 if(
                     opi.vstdate  is null 
                         or trim(opi.vstdate)='' 
@@ -499,11 +514,14 @@ export class HisHosxpv3Model {
                     date_format(opi.vstdate ,'%Y-%m-%d')
                 ) as date_serv,
                 sp.provis_code as clinic,
-                d.did as didstd,
+                d.did as DID,d.tmt_tp_code as DID_TMT,
                 d.name as dname,
                 opi.qty as amount,
                 d.packqty as unit,
                 d.units  as unit_packing,
+				concat(d.usage_code, ' ' , d.frequency_code, ' ', d.usage_unit_code, ' ', d.time_code) as usage_code,
+				concat(drugusage.name1, ' ', drugusage.name2 , ' ' , drugusage.name3) as drug_usage,
+				d.therapeutic as caution,
                 format(opi.unitprice,2) as drugprice, 
                 format(d.unitcost,2)  as drugcost, 
                 opi.doctor as provider,
@@ -515,21 +533,68 @@ export class HisHosxpv3Model {
                     date_format(opi.last_modified,'%Y-%m-%d %H:%i:%s')
                 ) as d_update
                 
-            from 
+            FROM
                 opitemrece opi 
                 left join ovst o on o.vn=opi.vn  and o.hn=opi.hn
                 left join drugitems d on opi.icode=d.icode
+                left join drugusage on d.drugusage=drugusage.drugusage
                 left join spclty sp on o.spclty=sp.spclty
                 left join person p on opi.hn=p.patient_hn 
                 left join patient pt on pt.hn = o.hn
                 left join ovst_seq os on os.vn = o.vn 
                 
-            where 
+            WHERE 
                 (opi.an is null or opi.an ='') 
                 and opi.vn not in (select i.vn from ipt i where i.vn=opi.vn) 
                 and opi.icode in (select d.icode from drugitems d) 
-                and os.seq_id = "${visitNo}"
-            `;
+                and os.vn = '${visitNo}'
+        `;
+
+        // const sql = `
+        //     select 
+        //         (select hospitalcode from opdconfig) as hospcode,
+        //         ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
+        //         pt.hn as pid, pt.cid,
+        //         os.seq_id, os.vn as seq, os.vn,
+        //         if(
+        //             opi.vstdate  is null 
+        //                 or trim(opi.vstdate)='' 
+        //                 or opi.vstdate  like '0000-00-00%',
+        //             '',
+        //             date_format(opi.vstdate ,'%Y-%m-%d')
+        //         ) as date_serv,
+        //         sp.provis_code as clinic,
+        //         d.did as didstd, d.tmt_tp_code as tmt,
+        //         d.name as dname,
+        //         opi.qty as amount,
+        //         d.packqty as unit,
+        //         d.units  as unit_packing,
+        //         format(opi.unitprice,2) as drugprice, 
+        //         format(d.unitcost,2)  as drugcost, 
+        //         opi.doctor as provider,
+        //         if(
+        //             opi.last_modified  is null 
+        //                 or trim(opi.last_modified)='' 
+        //                 or opi.last_modified  like '0000-00-00%',
+        //             date_format(concat(opi.rxdate,' ',opi.rxtime),'%Y-%m-%d %H:%i:%s'),
+        //             date_format(opi.last_modified,'%Y-%m-%d %H:%i:%s')
+        //         ) as d_update
+
+        //     from 
+        //         opitemrece opi 
+        //         left join ovst o on o.vn=opi.vn  and o.hn=opi.hn
+        //         left join drugitems d on opi.icode=d.icode
+        //         left join spclty sp on o.spclty=sp.spclty
+        //         left join person p on opi.hn=p.patient_hn 
+        //         left join patient pt on pt.hn = o.hn
+        //         left join ovst_seq os on os.vn = o.vn 
+
+        //     where 
+        //         (opi.an is null or opi.an ='') 
+        //         and opi.vn not in (select i.vn from ipt i where i.vn=opi.vn) 
+        //         and opi.icode in (select d.icode from drugitems d) 
+        //         and os.vn = '${visitNo}'
+        //     `;
         const result = await db.raw(sql);
         return result[0];
     }
@@ -537,7 +602,7 @@ export class HisHosxpv3Model {
     async getAdmission(db: Knex, columnName, searchNo, hospCode = hcode) {
         columnName = columnName === 'an' ? 'i.an' : columnName;
         columnName = columnName === 'hn' ? 'i.hn' : columnName;
-        columnName = columnName === 'visitNo' ? 'q.seq_id' : columnName;
+        columnName = columnName === 'visitNo' ? 'q.vn' : columnName;
         const sql = `
             SELECT
                 (select hospitalcode from opdconfig) as hospcode,
@@ -555,9 +620,9 @@ export class HisHosxpv3Model {
                 ) an,
                 ifnull(
                     date_format(
-                        concat(i.regdate, ' ', i.regtime),'%Y%m%d%H%i%s'
+                        concat(i.regdate, ' ', i.regtime),'%Y-%m-%d %H:%i:%s'
                     ),''
-                ) dateTime_admit,
+                ) datetime_admit,
                 ifnull(
                     s.provis_code,
                     ''
@@ -576,11 +641,11 @@ export class HisHosxpv3Model {
                 ifnull(
                     i.rfrilct,
                     ''
-                ) ReferInHosp,
+                ) referinhosp,
                 ifnull(
                     i.rfrics,
                     ''
-                ) CauseIn,
+                ) causein,
                 cast(
                     IF (
                         i.bw = 0,'',
@@ -595,7 +660,7 @@ export class HisHosxpv3Model {
                                 )
                             )
                     ) AS CHAR (5)
-                ) AdmitWeight,
+                ) ddmitweight,
                 IF (
                     os.height = 0,
                     '',
@@ -603,30 +668,30 @@ export class HisHosxpv3Model {
                         os.height,
                         ''
                     )
-                ) AdmitHeight,
+                ) admitheight,
                 ifnull(
                     date_format(
                         concat(i.dchdate, ' ', i.dchtime),
-                        '%Y%m%d%H%i%s'
+                        '%Y-%m-%d %H:%i:%s'
                     ),''
-                ) DateTime_Disch,
+                ) datetime_disch,
                 ifnull(
                     s.provis_code,
                     ''
-                ) WardDisch,
+                ) warddisch,
                 ifnull(
                     ds.nhso_dchstts,
                     ''
-                ) DischStatus,
+                ) dischstatus,
                 ifnull(
                     dt.nhso_dchtype,
                     ''
-                ) DischType,            
+                ) dischtype,            
                 IF (
                     i.dchtype = 04,
                     ifnull(i.rfrolct, ''),
                     ''
-                ) ReferOutHosp,            
+                ) referouthosp,            
                 IF (
                     i.dchtype = 04,            
                     IF (
@@ -639,20 +704,20 @@ export class HisHosxpv3Model {
                         )
                     ),
                     ''
-                ) CauseOut,
+                ) causeout,
                 ROUND(
                     ifnull(                    
                         sum(c.qty * c.cost),2
                     ),
                     0
-                ) Cost,
+                ) cost,
                 ROUND(
                     ifnull(		
                         a.uc_money,
                         2
                     ),
                     2
-                ) Price,
+                ) price,
                 ROUND(
                     sum(
                         IF (
@@ -662,30 +727,30 @@ export class HisHosxpv3Model {
                             )
                     ),
                     2
-                ) Payprice,
+                ) payprice,
                 ROUND(
                     IFNULL(		
                         a.paid_money,
                         0
                     ),
                     2
-                ) Actualpay,	
-                provider (a.dx_doctor, 'doctor') Provider,
+                ) actualpay,	
+                a.dx_doctor provider,
                 ifnull(
                     date_format(
                     idx.modify_datetime,
-                    '%Y%m%d%H%i%s'
+                    '%Y-%m-%d %H:%i:%s'
                     ),
                     ''
-                ) D_Update,
+                ) d_update,
                 ifnull(
                     i.drg,
                     0                
-                ) Drg,
+                ) drg,
                 ifnull(
                     a.rw,
                     0
-                ) Rw,                
+                ) rw,                
                 ifnull(
                     i.adjrw,
                     0
@@ -711,7 +776,7 @@ export class HisHosxpv3Model {
                 LEFT JOIN dchstts ds ON i.dchstts = ds.dchstts
                 LEFT JOIN opitemrece c ON c.an = i.an           
             WHERE                 
-                ${columnName}="${searchNo}"
+                ${columnName}='${searchNo}'
             GROUP BY
                 i.an
             `;
@@ -720,19 +785,20 @@ export class HisHosxpv3Model {
     }
 
     async getDiagnosisIpd(db: Knex, columnName, searchNo, hospCode = hcode) {
-        columnName = columnName === 'visitNo' ? 'q.seq_id' : columnName;
+        columnName = columnName === 'visitNo' ? 'q.vn' : columnName;
+        columnName = columnName === 'an' ? 'ipt.an' : columnName;
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
                 ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 ipt.an as an,
-                ifnull(date_format(concat(ipt.regdate,' ',ipt.regtime),'%Y%m%d%H%i%s'),'') as datetime_admit,
+                ifnull(date_format(concat(ipt.regdate,' ',ipt.regtime),'%Y-%m-%d %H:%i:%s'),'') as datetime_admit,
                 concat('0',right(spclty.provis_code,4)) as warddiag,
                 iptdiag.diagtype as diagtype,
                 iptdiag.icd10 as diagcode,
                 iptdiag.doctor as provider,
-                ifnull(date_format(iptdiag.modify_datetime,'%Y%m%d%H%i%s'),date_format(NOW(),'%Y%m%d%H%i%s')) d_update,
+                ifnull(date_format(iptdiag.modify_datetime,'%Y-%m-%d %H:%i:%s'),date_format(NOW(),'%Y-%m-%d %H:%i:%s')) d_update,
                 pt.cid as CID
                 
             from 
@@ -742,11 +808,8 @@ export class HisHosxpv3Model {
                 left join patient pt on pt.hn = ipt.hn
                 left join person p on p.patient_hn = ipt.hn
                 left outer join spclty on spclty.spclty=ipt.spclty              
-            where 
-                ${columnName}="${searchNo}"
-            order by 
-                an, diagtype
-            `;
+            where ${columnName}='${searchNo}'
+            order by an, diagtype`;
         const result = await db.raw(sql);
         return result[0];
     }
