@@ -2,6 +2,7 @@ import * as Knex from 'knex';
 import * as moment from 'moment';
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
+const hn_len = +process.env.HN_LENGTH || 6;
 const dbName = process.env.HIS_DB_NAME;
 const dbClient = process.env.HIS_DB_CLIENT;
 
@@ -391,7 +392,7 @@ export class HisHosxpv4Model {
                 ) as date_serv,
                 if (sp.provis_code is null or sp.provis_code ='' ,'00100',sp.provis_code ) as clinic,
                 o.income as chargeitem,
-                if(d.charge_list_id is null or d.charge_list_id ='' ,'000000',right(concat('000000',d.charge_list_id),6)) as chargelist,
+                if(d.charge_list_id is null or d.charge_list_id ='' ,'000000',right(concat('00000000',d.charge_list_id), ${hn_len})) as chargelist,
                 o.qty as quantity,
                 if (p2.pttype_std_code is null or p2.pttype_std_code ='' ,'9100',p2.pttype_std_code) as instype,
                 format(o.cost,2) as cost,
@@ -779,7 +780,7 @@ export class HisHosxpv4Model {
                 ) as datetime_admit,
                 concat('1',right(sp.provis_code,4)) as wardstay,
                 o.income as chargeitem,
-                if(d.charge_list_id is null or d.charge_list_id = '' ,'000000',right(concat('000000',d.charge_list_id),6)) as chargelist,
+                if(d.charge_list_id is null or d.charge_list_id = '' ,'000000',right(concat('00000000',d.charge_list_id), ${hn_len})) as chargelist,
                 format(o.qty,2) as quantity,
                 if (psi.pttype_std_code is null or psi.pttype_std_code ='' ,'9100',psi.pttype_std_code ) as instype,
                 format(o.cost,2) as cost,

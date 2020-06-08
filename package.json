@@ -1,6 +1,6 @@
 {
   "name": "hisgateway-api",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "private": true,
   "scripts": {
     "start": "npx ts-node ./src/app.ts",
@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "alert-node": "^3.0.11",
-    "crypto": "^1.0.1",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.3",
     "ejs-mate": "^3.0.0",
@@ -19,7 +18,6 @@
     "fastify-formbody": "^3.2.0",
     "fastify-helmet": "^3.0.2",
     "fastify-jwt": "^1.4.0",
-    "fastify-knexjs": "^1.0.14",
     "fastify-no-icon": "^3.0.0",
     "fastify-rate-limit": "^3.0.1",
     "fastify-session": "^4.0.0",
@@ -30,30 +28,29 @@
     "http-status-codes": "^1.4.0",
     "https-proxy-agent": "^5.0.0",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.19.5",
+    "knex": "^0.21.1",
     "moment": "^2.26.0",
     "mqtt": "^4.1.0",
-    "mssql": "^4.1.0",
-    "mysql": "^2.17.1",
+    "mssql": "^6.2.0",
+    "mysql": "^2.18.1",
     "node-cron": "^2.0.3",
-    "npm": "^6.14.5",
-    "oracledb": "^4.0.1",
-    "pg": "^7.4.3",
-    "pino": "^5.13.6",
-    "pino-pretty": "^3.3.0",
-    "point-of-view": "^3.7.0",
-    "pug": "^2.0.4",
+    "oracledb": "^4.2.0",
+    "pg": "^8.2.1",
+    "pino": "^6.3.0",
+    "pino-pretty": "^4.0.0",
+    "point-of-view": "^3.8.0",
+    "pug": "^3.0.0",
     "qrcode": "^1.4.4",
-    "request": "^2.88.0",
+    "request": "^2.88.2",
     "serve-static": "^1.14.1",
-    "shelljs": "^0.8.3"
+    "shelljs": "^0.8.4"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.0",
     "@types/knex": "^0.14.26",
     "@types/node": "^14.0.5",
     "nodemon": "^2.0.4",
-    "ts-node": "^8.10.1",
+    "ts-node": "^8.10.2",
     "typescript": "^3.9.3"
   }
 }

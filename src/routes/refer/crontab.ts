@@ -109,19 +109,21 @@ async function sendMoph(req, reply, db) {
   if (hourNow < 8 || hourNow === 12 ||
     hourNow === 18 || hourNow === 22) {
     const date = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
-    await startSending(req, reply, db, date);
+    await getRefer_out(db, date);
+    // await startSending(req, reply, db, date);
   }
 
-  await startSending(req, reply, db, dateNow);
+  return await getRefer_out(db, dateNow);
+  // return await startSending(req, reply, db, dateNow);
 }
 
-async function startSending(req, reply, db, date) {
-  console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
-  const referOut: any = await getRefer_out(db, date);
-}
+// async function startSending(req, reply, db, date) {
+//   console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
+//   const referOut: any = await getRefer_out(db, date);
+// }
 
 async function getRefer_out(db, date) {
-  // sentContent += 'REFERID,HN,SEQ,REFER_DATE\r';
+  console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
   try {
     const referout = await hisModel.getReferOut(db, date, hcode);
     sentContent += `\rsave refer_history ${date} \r`;
@@ -129,6 +131,7 @@ async function getRefer_out(db, date) {
     sentContent += `\rsave refer service data ${date} \r`;
     let index = 0;
     let sentResult: any = {
+      pid: process.pid,
       referout: { success: 0, fail: 0 },
       person: { success: 0, fail: 0 },
       address: { success: 0, fail: 0 },
@@ -137,19 +140,19 @@ async function getRefer_out(db, date) {
       procedureOpd: { success: 0, fail: 0 },
       drugOpd: { success: 0, fail: 0 },
     };
-    for (const row of referout) {
+    for (let row of referout) {
       const hn = row.hn || row.HN;
       const seq = row.seq || row.SEQ;
       const referid = row.REFERID || row.referid;
       sentContent += (index + 1) + '. refer no.' + row.referid + ', hn ' + row.hn + ', seq ' + row.seq + '\r';
 
-      const saverefer = await sendReferOut(row, sentResult);
-      const person = await getPerson(db, hn, sentResult);
-      const address = await getAddress(db, hn, sentResult);
-      const service = await getService(db, seq, sentResult);
-      const diagnosisopd = await getDiagnosisOpd(db, seq, sentResult);
-      const procedureopd = await getProcedureOpd(db, seq, sentResult);
-      const drugopd = await getDrugOpd(db, seq, sentResult);
+      await sendReferOut(row, sentResult);
+      await getPerson(db, hn, sentResult);
+      await getAddress(db, hn, sentResult);
+      await getService(db, seq, sentResult);
+      await getDiagnosisOpd(db, seq, sentResult);
+      await getProcedureOpd(db, seq, sentResult);
+      await getDrugOpd(db, seq, sentResult);
       const ipd = await getAdmission(db, seq);
 
       const an = ipd && ipd.length ? ipd[0].an : '';
@@ -185,7 +188,6 @@ async function sendReferOut(row, sentResult) {
     const dServe = row.DATETIME_SERV || row.REFER_DATE || row.refer_date;
     const dAdmit = row.DATETIME_ADMIT || row.datetime_admit || null;
     const dRefer = row.DATETIME_REFER || row.REFER_DATE || row.refer_date || dServe || null;
-    const cid = row.CID || row.cid;
     const destHosp = row.HOSP_DESTINATION || row.hosp_destination;
 
     const data: any = await {
@@ -194,7 +196,7 @@ async function sendReferOut(row, sentResult) {
       PID: row.PID || row.pid || row.HN || row.hn,
       SEQ: row.SEQ || row.seq || '',
       AN: row.AN || row.an || '',
-      CID: cid,
+      CID: row.CID || row.cid,
       DATETIME_SERV: moment(dServe).format('YYYY-MM-DD'),
       DATETIME_ADMIT: moment(dAdmit).format('YYYY-MM-DD'),
       DATETIME_REFER: moment(dRefer).format('YYYY-MM-DD'),
@@ -234,97 +236,96 @@ async function sendReferOut(row, sentResult) {
   }
 }
 
-async function sendReferOutRows(rows) {
-  const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
-  sentContent += 'refer_out = ' + rows.length + '\r';
-  if (rows && rows.length) {
-    let rowsSave = [];
-    for (const row of rows) {
-      const data: any = await {
-        HOSPCODE: row.HOSPCODE || row.hospcode,
-        REFERID: row.REFERID || row.referid,
-        PID: row.PID || row.pid || row.HN || row.hn,
-        SEQ: row.SEQ || row.seq || '',
-        AN: row.AN || row.an || '',
-        CID: row.CID || row.cid,
-        DATETIME_SERV: row.DATETIME_SERV || row.REFER_DATE || row.refer_date,
-        DATETIME_ADMIT: row.DATETIME_ADMIT || row.datetime_admit || '',
-        DATETIME_REFER: row.DATETIME_REFER || row.REFER_DATE || row.refer_date || '',
-        HOSP_DESTINATION: row.HOSP_DESTINATION || row.hosp_destination,
-        REFERID_ORIGIN: row.REFERID_ORIGIN || row.referid_origin || '',
-        HOSPCODE_ORIGIN: row.HOSPCODE_ORIGIN || row.hospcode_origin || '',
-        CLINIC_REFER: row.CLINIC_REFER || row.clinic_refer || '',
-        CHIEFCOMP: row.CHIEFCOMP || row.chiefcomp || '',
-        PHYSICALEXAM: row.PHYSICALEXAM || row.physicalexam || '',
-        DIAGFIRST: row.DIAGFIRST || row.diagfirst || '',
-        DIAGLAST: row.DIAGLAST || row.diaglast || '',
-        PSTATUS: row.PSTATUS || row.ptstatus || '',
-        PTYPE: row.PTYPE || row.ptype || '',
-        EMERGENCY: row.EMERGENCY || row.emergency || '',
-        PTYPEDIS: row.PTYPEDIS || row.ptypedis || '',
-        CAUSEOUT: row.CAUSEOUT || row.causeout || '',
-        REQUEST: row.REQUEST || row.request || '',
-        PROVIDER: row.PROVIDER || row.provider || '',
-        D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-        his: his,
-        typesave: 'autosent'
-      }
+// async function sendReferOutRows(rows) {
+//   const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+//   sentContent += 'refer_out = ' + rows.length + '\r';
+//   if (rows && rows.length) {
+//     let rowsSave = [];
+//     for (const row of rows) {
+//       const data: any = await {
+//         HOSPCODE: row.HOSPCODE || row.hospcode,
+//         REFERID: row.REFERID || row.referid,
+//         PID: row.PID || row.pid || row.HN || row.hn,
+//         SEQ: row.SEQ || row.seq || '',
+//         AN: row.AN || row.an || '',
+//         CID: row.CID || row.cid,
+//         DATETIME_SERV: row.DATETIME_SERV || row.REFER_DATE || row.refer_date,
+//         DATETIME_ADMIT: row.DATETIME_ADMIT || row.datetime_admit || '',
+//         DATETIME_REFER: row.DATETIME_REFER || row.REFER_DATE || row.refer_date || '',
+//         HOSP_DESTINATION: row.HOSP_DESTINATION || row.hosp_destination,
+//         REFERID_ORIGIN: row.REFERID_ORIGIN || row.referid_origin || '',
+//         HOSPCODE_ORIGIN: row.HOSPCODE_ORIGIN || row.hospcode_origin || '',
+//         CLINIC_REFER: row.CLINIC_REFER || row.clinic_refer || '',
+//         CHIEFCOMP: row.CHIEFCOMP || row.chiefcomp || '',
+//         PHYSICALEXAM: row.PHYSICALEXAM || row.physicalexam || '',
+//         DIAGFIRST: row.DIAGFIRST || row.diagfirst || '',
+//         DIAGLAST: row.DIAGLAST || row.diaglast || '',
+//         PSTATUS: row.PSTATUS || row.ptstatus || '',
+//         PTYPE: row.PTYPE || row.ptype || '',
+//         EMERGENCY: row.EMERGENCY || row.emergency || '',
+//         PTYPEDIS: row.PTYPEDIS || row.ptypedis || '',
+//         CAUSEOUT: row.CAUSEOUT || row.causeout || '',
+//         REQUEST: row.REQUEST || row.request || '',
+//         PROVIDER: row.PROVIDER || row.provider || '',
+//         D_UPDATE: row.D_UPDATE || row.d_update || d_update,
+//         his: his,
+//         typesave: 'autosent'
+//       }
 
-      await rowsSave.push(data);
+//       await rowsSave.push(data);
 
-      data.REFERID_PROVINCE = data.HOSPCODE + data.REFERID;
-      const saveResult = await referSending('/save-refer-history', data);
-      // console.log(data.REFERID, saveResult);
-      sentContent += ' -- ' + data.REFERID + ' ' + JSON.stringify(saveResult) + '\r';
-    }
-  }
-  return rows;
-}
+//       data.REFERID_PROVINCE = data.HOSPCODE + data.REFERID;
+//       const saveResult = await referSending('/save-refer-history', data);
+//       sentContent += ' -- ' + data.REFERID + ' ' + JSON.stringify(saveResult) + '\r';
+//     }
+//   }
+//   return rows;
+// }
 
-async function sendReferOutAll(rows) {
-  let rowsSave = [];
-  const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
-  sentContent += 'refer_out = ' + rows.length + '\r';
-  if (rows && rows.length) {
-    for (const row of rows) {
-      const data: any = await {
-        HOSPCODE: row.HOSPCODE || row.hospcode,
-        REFERID: row.REFERID || row.referid,
-        PID: row.PID || row.pid || row.HN || row.hn,
-        SEQ: row.SEQ || row.seq || '',
-        AN: row.AN || row.an || '',
-        CID: row.CID || row.cid,
-        DATETIME_SERV: row.DATETIME_SERV || row.REFER_DATE || row.refer_date,
-        DATETIME_ADMIT: row.DATETIME_ADMIT || row.datetime_admit || '',
-        DATETIME_REFER: row.DATETIME_REFER || row.REFER_DATE || row.refer_date || '',
-        HOSP_DESTINATION: row.HOSP_DESTINATION || row.hosp_destination,
-        REFERID_ORIGIN: row.REFERID_ORIGIN || row.referid_origin || '',
-        HOSPCODE_ORIGIN: row.HOSPCODE_ORIGIN || row.hospcode_origin || '',
-        CLINIC_REFER: row.CLINIC_REFER || row.clinic_refer || '',
-        CHIEFCOMP: row.CHIEFCOMP || row.chiefcomp || '',
-        PHYSICALEXAM: row.PHYSICALEXAM || row.physicalexam || '',
-        DIAGFIRST: row.DIAGFIRST || row.diagfirst || '',
-        DIAGLAST: row.DIAGLAST || row.diaglast || '',
-        PSTATUS: row.PSTATUS || row.ptstatus || '',
-        PTYPE: row.PTYPE || row.ptype || '',
-        EMERGENCY: row.EMERGENCY || row.emergency || '',
-        PTYPEDIS: row.PTYPEDIS || row.ptypedis || '',
-        CAUSEOUT: row.CAUSEOUT || row.causeout || '',
-        REQUEST: row.REQUEST || row.request || '',
-        PROVIDER: row.PROVIDER || row.provider || '',
-        D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-        his: his,
-        typesave: 'autosent'
-      }
-      await rowsSave.push(data);
+// async function sendReferOutAll(rows) {
+//   let rowsSave = [];
+//   const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+//   sentContent += 'refer_out = ' + rows.length + '\r';
+//   if (rows && rows.length) {
+//     for (const row of rows) {
+//       const data: any = await {
+//         HOSPCODE: row.HOSPCODE || row.hospcode,
+//         REFERID: row.REFERID || row.referid,
+//         PID: row.PID || row.pid || row.HN || row.hn,
+//         SEQ: row.SEQ || row.seq || '',
+//         AN: row.AN || row.an || '',
+//         CID: row.CID || row.cid,
+//         DATETIME_SERV: row.DATETIME_SERV || row.REFER_DATE || row.refer_date,
+//         DATETIME_ADMIT: row.DATETIME_ADMIT || row.datetime_admit || '',
+//         DATETIME_REFER: row.DATETIME_REFER || row.REFER_DATE || row.refer_date || '',
+//         HOSP_DESTINATION: row.HOSP_DESTINATION || row.hosp_destination,
+//         REFERID_ORIGIN: row.REFERID_ORIGIN || row.referid_origin || '',
+//         HOSPCODE_ORIGIN: row.HOSPCODE_ORIGIN || row.hospcode_origin || '',
+//         CLINIC_REFER: row.CLINIC_REFER || row.clinic_refer || '',
+//         CHIEFCOMP: row.CHIEFCOMP || row.chiefcomp || '',
+//         PHYSICALEXAM: row.PHYSICALEXAM || row.physicalexam || '',
+//         DIAGFIRST: row.DIAGFIRST || row.diagfirst || '',
+//         DIAGLAST: row.DIAGLAST || row.diaglast || '',
+//         PSTATUS: row.PSTATUS || row.ptstatus || '',
+//         PTYPE: row.PTYPE || row.ptype || '',
+//         EMERGENCY: row.EMERGENCY || row.emergency || '',
+//         PTYPEDIS: row.PTYPEDIS || row.ptypedis || '',
+//         CAUSEOUT: row.CAUSEOUT || row.causeout || '',
+//         REQUEST: row.REQUEST || row.request || '',
+//         PROVIDER: row.PROVIDER || row.provider || '',
+//         D_UPDATE: row.D_UPDATE || row.d_update || d_update,
+//         his: his,
+//         typesave: 'autosent'
+//       }
+//       await rowsSave.push(data);
 
-      data.REFERID_PROVINCE = data.HOSPCODE + data.REFERID;
-    }
-    const saveResult = await referSending('/save-refer-history-all', rowsSave);
-    sentContent += ' -- ' + JSON.stringify(saveResult) + '\r';
-  }
-  return rowsSave;
-}
+//       data.REFERID_PROVINCE = data.HOSPCODE + data.REFERID;
+//     }
+//     const saveResult = await referSending('/save-refer-history-all', rowsSave);
+//     sentContent += ' -- ' + JSON.stringify(saveResult) + '\r';
+//   }
+//   return rowsSave;
+// }
 
 async function getPerson(db, pid, sentResult) {
   const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
@@ -335,9 +336,9 @@ async function getPerson(db, pid, sentResult) {
       const person = await {
         HOSPCODE: row.HOSPCODE || row.hospcode,
         CID: row.CID || row.cid,
-        PID: row.PID || row.pid || row.HN || row.hn,
+        PID: row.HN || row.hn || row.PID || row.pid,
         HID: row.HID || row.hid || '',
-        HN: row.PID || row.pid || row.HN || row.hn,
+        HN: row.HN || row.hn || row.PID || row.pid,
         PRENAME: row.PRENAME || row.prename,
         NAME: row.NAME || row.name,
         LNAME: row.LNAME || row.lname,
@@ -470,7 +471,7 @@ async function getDiagnosisOpd(db, visitNo, sentResult) {
     for (const row of rows) {
       await r.push({
         HOSPCODE: row.HOSPCODE || row.hospcode ,
-        PID: row.PID.toString() || row.pid.toString() ,
+        PID: row.PID || row.pid ,
         SEQ: row.SEQ || row.seq ,
         DATE_SERV: row.DATE_SERV || row.date_serv ,
         DIAGTYPE: row.DIAGTYPE || row.diagtype ,
@@ -673,7 +674,9 @@ async function getProcedureIpd(db, an) {
 
 async function referSending(path, dataArray) {
   const dataSending = querystring.stringify({
-    hospcode: hcode, data: JSON.stringify(dataArray)
+    hospcode: hcode, data: JSON.stringify(dataArray),
+    processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+    sourceApiName: 'HIS-Gateway-API'
   });
 
   const options = {

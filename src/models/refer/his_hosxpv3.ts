@@ -2,7 +2,7 @@ import * as Knex from 'knex';
 import * as moment from 'moment';
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
-
+const hn_len = +process.env.HN_LENGTH || 6;
 export class HisHosxpv3Model {
     check() {
         return true;
@@ -77,7 +77,7 @@ export class HisHosxpv3Model {
             select
                 (select hospitalcode from opdconfig) HOSPCODE
                 ,p.cid CID
-                ,ifnull(right(concat('000000', p.person_id), 6),pt.hn) PID  
+                ,ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) PID  
                 ,h.house_id HID
                 ,pn.provis_code PRENAME
                 ,p.fname NAME
@@ -131,7 +131,7 @@ export class HisHosxpv3Model {
                 left join person_labor_type pl on pl.person_labor_type_id=p.person_labor_type_id   
                 left join (select hn,cid as pt_cid from patient) pt ON pt.pt_cid=p.cid
 
-            where ${columnName}="${searchText}"
+            where pt.${columnName}="${searchText}"
         `;
         const result = await db.raw(sql);
         return result[0];
@@ -179,7 +179,7 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as HOSPCODE,
-                ifnull(right(concat('000000', p.person_id), 6),pt.hn) as PID,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as PID,
                 o.hn as HN,
                 os.seq_id as SEQ,
                 if(
@@ -293,7 +293,7 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 os.seq_id as seq,
                 if(o.vstdate is null or trim(o.vstdate)='' or o.vstdate like '0000-00-00%','',date_format(o.vstdate,'%Y-%m-%d')) as date_serv,
                 sp.provis_code as clinic,
@@ -329,7 +329,7 @@ export class HisHosxpv3Model {
                 
             select distinct
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 os.seq_id as seq,
                 if(o.vstdate is null or trim(o.vstdate)='' or o.vstdate like '0000-00-00%','',date_format(o.vstdate,'%Y-%m-%d')) as date_serv,
                 sp.provis_code as clinic,
@@ -362,7 +362,7 @@ export class HisHosxpv3Model {
                 
             select distinct
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 os.seq_id as seq,
                 if(r.vstdate is null or trim(r.vstdate)='' or r.vstdate like '0000-00-00%','',date_format(r.vstdate,'%Y-%m-%d')) as date_serv,
                 sp.provis_code as clinic, 
@@ -399,7 +399,7 @@ export class HisHosxpv3Model {
         const sql = `
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 os.seq_id as seq,
                 if(
                     concat(ovst.vstdate) is null 
@@ -410,7 +410,7 @@ export class HisHosxpv3Model {
                 ) as date_serv,
                 if (sp.provis_code is null or sp.provis_code ='' ,'00100',sp.provis_code ) as clinic,
                 o.income as chargeitem,
-                if(d.charge_list_id is null or d.charge_list_id ='' ,'000000',right(concat('000000',d.charge_list_id),6)) as chargelist,
+                if(d.charge_list_id is null or d.charge_list_id ='' ,'0000000',right(concat('00000000',d.charge_list_id),${hn_len})) as chargelist,
                 o.qty as quantity,
                 if (p2.pttype_std_code is null or p2.pttype_std_code ='' ,'9100',p2.pttype_std_code) as instype,
                 format(o.cost,2) as cost,
@@ -481,7 +481,7 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id), 6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 os.seq_id as seq,
                 if(
                     opi.vstdate  is null 
@@ -716,7 +716,7 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 ipt.an as an,
                 ifnull(date_format(concat(ipt.regdate,' ',ipt.regtime),'%Y%m%d%H%i%s'),'') as datetime_admit,
                 concat('0',right(spclty.provis_code,4)) as warddiag,
@@ -746,7 +746,7 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 ipt.an,
                 if(
                     concat(ipt.regdate,' ',ipt.regtime) is null 
@@ -798,7 +798,7 @@ export class HisHosxpv3Model {
 
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 ipt.an,
                 if(
                     concat(ipt.regdate,' ',ipt.regtime) is null 
@@ -849,7 +849,7 @@ export class HisHosxpv3Model {
         const sql = `
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id),6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 o.an as an,
                 if(
                     concat(ipt.regdate,' ',ipt.regtime) is null 
@@ -860,7 +860,7 @@ export class HisHosxpv3Model {
                 ) as datetime_admit,
                 concat('1',right(sp.provis_code,4)) as wardstay,
                 o.income as chargeitem,
-                if(d.charge_list_id is null or d.charge_list_id = '' ,'000000',right(concat('000000',d.charge_list_id),6)) as chargelist,
+                if(d.charge_list_id is null or d.charge_list_id = '' ,'000000',right(concat('00000000',d.charge_list_id), ${hn_len})) as chargelist,
                 format(o.qty,2) as quantity,
                 if (psi.pttype_std_code is null or psi.pttype_std_code ='' ,'9100',psi.pttype_std_code ) as instype,
                 format(o.cost,2) as cost,
@@ -980,7 +980,7 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('000000', p.person_id), 6),pt.hn) as pid,
+                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid,
                 if(
                     oe.report_date is null 
                         or trim(oe.report_date)=' ' 
@@ -1041,7 +1041,7 @@ export class HisHosxpv3Model {
                 (select hospitalcode from opdconfig) as HOSPCODE,
                 ro.refer_number as REFERID,
                 concat((select hospitalcode from opdconfig),ro.refer_number ) as REFERID_PROVINCE,
-                ifnull(right(concat('000000', ps.person_id), 6),pt.hn) as PID,
+                ifnull(right(concat('00000000', ps.person_id), ${hn_len}),pt.hn) as PID,
                 os.seq_id as SEQ,
                 o.an as AN,
                 o.i_refer_number as REFERID_ORIGIN,

@@ -62,10 +62,14 @@ export class HisEzhospModel {
     }
 
     getAddress(db, columnName, searchNo, hospCode = hcode) {
-        columnName = columnName === 'cid' ? 'no_card' : columnName;
-        return db('view_address')
+        columnName = columnName === 'cid' ? 'CID' : columnName;
+        return db('view_address_hdc')
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')    // ตาม 43 แฟ้ม
+            .select(`PID`, `ADDRESSTYPE`, `HOUSE_ID`, `HOUSETYPE`,
+                `ROOMNO`, `CONDO`, `HOUSENO`, `SOISUB`,
+                `SOIMAIN`, `ROAD`, `VILLANAME`, `VILLAGE`,
+                `TAMBON`, `AMPUR`, `CHANGWAT`, `TELEPHONE`,
+                `MOBILE`, `D_UPDATE`)
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
     }
@@ -118,8 +122,8 @@ export class HisEzhospModel {
 
     getChargeOpd(db, visitNo, hospCode = hcode) {
         return db('view_opd_charge_item')
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where('vn', visitNo)
             .limit(maxLimit);
     }
@@ -142,12 +146,12 @@ export class HisEzhospModel {
             .limit(maxLimit);
     }
 
-    getLabResult(db, columnName, searchNo, referID='', hospCode = hcode) {
+    getLabResult(db, columnName, searchNo, referID = '', hospCode = hcode) {
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
         return db('hospdata.view_lab_result as result')
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select(db.raw('"' + hcode+referID +'" as REFERID'))
-            .select(db.raw('"' + referID +'" as REFERID_PROVINCE'))
+            .select(db.raw('"' + hcode + referID + '" as REFERID'))
+            .select(db.raw('"' + referID + '" as REFERID_PROVINCE'))
             .select(db.raw('"LAB" as TYPEINVEST'))
             .select(db.raw('CONCAT(result.date," ",result.time) as DATETIME_INVEST'))
             .select('result.hn as PID', 'result.vn as SEQ', 'result.pid as CID'
@@ -162,8 +166,8 @@ export class HisEzhospModel {
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
 
-            // `LOINC` varchar(20) DEFAULT NULL,
-        }
+        // `LOINC` varchar(20) DEFAULT NULL,
+    }
 
     async getDrugOpd(db, visitNo, hospCode = hcode) {
         const sql = `
@@ -243,8 +247,8 @@ export class HisEzhospModel {
 
     getChargeIpd(db, an, hospCode = hcode) {
         return db('charge_ipd')
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where('an', "=", an)
             .limit(maxLimit);
     }
@@ -265,24 +269,24 @@ export class HisEzhospModel {
 
     getAccident(db, visitNo, hospCode = hcode) {
         return db('accident')
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where('vn', visitNo)
             .limit(maxLimit);
     }
 
     getDrugAllergy(db, hn, hospCode = hcode) {
         return db('view_drug_allergy')
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where('hn', hn)
             .limit(maxLimit);
     }
 
     getAppointment(db, visitNo, hospCode = hcode) {
         return db('view_opd_fu')
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where('vn', "=", visitNo)
             .limit(maxLimit);
     }
@@ -317,32 +321,32 @@ export class HisEzhospModel {
 
     getClinicalRefer(db, referNo, hospCode = hcode) {
         return db('view_clinical_refer')
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where('refer_no', "=", referNo)
             .limit(maxLimit);
     }
 
     getInvestigationRefer(db, referNo, hospCode = hcode) {
         return db('view_investigation_refer')
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where('refer_no', "=", referNo)
             .limit(maxLimit);
     }
 
     getCareRefer(db, referNo, hospCode = hcode) {
         return db('view_care_refer')
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where('refer_no', "=", referNo)
             .limit(maxLimit);
     }
 
     getReferResult(db, hospDestination, referNo, hospCode = hcode) {
         return db('view_refer_result')
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where('refer_hcode', "=", hospDestination)
             .where('refer_no', "=", referNo)
             .limit(maxLimit);
@@ -368,8 +372,8 @@ export class HisEzhospModel {
 
     getData(db, tableName, columnName, searchNo, hospCode = hcode) {
         return db(tableName)
-            .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
     }

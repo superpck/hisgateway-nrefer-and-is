@@ -279,7 +279,7 @@ app.listen(port, host, (err) => {
     console.log('WebSocket server error!', error);
   });
 
-  console.log('>>> ', app.startServerTime, 'HIS Gateway API start', app.server.address());
+  console.log('>>> ', app.startServerTime, 'HIS Gateway API start on port', port, 'PID' ,process.pid);
 });
 
 function createConnectionOption(db: any) {

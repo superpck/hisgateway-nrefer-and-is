@@ -12,14 +12,17 @@ export class HisHospitalOsModel {
     }
     
     getPerson(knex: Knex, columnName, searchText) {
+        columnName = columnName == 'hn' ? 'patient.patient_hn':columnName;
+        columnName = columnName == 'cid' ? 'patient.patient_pid':columnName;
         return knex   
             //.withSchema('public')
-            .select('patient.hn','patient.cid','patient.pname as prename',
-            'patient.fname', 'patient.lname',
-            'patient.birthday as dob', 'patient.sex','patient.moopart as moo','patient.road',
-            'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip')
+            .select('patient.patient_hn as hn','patient.patient_pid as cid','patient.f_patient_prefix_id as prename',
+            'patient.patient_firstname as fname', 'patient.patient_lastname as lname',
+            'patient.patient_birthday as dob', 'patient.f_sex_id as sex','patient.patient_moo as moo','patient.patient_road as road',
+            'patient.patient_house as address', 'patient.patient_phone_number as tel')
+            .select(knex.raw(`'' as zip`))
             //.select(knex.raw('CONCAT(`chwpart`,`amppart`,`tmbpart`) as addcode'))
-            .from('patient')
+            .from('t_patient as patient')
             .where(columnName, "=", searchText);
     }
     
@@ -51,7 +54,7 @@ export class HisHospitalOsModel {
             //.select(knex.raw("CONCAT(`vstdate`,`vsttime`) as hdate"))            
             .from('opdscreen')
             .leftJoin(`ovst`, 'ovst.vn', 'opdscreen.vn')
-            .leftJoin(`patient`, 'patient.hn', 'opdscreen.hn')
+            .leftJoin(`t_patient as patient`, 'patient.hn', 'opdscreen.hn')
             .leftJoin(`er_regist`, 'er_regist.vn', 'ovst.vn')
             .leftJoin(`er_nursing_detail`, 'er_nursing_detail.vn', 'opdscreen.vn') 
             .leftJoin(`accident_airway_type`, 'accident_airway_type.accident_airway_type_id', 'er_nursing_detail.accident_airway_type_id')
