@@ -27,6 +27,7 @@ export class HisHosxpv4Model {
                 refer.refer_date as refer_date,
                 refer.refer_number as referid,
                 refer.hn as hn,
+                refer.hn as pid,
                 pt.cid as cid,
                 os.seq_id as seq,
                 null as an,
@@ -79,7 +80,7 @@ export class HisHosxpv4Model {
         return db('patient as pt')
             .leftJoin('occupation as op', 'pt.occupation', 'op.occupation')
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('pt.hn', 'pt.cid as cid', 'pt.pname as prename',
+            .select('pt.hn','pt.hn as pid', 'pt.cid as cid', 'pt.pname as prename',
                 'pt.fname as fname', 'pt.midname as mname', 'pt.lname as lname',
                 'pt.birthday as dob', 'pt.sex', 'pt.addrpart as address', 'pt.moopart as moo', 'pt.road as road', 'addr_soi as soi',
                 'pt.addressid as addcode', 'pt.hometel as tel', 'pt.po_code as zip', 'op.nhso_code as occupation')
