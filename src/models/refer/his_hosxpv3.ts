@@ -1,5 +1,5 @@
 import * as Knex from 'knex';
-import * as moment from 'moment';
+
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
 const hn_len = +process.env.HN_LENGTH || 6;
@@ -17,27 +17,26 @@ export class HisHosxpv3Model {
     //select รายชื่อเพื่อแสดงทะเบียน refer
     async getReferOut(db: Knex, date, hospCode = hcode) {
         //columnName => date
-        const sql = `SELECT (SELECT hospitalcode FROM opdconfig ) AS hospcode,
-        concat(r.refer_date, ' ', r.refer_time) AS refer_date,
-        r.refer_number AS referid,
-        r.refer_hospcode AS hosp_destination,
-        r.hn AS pid,
-        r.hn AS hn,
-        pt.cid AS cid,
-        IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,(SELECT vn from ovst WHERE an=r.vn),r.vn) as vn,
-        IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,(SELECT seq_id from ovst_seq WHERE vn=((SELECT vn from ovst WHERE an=r.vn))),(SELECT seq_id from ovst_seq WHERE vn=r.vn)) as seq,
-        pt.pname AS prename,
-        pt.fname AS fname,
-        pt.lname AS lname,
-        pt.birthday AS dob,
-        pt.sex AS sex,
-        r.pdx AS dx,
-        IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,r.vn,null) as an
+        // IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,(SELECT vn from ovst WHERE an=r.vn),r.vn) as vn,
+        // IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,(SELECT seq_id from ovst_seq WHERE vn=((SELECT vn from ovst WHERE an=r.vn))),(SELECT seq_id from ovst_seq WHERE vn=r.vn)) as seq,
+        const sql = `
+            SELECT (SELECT hospitalcode FROM opdconfig ) AS hospcode,
+                concat(r.refer_date, ' ', r.refer_time) AS refer_date,
+                r.refer_number AS referid,
+                r.refer_hospcode AS hosp_destination,
+                r.hn AS PID, r.hn AS hn, pt.cid AS CID, r.vn, r.vn as SEQ,
+                pt.pname AS prename,
+                pt.fname AS fname,
+                pt.lname AS lname,
+                pt.birthday AS dob,
+                pt.sex AS sex,
+                r.pdx AS dx,
+                IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,r.vn,null) as an
             FROM
                 referout r
-            INNER JOIN patient pt ON pt.hn = r.hn
+                INNER JOIN patient pt ON pt.hn = r.hn
             WHERE
-                r.refer_date = "${date}"
+                r.refer_date = '${date}'
             ORDER BY
                 r.refer_date`;
 
@@ -177,19 +176,20 @@ export class HisHosxpv3Model {
     async getService(db: Knex, columnName, searchText, hospCode = hcode) {
         //columnName = visitNo, hn
         columnName = columnName === 'visitNo' ? 'os.vn' : columnName;
-        columnName = columnName === 'seq' ? 'os.seq_id' : columnName;
+        columnName = columnName === 'vn' ? 'os.vn' : columnName;
+        columnName = columnName === 'seq_id' ? 'os.seq_id' : columnName;
         columnName = columnName === 'hn' ? 'o.hn' : columnName;
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as HOSPCODE,
                 ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as PID2,
-                pt.hn as PID, o.hn as HN, pt.CID, os.seq_id as SEQ, os.vn as VN,
+                pt.hn as PID, o.hn as HN, pt.CID, os.seq_id, os.vn as SEQ, os.vn as VN,
                 if(
                     o.vstdate  is null 
                         or trim(o.vstdate )='' 
                         or o.vstdate  like '0000-00-00%',
                     '',
-                    date_format(o.vstdate ,'%Y%m%d')
+                    date_format(o.vstdate ,'%Y-%m-%d')
                 ) as DATE_SERV,
                 if(
                     o.vsttime  is null 
@@ -606,31 +606,16 @@ export class HisHosxpv3Model {
         const sql = `
             SELECT
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(
-                    p.person_id,
-                    ''
-                ) pid,
-                ifnull(
-                    q.seq_id,
-                    ''
-                ) seq,
-                ifnull(
-                    i.an,
-                    ''
-                ) an,
+                ifnull(p.person_id,'') pid,
+                q.seq_id, o.vn seq,
+                ifnull(i.an,'') an,
                 ifnull(
                     date_format(
                         concat(i.regdate, ' ', i.regtime),'%Y-%m-%d %H:%i:%s'
                     ),''
                 ) datetime_admit,
-                ifnull(
-                    s.provis_code,
-                    ''
-                ) wardadmit,
-                ifnull(
-                    ps.pttype_std_code,
-                    ''
-                ) instype,
+                ifnull(s.provis_code,'') wardadmit,
+                ifnull(ps.pttype_std_code,'') instype,
                 ifnull(
                     RIGHT (
                         (
@@ -973,20 +958,20 @@ export class HisHosxpv3Model {
                 (select hospitalcode from opdconfig) as HOSPCODE
                 ,ifnull(p.person_id,'') PID
                 ,ifnull(i.an,'') AN
-                ,ifnull(date_format(concat(i.regdate,' ',i.regtime),'%Y%m%d%H%i%s'),'') DATETIME_ADMIT
+                ,ifnull(date_format(concat(i.regdate,' ',i.regtime),'%Y-%m-%d %H:%i:%s'),'') DATETIME_ADMIT
                 ,ifnull(s.provis_code,'') WARDSTAY
                 ,if(o.item_type='H','2','1') TYPEDRUG
                 ,ifnull(d.did,'') DIDSTD
                 ,ifnull(concat(d.name,' ',d.strength),'') DNAME
-                ,ifnull(date_format(m.orderdate,'%Y%m%d'),'') DATESTART
-                ,ifnull(date_format(m.offdate,'%Y%m%d'),'') DATEFINISH
+                ,ifnull(date_format(m.orderdate,'%Y-%m-%d'),'') DATESTART
+                ,ifnull(date_format(m.offdate,'%Y-%m-%d'),'') DATEFINISH
                 ,cast(sum(ifnull(o.qty,0)) as decimal(12,0)) AMOUNT
                 ,ifnull(d.provis_medication_unit_code,'') UNIT
                 ,ifnull(d.packqty,'') UNIT_PACKING
                 ,cast(ifnull(d.unitprice,0) as decimal(11,2)) DRUGPRICE
                 ,cast(if(d.unitcost is null or d.unitcost=0,ifnull(d.unitprice,0),d.unitcost) as decimal(11,2)) DRUGCOST
                 ,provider(o.doctor,'doctor') PROVIDER
-                ,ifnull(date_format(concat(o.rxdate,' ',o.rxtime),'%Y%m%d%H%i%s'),'') D_UPDATE
+                ,ifnull(date_format(concat(o.rxdate,' ',o.rxtime),'%Y-%m-%d %H:%i:%s'),'') D_UPDATE
                 ,pt.cid as CID
             from ipt i
                 left join an_stat a on a.an=i.an
@@ -1012,10 +997,10 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                p.person_id pid,
-                q.seq_id seq,
-                date_format(concat(o.vstdate, ' ', o.vsttime),'%Y%m%d%H%i%s') datetime_serv,
-                date_format(concat(o.vstdate, ' ', o.vsttime),'%Y%m%d%H%i%s') datetime_ae,
+                p.hn, p.hn as pid, p.cid,
+                q.seq_id, q.vn as seq,
+                date_format(concat(o.vstdate, ' ', o.vsttime),'%Y-%m-%d %H:%i:%s') datetime_serv,
+                date_format(concat(o.vstdate, ' ', o.vsttime),'%Y-%m-%d %H:%i:%s') datetime_ae,
                 ifnull(lpad(d.er_accident_type_id,2,'0'),'') aetype,
                 ifnull(lpad(d.accident_place_type_id,2,'0'),'99') aeplace,
                 ifnull(vt.export_code, '1') typein_ae,
@@ -1033,7 +1018,7 @@ export class HisHosxpv3Model {
                 IF (d.gcs_e IN (1, 2, 3, 4),d.gcs_e,'4') coma_eye,
                 IF (d.gcs_v IN (1, 2, 3, 4, 5),d.gcs_v,'5') coma_speak,
                 IF (d.gcs_m IN (1, 2, 3, 4, 5, 6),d.gcs_m,'6') coma_movement,
-                date_format(now(), '%Y%m%d%H%i%s') d_update
+                date_format(now(), '%Y-%m-%d %H:%i:%s') d_update
             FROM
                 er_regist er
             LEFT JOIN ovst o ON er.vn = o.vn
@@ -1045,7 +1030,7 @@ export class HisHosxpv3Model {
             LEFT JOIN er_nursing_visit_type vt ON vt.visit_type = d.visit_type
             LEFT JOIN accident_transport_type tt ON tt.accident_transport_type_id = d.accident_transport_type_id                   
             where                 
-                q.seq_id = "${visitNo}"
+                q.vn = "${visitNo}"
             `;
         const result = await db.raw(sql);
         return result[0];
@@ -1110,7 +1095,9 @@ export class HisHosxpv3Model {
 
     async getReferHistory(db: Knex, columnName, searchNo, hospCode = hcode) {
         //columnName = visitNo, referNo
-        columnName = columnName === 'visitNo' ? 'os.seq_id' : columnName;
+        columnName = columnName === 'visitNo' ? 'os.vn' : columnName;
+        columnName = columnName === 'vn' ? 'os.vn' : columnName;
+        columnName = columnName === 'seq_id' ? 'os.seq_id' : columnName;
         columnName = columnName === 'referNo' ? 'ro.refer_number' : columnName;
         const sql = `
             select
@@ -1118,8 +1105,8 @@ export class HisHosxpv3Model {
                 ro.refer_number as REFERID,
                 concat((select hospitalcode from opdconfig),ro.refer_number ) as REFERID_PROVINCE,
                 ifnull(right(concat('00000000', ps.person_id), ${hn_len}),pt.hn) as PID2,
-                pt.hn as PID,
-                os.seq_id as SEQ,
+                pt.hn as PID, pt.cid,
+                os.seq_id, os.vn as SEQ,
                 o.an as AN,
                 o.i_refer_number as REFERID_ORIGIN,
                 o.rfrilct as HOSPCODE_ORIGIN,
@@ -1128,21 +1115,21 @@ export class HisHosxpv3Model {
                         or trim(concat(o.vstdate,' ', o.vsttime)) = '' 
                         or concat(o.vstdate,' ', o.vsttime) like '0000-00-00%',
                     '',
-                    date_format(concat(o.vstdate,' ', o.vsttime),'%Y%m%d%H%i%s')
+                    date_format(concat(o.vstdate,' ', o.vsttime),'%Y-%m-%d %H:%i:%s')
                 ) as DATETIME_SERV,
                 if(
                     concat(i.regdate,' ', i.regtime) is null 
                         or trim(concat(i.regdate,' ', i.regtime)) = '' 
                         or concat(i.regdate,' ', i.regtime) like '0000-00-00%',
                     '',
-                    date_format(concat(i.regdate,' ', i.regtime),'%Y%m%d%H%i%s')
+                    date_format(concat(i.regdate,' ', i.regtime),'%Y-%m-%d %H:%i:%s')
                 ) as DATETIME_ADMIT,
                 if(
                     concat(ro.refer_date, ' ', ro.refer_time) is null 
                         or trim(concat(ro.refer_date, ' ', ro.refer_time)) = '' 
                         or concat(ro.refer_date, ' ', ro.refer_time) like '0000-00-00%',
                     '',
-                    date_format(concat(ro.refer_date, ' ', ro.refer_time),'%Y%m%d%H%i%s')
+                    date_format(concat(ro.refer_date, ' ', ro.refer_time),'%Y-%m-%d %H:%i:%s')
                 ) as DATETIME_REFER,
                 if (
                     sp.provis_code is null 
@@ -1193,7 +1180,7 @@ export class HisHosxpv3Model {
                 left join er_regist e on e.vn = o.vn 
 
             where
-                ${columnName}="${searchNo}"
+                ${columnName}='${searchNo}'
             `;
         const result = await db.raw(sql);
         return result[0];

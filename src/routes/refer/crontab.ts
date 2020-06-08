@@ -141,10 +141,10 @@ async function getRefer_out(db, date) {
       drugOpd: { success: 0, fail: 0 },
     };
     for (let row of referout) {
-      const hn = row.hn || row.HN;
-      const seq = row.seq || row.SEQ;
+      const hn = row.hn || row.HN || row.pid || row.PID;
+      const seq = row.seq || row.SEQ || row.vn || row.VN;
       const referid = row.REFERID || row.referid;
-      sentContent += (index + 1) + '. refer no.' + row.referid + ', hn ' + row.hn + ', seq ' + row.seq + '\r';
+      sentContent += (index + 1) + '. refer no.' + referid + ', hn ' + hn + ', seq ' + seq + '\r';
 
       await sendReferOut(row, sentResult);
       await getPerson(db, hn, sentResult);
