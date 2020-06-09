@@ -10,9 +10,9 @@
 npm install typescript ts-node pm2 nodemon -g
 ```
 
-### source code
+### การติดตั้ง
 ```
-git clone https://github.com/superpck/hisgateway-nrefer-and-is his_api
+git clone https://gitlab.com/moph/hisgateway/his-gateway-api his_api
 cd his_api
 npm install
 npm audit fix --force
@@ -31,14 +31,23 @@ http://localhost:<port>/setup-api
 
 ## Running
 ```
+# run จาก javascrit ที่ compile แล้ว
 tsc -> compile source code
 pm2 start app/app.js -i 2 --name "his-gateway"
 open browser and go to http://localhost:<port ที่กำหนดใน config>
+
+# run จาก source code ที่ยังคงเป็น typescript
+pm2 start --interpreter ts-node src/app.ts his_gateway
 ```
 
-## PM2
+# Update
 ```
-pm2 start --interpreter ts-node src/app.ts his_gateway
+cd his_api  ## or API folder
+git pull
+npm install
+npm audit fix --force
+tsc
+pm2 restart his-gateway
 ```
 
 # push to git
@@ -56,7 +65,7 @@ git push
 
 # ข้อควรระวัง
 ```
-- mssql ให้ติดตั้ง version 4.1.0 เท่านั้น "npm install --save mssql@4.1.0"
+- mssql ให้ติดตั้ง version 4.1.0 หรือ 6 เท่านั้น "npm install --save mssql@4.1.0"
 ```
 
 เอกสารการติดตั้ง
