@@ -94,20 +94,16 @@ export class HisEzhospModel {
     }
 
     getDiagnosisOpd(db, visitno, hospCode = hcode) {
-        return db('view_opd_dx as dx')
-            .leftJoin('patient', 'dx.hn', 'patient.hn')
-            .select(db.raw('"' + hospCode + '" as hospcode'))
-            .select('dx.hn as pid', 'dx.vn as seq',
-                'dx.type as diagtype', 'dx.diag as diagcode', 'dx.desc as diagname',
-                'dx.clinic_std as clinic', 'dx.dr_dx as provider',
-                'patient.no_card as cid')
-            .select(db.raw('concat(dx.date," ",dx.time_in) as date_serv'))
-            .select(db.raw('concat(dx.date," ",dx.time_in) as d_update'))
+        return db('view_opd_dx_hdc as dx')
+            .select('dx.*')
             .select(db.raw(' "IT" as codeset'))
-            .where('vn', visitno)
+            .select(db.raw(`case when substr(dx.DIAGCODE,1,1) in ('V','W','X','Y') then 4 else dx.DIAGTYPE end as dxtype`))
+            .where('SEQ', visitno)
+            .orderBy('dxtype')
+            .orderBy('dx.D_UPDATE')
             .limit(maxLimit);
     }
-
+   
     getProcedureOpd(db, visitno, hospCode = hcode) {
         return db('view_opd_op')
             .select(db.raw('"' + hcode + '" as hospcode'))
@@ -216,17 +212,17 @@ export class HisEzhospModel {
     }
 
     getDiagnosisIpd(db, columnName, searchNo, hospCode = hcode) {
-        columnName = columnName === 'visitNo' ? 'dx.vn' : columnName;
-        return db('view_ipd_dx as dx')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('hn as pid', 'an')
-            .select(db.raw('concat(admite, " " , time) as datetime_admit'))
-            .select('clinic_std as warddiag', 'dx as diagcode', 'type as diagtype',
-                'dr as provider', 'dx.desc as diagname',
-                'cid', 'lastupdate as d_update')
+        columnName = columnName === 'visitNo' ? 'dx.SEQ' : columnName;
+        columnName = columnName === 'an' ? 'dx.AN' : columnName;
+        columnName = columnName === 'pid' ? 'dx.PID' : columnName;
+        columnName = columnName === 'cid' ? 'dx.CID' : columnName;
+        return db('view_ipd_dx_hdc as dx')
+            .select('dx.*')
+            .select(db.raw(' "IT" as codeset'))
             .where(columnName, "=", searchNo)
-            .orderBy('an')
-            .orderBy('type')
+            .orderBy('AN')
+            .orderBy('DIAGTYPE')
+            .orderBy('D_UPDATE')
             .limit(maxLimit);
     }
 
