@@ -182,7 +182,6 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as HOSPCODE,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as PID2,
                 pt.hn as PID, o.hn as HN, pt.CID, os.seq_id, os.vn as SEQ, os.vn as VN,
                 if(
                     o.vstdate  is null 
@@ -295,7 +294,6 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 os.seq_id, os.vn as seq, os.vn,
                 if(o.vstdate is null or trim(o.vstdate)='' or o.vstdate like '0000-00-00%','',date_format(o.vstdate,'%Y-%m-%d')) as date_serv,
@@ -332,7 +330,6 @@ export class HisHosxpv3Model {
                 
             select distinct
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 os.seq_id, os.vn as seq, os.vn,
                 if(o.vstdate is null or trim(o.vstdate)='' or o.vstdate like '0000-00-00%','',date_format(o.vstdate,'%Y-%m-%d')) as date_serv,
@@ -366,7 +363,6 @@ export class HisHosxpv3Model {
                 
             select distinct
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 os.seq_id, os.vn as seq, os.vn,
                 if(r.vstdate is null or trim(r.vstdate)='' or r.vstdate like '0000-00-00%','',date_format(r.vstdate,'%Y-%m-%d')) as date_serv,
@@ -401,10 +397,10 @@ export class HisHosxpv3Model {
     }
 
     async getChargeOpd(db: Knex, visitNo, hospCode = hcode) {
+        // ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
         const sql = `
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 os.seq_id, os.vn as seq, os.vn,
                 if(
@@ -503,7 +499,6 @@ export class HisHosxpv3Model {
     async getDrugOpd(db: Knex, visitNo, hospCode = hcode) {
         const sql = `
             SELECT (select hospitalcode from opdconfig) as HOSPCODE,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as PID, pt.cid as CID,
                 os.seq_id, os.vn as SEQ, os.vn,
                 if(
@@ -553,7 +548,6 @@ export class HisHosxpv3Model {
         // const sql = `
         //     select 
         //         (select hospitalcode from opdconfig) as hospcode,
-        //         ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
         //         pt.hn as pid, pt.cid,
         //         os.seq_id, os.vn as seq, os.vn,
         //         if(
@@ -775,7 +769,6 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 ipt.an as an,
                 ifnull(date_format(concat(ipt.regdate,' ',ipt.regtime),'%Y-%m-%d %H:%i:%s'),'') as datetime_admit,
@@ -803,7 +796,6 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 ipt.an,
                 if(
@@ -856,7 +848,6 @@ export class HisHosxpv3Model {
 
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 ipt.an,
                 if(
@@ -908,7 +899,6 @@ export class HisHosxpv3Model {
         const sql = `
             select
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 o.an as an,
                 if(
@@ -1040,7 +1030,6 @@ export class HisHosxpv3Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as hospcode,
-                ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) as pid2,
                 pt.hn as pid,
                 if(
                     oe.report_date is null 
@@ -1104,7 +1093,6 @@ export class HisHosxpv3Model {
                 (select hospitalcode from opdconfig) as HOSPCODE,
                 ro.refer_number as REFERID,
                 concat((select hospitalcode from opdconfig),ro.refer_number ) as REFERID_PROVINCE,
-                ifnull(right(concat('00000000', ps.person_id), ${hn_len}),pt.hn) as PID2,
                 pt.hn as PID, pt.cid,
                 os.seq_id, os.vn as SEQ,
                 o.an as AN,
