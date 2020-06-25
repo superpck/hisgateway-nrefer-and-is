@@ -533,19 +533,43 @@ async function getProcedureOpd(db, visitNo, sentResult) {
 }
 
 async function getDrugOpd(db, visitNo, sentResult) {
+  let opdDrug = [];
   const rows = await hisModel.getDrugOpd(db, visitNo, hcode);
   sentContent += '  - drug_opd = ' + rows.length + '\r';
   if (rows && rows.length) {
-    const saveResult: any = await referSending('/save-drug-opd', rows);
+    for (let r of rows) {
+      await opdDrug.push({
+        HOSPCODE: r.HOSPCODE || r.hospcode || hcode,
+        PID: r.PID || r.pid || r.HN || r.hn,
+        SEQ: r.SEQ || r.seq || r.vn,
+        DATE_SERV: r.DATE_SERV || r.date_serv,
+        CLINIC: r.CLINIC || r.clinic,
+        DIDSTD: r.DIDSTD || r.didstd || r.DID || r.did || r.dcode,
+        DNAME: r.DNAME || r.dname,
+        AMOUNT: r.AMOUNT || r.amount || null,
+        UNIT: r.UNIT || r.unit || null,
+        UNIT_PACKING: r.UNIT_PACKING || r.unit_packing || null,
+        DRUGPRICE: r.DRUGPRICE || r.drugprice || null,
+        DRUGCOST: r.DRUGCOST || r.drugcost || null,
+        PROVIDER: r.PROVIDER || r.provider || null,
+        D_UPDATE: r.D_UPDATE || r.d_update || null,
+        DID: r.DIDSTD || r.didstd || r.DID || r.did,
+        CID: r.CID || r.cid || null,
+        DID_TMT: r.DID_TMT || r.did_tmt || null,
+        drug_usage: r.drug_usage || null,
+        caution: r.caution
+      });
+    }
+    const saveResult: any = await referSending('/save-drug-opd', opdDrug);
     sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
-    if (saveResult.statusCode === 200) {
+    if (saveResult.statusCode == 200) {
       sentResult.drugOpd.success += 1;
     } else {
+      console.log('drug opd error: vn ', visitNo, saveResult);
       sentResult.drugOpd.fail += 1;
-      console.log(visitNo, saveResult);
     }
   }
-  return rows;
+  return opdDrug;
 }
 
 async function getLabResult(db, row, sentResult) {

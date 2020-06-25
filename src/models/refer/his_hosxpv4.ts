@@ -30,7 +30,12 @@ export class HisHosxpv4Model {
                 pt.lname AS lname,
                 pt.birthday AS dob,
                 pt.sex AS sex,
-                r.pdx AS dx, r.pdx AS DIAGFIRST,
+                r.request_text as REQUEST,
+                r.pdx AS dx, r.pre_diagnosis AS DIAGFIRST,
+                r.pmh as PH,
+                r.hpi as PI,
+                treatment_text as PHYSICALEXAM,
+                r.diagnosis_text as DIAGLAST,
                 IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,r.vn,null) as an
             FROM
                 referout r
@@ -522,7 +527,7 @@ export class HisHosxpv4Model {
                 ) as date_serv,
                 sp.provis_code as clinic,
                 d.did as DID,d.tmt_tp_code as DID_TMT,
-                d.name as dname,
+                d.icode as dcode, d.name as dname,
                 opi.qty as amount,
                 d.packqty as unit,
                 d.units  as unit_packing,
