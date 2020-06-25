@@ -139,6 +139,7 @@ async function getRefer_out(db, date) {
       diagnosisOpd: { success: 0, fail: 0 },
       procedureOpd: { success: 0, fail: 0 },
       drugOpd: { success: 0, fail: 0 },
+      investigationRefer: { success: 0, fail: 0 },
     };
     for (let row of referout) {
       const hn = row.hn || row.HN || row.pid || row.PID;
@@ -160,7 +161,7 @@ async function getRefer_out(db, date) {
 
       // const drug_ipd = await getDrugIpd(db, an);
 
-      await getLabResult(db, row);
+      await getLabResult(db, row, sentResult);
 
       index += 1;
       if (referout.length <= index) {
@@ -395,12 +396,11 @@ async function getAddress(db, pid, sentResult) {
       }
 
       const saveResult: any = await referSending('/save-address', address);
-      console.log('save address', saveResult);
       if (saveResult.statusCode === 200) {
         sentResult.address.success += 1;
       } else {
         sentResult.address.fail += 1;
-        console.log('save address', address.PID, saveResult);
+        console.log('save address fail', address.PID, saveResult);
       }
       sentContent += '    -- PID ' + address.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
     }
@@ -533,61 +533,90 @@ async function getProcedureOpd(db, visitNo, sentResult) {
 }
 
 async function getDrugOpd(db, visitNo, sentResult) {
+  let opdDrug = [];
   const rows = await hisModel.getDrugOpd(db, visitNo, hcode);
   sentContent += '  - drug_opd = ' + rows.length + '\r';
   if (rows && rows.length) {
-    const saveResult: any = await referSending('/save-drug-opd', rows);
+    for (let r of rows) {
+      await opdDrug.push({
+        HOSPCODE: r.HOSPCODE || r.hospcode || hcode,
+        PID: r.PID || r.pid || r.HN || r.hn,
+        SEQ: r.SEQ || r.seq || r.vn,
+        DATE_SERV: r.DATE_SERV || r.date_serv,
+        CLINIC: r.CLINIC || r.clinic,
+        DIDSTD: r.DIDSTD || r.didstd || r.DID || r.did || r.dcode,
+        DNAME: r.DNAME || r.dname,
+        AMOUNT: r.AMOUNT || r.amount || null,
+        UNIT: r.UNIT || r.unit || null,
+        UNIT_PACKING: r.UNIT_PACKING || r.unit_packing || null,
+        DRUGPRICE: r.DRUGPRICE || r.drugprice || null,
+        DRUGCOST: r.DRUGCOST || r.drugcost || null,
+        PROVIDER: r.PROVIDER || r.provider || null,
+        D_UPDATE: r.D_UPDATE || r.d_update || null,
+        DID: r.DIDSTD || r.didstd || r.DID || r.did,
+        CID: r.CID || r.cid || null,
+        DID_TMT: r.DID_TMT || r.did_tmt || null,
+        drug_usage: r.drug_usage || null,
+        caution: r.caution
+      });
+    }
+    const saveResult: any = await referSending('/save-drug-opd', opdDrug);
     sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
-    if (saveResult.statusCode === 200) {
+    if (saveResult.statusCode == 200) {
       sentResult.drugOpd.success += 1;
     } else {
+      console.log('drug opd error: vn ', visitNo, saveResult);
       sentResult.drugOpd.fail += 1;
-      console.log(visitNo, saveResult);
     }
   }
-  return rows;
+  return opdDrug;
 }
 
-async function getLabResult(db, row) {
+async function getLabResult(db, row, sentResult) {
   const visitNo = row.seq || row.SEQ;
   const referID = row.REFERID || row.referid;
-  const rows = await hisModel.getLabResult(db, 'visitNo', visitNo, referID, hcode);
+  const rowsLabResult = await hisModel.getLabResult(db, 'visitNo', visitNo, referID, hcode);
   let rowsSave = [];
   const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
-  sentContent += '  - lab result = ' + rows.length + '\r';
-  if (rows && rows.length) {
-    for (const row of rows) {
-      const cHOSPCODE = row.HOSPCODE || row.hospcode;
-      const investresult = row.INVESTRESULT || row.investresult || '';
-      const data: any = await {
+  sentContent += '  - lab result = ' + rowsLabResult.length + '\r';
+  if (rowsLabResult && rowsLabResult.length) {
+    for (const r of rowsLabResult) {
+      const cHOSPCODE = r.HOSPCODE || r.hospcode || process.env.HOSPCODE;
+      const investresult = r.INVESTRESULT || r.investresult || '';
+      await rowsSave.push({
         HOSPCODE: cHOSPCODE,
         REFERID: referID,
         REFERID_PROVINCE: cHOSPCODE + referID,
-        PID: row.PID || row.pid || row.HN || row.hn,
+        PID: r.PID || r.pid || r.HN || r.hn,
         SEQ: visitNo,
-        AN: row.AN || row.an || '',
-        DATETIME_INVEST: row.DATETIME_INVEST || row.datetime_invest || '',
-        INVESTTYPE: row.INVESTTYPE || row.investtype || 'LAB',
-        INVESTCODE: row.INVESTCODE || row.investcode || row.LOCALCODE || row.localcode || '',
-        LOCALCODE: row.LOCALCODE || row.localcode || '',
-        ICDCM: row.ICDCM || row.icdcm || '',
-        LOINC: row.LOINC || row.loinc || '',
-        INVESTNAME: row.INVESTNAME || row.investname || '',
-        DATETIME_REPORT: row.DATETIME_REPORT || row.datetime_report || '',
+        AN: r.AN || r.an || '',
+        DATETIME_INVEST: r.DATETIME_INVEST || r.datetime_invest || '',
+        INVESTTYPE: r.INVESTTYPE || r.investtype || 'LAB',
+        INVESTCODE: r.INVESTCODE || r.investcode || r.LOCALCODE || r.localcode || '',
+        LOCALCODE: r.LOCALCODE || r.localcode || '',
+        ICDCM: r.ICDCM || r.icdcm || '',
+        LOINC: r.LOINC || r.loinc || '',
+        INVESTNAME: r.INVESTNAME || r.investname || '',
+        DATETIME_REPORT: r.DATETIME_REPORT || r.datetime_report || '',
         INVESTVALUE: investresult.toString(),
-        LH: row.LH || row.lh || '',
-        UNIT: row.UNIT || row.unit || '',
-        NORMAL_MIN: row.NORMAL_MIN || row.normal_min || '',
-        NORMAL_MAX: row.NORMAL_MAX || row.normal_max || '',
+        LH: r.LH || r.lh || '',
+        UNIT: r.UNIT || r.unit || '',
+        NORMAL_MIN: r.NORMAL_MIN || r.normal_min || '',
+        NORMAL_MAX: r.NORMAL_MAX || r.normal_max || '',
         INVESTRESULT: investresult.toString(),
-        D_UPDATE: row.D_UPDATE || row.d_update || d_update
-      };
-      await rowsSave.push(data);
+        D_UPDATE: r.D_UPDATE || r.d_update || d_update
+      });
     }
     const saveResult: any = await referSending('/save-investigation-refer', rowsSave);
+    if (saveResult.statusCode === 200) {
+      sentResult.investigationRefer.success += rowsSave.length;
+    } else {
+      console.log('investigation-refer error:', saveResult);
+      sentResult.investigationRefer.fail += rowsSave.length;
+    }
     sentContent += '    -- SEQ ' + visitNo + ' ' + JSON.stringify(saveResult.result || saveResult.message) + '\r';
   }
-  return rows;
+  return rowsLabResult;
 }
 
 async function getAdmission(db, visitNo) {

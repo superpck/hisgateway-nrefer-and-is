@@ -30,13 +30,13 @@ export class HisHosxpv3Model {
                 pt.lname AS lname,
                 pt.birthday AS dob,
                 pt.sex AS sex,
-                r.pdx AS dx,
+                r.pdx AS dx, r.pdx AS DIAGFIRST,
                 IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,r.vn,null) as an
             FROM
                 referout r
                 INNER JOIN patient pt ON pt.hn = r.hn
             WHERE
-                r.refer_date = '${date}'
+                r.refer_date = '${date}' and r.refer_hospcode!='' and !isnull(r.refer_hospcode)
             ORDER BY
                 r.refer_date`;
 
@@ -461,38 +461,51 @@ export class HisHosxpv3Model {
             .limit(maxLimit);
     }
 
-    getLabResult(db, columnName, searchNo, referID = '', hospCode = hcode) {
+    getLabResult(db: Knex, columnName, searchNo, referID = '', hospCode = hcode) {
         columnName = columnName === 'visitNo' ? 'lab.vn' : columnName;
-        const sql = `
-            SELECT "${hospCode}" as HOSPCODE,
-                lab.vn as visitno, lab.vn, lab.vn as seq, ovst.hn as hn, patient.cid,
-                o.lab_order_number as request_id,
-                lab.lab_code as LOCALCODE,
-                lab.lab_name as lab_group, o.lab_items_name_ref as INVESTNAME,
-                o.lab_order_result as INVESTRESULT,
-                o.lab_items_normal_value_ref as UNIT,
-                lab.icode as ICDCM, lab.date as DATETIME_REPORT,
-                concat(ovst.vstdate,' ',ovst.vsttime) as DATETIME_INVEST
-            FROM lab_order as o
-                left Join lab_order_service as lab on o.lab_order_number=lab.lab_order_number
-                left Join ovst on lab.vn=ovst.vn
-                left Join patient on ovst.hn=patient.hn
-            WHERE ${columnName}='${searchNo}' and o.confirm='Y'
-            LIMIT ${maxLimit}`;
-        return db.raw(sql);
-        // return db('lab_order as o')
-        //     .leftJoin('lab_order_service as s', 'o.lab_order_number', 's.lab_order_number')
-        //     .select(db.raw(`"${hospCode}" as HOSPCODE`))
-        //     .select('vn as visitno',
-        //         'o.lab_order_number as INVESTCODE',
-        //         'o.lab_items_code as LOCALCODE',
-        //         'o.lab_items_name_ref as INVESTNAME',
-        //         'o.lab_order_result as INVESTRESULT',
-        //         'o.lab_items_normal_value_ref as UNIT',
-        //         'o.update_datetime as DATETIME_REPORT')
-        //     .where(columnName, "=", searchNo)
-        //     .where('confirm', "=", 'Y')
-        //     .limit(maxLimit);
+        columnName = columnName === 'hn' ? 'ovst.hn' : columnName;
+        columnName = columnName === 'cid' ? 'patient.cid' : columnName;
+
+        return db('lab_order as o')
+            .leftJoin(db.raw('lab_order_service as lab on o.lab_order_number=lab.lab_order_number and o.check_key_a=lab.lab_code'))
+            .innerJoin('ovst', 'lab.vn', 'ovst.vn')
+            .innerJoin('patient', 'ovst.hn', 'patient.hn')
+            .select(db.raw(`'${hospCode}' as HOSPCODE`))
+            .select(db.raw(`'LAB' as INVESTTYPE`))
+            .select("lab.vn as visitno", "lab.vn", "lab.vn as SEQ",
+                "ovst.hn as PID", "patient.cid as CID",
+                "o.lab_order_number as request_id",
+                "lab.lab_code as LOCALCODE",
+                "lab.lab_name as lab_group", "o.lab_items_name_ref as INVESTNAME",
+                "o.lab_order_result as INVESTRESULT",
+                "o.lab_items_normal_value_ref as UNIT",
+                "lab.icode as ICDCM", "o.update_datetime as DATETIME_REPORT")
+            .select(db.raw("concat(ovst.vstdate,' ',ovst.vsttime) as DATETIME_INVEST"))
+            .where(columnName, searchNo)
+            .where(`o.confirm`, 'Y')
+            .whereNot(`o.lab_order_result`, '')
+            .whereRaw('!isnull(o.lab_order_result)')
+            .limit(maxLimit);
+
+        // const sql = `
+        //     SELECT "${hospCode}" as HOSPCODE, "LAB" as INVESTTYPE,
+        //         lab.vn as visitno, lab.vn, lab.vn as SEQ, 
+        //         ovst.hn as HN, patient.cid as CID,
+        //         o.lab_order_number as request_id,
+        //         lab.lab_code as LOCALCODE,
+        //         lab.lab_name as lab_group, o.lab_items_name_ref as INVESTNAME,
+        //         o.lab_order_result as INVESTRESULT,
+        //         o.lab_items_normal_value_ref as UNIT,
+        //         lab.icode as ICDCM, o.update_datetime as DATETIME_REPORT,
+        //         concat(ovst.vstdate,' ',ovst.vsttime) as DATETIME_INVEST
+        //     FROM lab_order as o
+        //         left Join lab_order_service as lab on o.lab_order_number=lab.lab_order_number and o.check_key_a=lab.lab_code
+        //         left Join ovst on lab.vn=ovst.vn
+        //         left Join patient on ovst.hn=patient.hn
+        //     WHERE ${columnName}='${searchNo}' and o.confirm='Y' and o.lab_order_result!='' and !isnull(o.lab_order_result)
+        //     LIMIT ${maxLimit}`;
+        // const result = await db.raw(sql);
+        // return result[0];
     }
 
     async getDrugOpd(db: Knex, visitNo, hospCode = hcode) {
@@ -1168,6 +1181,7 @@ export class HisHosxpv3Model {
 
             where
                 ${columnName}='${searchNo}'
+                and ro.refer_hospcode!='' and !isnull(ro.refer_hospcode)
             `;
         const result = await db.raw(sql);
         return result[0];

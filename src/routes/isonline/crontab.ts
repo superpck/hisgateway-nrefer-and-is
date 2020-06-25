@@ -200,7 +200,6 @@ async function getIsToken() {
       'Content-Length': Buffer.byteLength(postData)
     }
   };
-  console.log(options);
 
   let ret = '';
   return new Promise((resolve, reject) => {

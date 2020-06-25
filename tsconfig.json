@@ -4,7 +4,7 @@
     "module": "commonjs",
     "strict": false,
     "removeComments": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "rootDir": "src",
     "outDir": "app",
     "typeRoots": [
