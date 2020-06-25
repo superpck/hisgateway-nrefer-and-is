@@ -148,7 +148,7 @@ export class HisEzhospModel {
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select(db.raw('"' + hcode + referID + '" as REFERID'))
             .select(db.raw('"' + referID + '" as REFERID_PROVINCE'))
-            .select(db.raw('"LAB" as TYPEINVEST'))
+            .select(db.raw('"LAB" as INVESTTYPE'))
             .select(db.raw('CONCAT(result.date," ",result.time) as DATETIME_INVEST'))
             .select('result.hn as PID', 'result.vn as SEQ', 'result.pid as CID'
                 , 'an as AN', 'result.type_result as LH'
