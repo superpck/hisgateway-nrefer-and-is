@@ -69,7 +69,7 @@ export class PccHisEzhospModel {
                 , 'visit.date', 'visit.date as date_serv', 'visit.time_reg as time'
                 , 'visit.time as time_serv', 'vs.time_vs'
                 , 'visit.pttype', 'visit.hospmain'
-                , 'visit.hospsub'
+                , 'visit.hospsub', 'patient.tel'
                 , 'vs.bp as bp_systolic', 'vs.bp1 as bp_diastolic'
                 , 'vs.weigh as weight', 'vs.high as height'
                 , 'vs.bmi', 'vs.puls as pr', 'vs.rr', 'vs.t as temperature'
@@ -100,8 +100,8 @@ export class PccHisEzhospModel {
             .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
             .select('patient.no_card as idcard', 'visit.hn as pid', 'visit.hn'
                 , 'visit.vn as visitno'
-                , 'visit.date', 'visit.date as date_serv', 'visit.time_reg as time'
-                , 'visit.time as time_serv', 'vs.time_vs'
+                , 'visit.date', 'visit.date as visitdate', 'visit.time_reg as time'
+                , 'visit.time as timestart', 'vs.time_vs'
                 , 'visit.pttype', 'visit.hospmain'
                 , 'visit.hospsub'
                 , 'vs.bp as bp_systolic', 'vs.bp1 as bp_diastolic'
@@ -133,34 +133,31 @@ export class PccHisEzhospModel {
     }
 
     getDiagnosis(db: Knex, visitNo) {
-        return db('opd_dx as dx')
-            .innerJoin('opd_visit as visit', 'dx.vn', 'visit.vn')
-            .leftJoin('lib_icd10 as lib', 'dx.diag', 'lib.code')
-            .leftJoin('chospital', 'visit.pcucode', 'chospital.hoscode')
+        return db('view_opd_dx')
+            .select('*')
             .select(db.raw(`'${hospCode}' as hospcode`))
             .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
-            .select('dx.*', 'dx.diag as diagcode'
-                , 'lib.desc as diagname', 'lib.short_thi as diagnamethai'
-                , 'visit.date as date_serv', 'visit.time as time_serv')
-            .where('dx.vn', "=", visitNo)
-            .whereNotIn('visit.status', [8, 20])
-            .orderBy('visit.date', 'desc')
-            .orderBy('visit.time', 'desc');
+            .select('diag as diagcode'
+                , 'desc as diagname', 'short_thi as diagnamethai'
+                , 'date as date_serv', 'time as time_serv')
+            .where('vn', "=", visitNo)
+            .whereNotIn('status', [8, 20])
+            .orderBy('date', 'desc')
+            .orderBy('time', 'desc');
     }
 
     getDrug(db: Knex, visitNo) {
         return db('view_pharmacy_opd_drug_item as drug')
-            .innerJoin('visit', 'drug.vn', 'visit.vn')
+            .select('*')
             .select(db.raw(`'${hospCode}' as hospcode`))
             .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
-            .select('drug.*', 'visit.vn', 'visit.vn as visitno'
-                , 'visit.date as date_serv', 'visit.time as time_serv'
-                , 'drug.caution as comment')
-            .select(db.raw(`concat(drug.methodname,' ', drug.no_use ,' ', drug.unit_use, ' ', drug.freqname, ' ', drug.timesname) as dose`))
-            .where('visit.vn', "=", visitNo)
-            .whereNotIn('visit.status', [8, 20])
-            .orderBy('visit.date', 'desc')
-            .orderBy('visit.time', 'desc');
+            .select('vn as visitno', 'caution as comment')
+            .select(db.raw(`concat(methodname,' ', no_use ,' ', unit_use, ' ', freqname, ' ', timesname) as dose`))
+            .where('vn', "=", visitNo)
+            .whereNotIn('visit_status', [8, 20])
+            .whereNotIn('drugcode', ['ZZZZZZ', 'POST', 'PREFILL', 'ZTP1'])
+            .orderBy('date_serv', 'desc')
+            .orderBy('time_serv', 'desc');
     }
 
     getDrugByHn(db: Knex, pid) {
@@ -324,11 +321,12 @@ export class PccHisEzhospModel {
     }
 
     getLabResult(db, columnName, searchNo) {
-        columnName = columnName === 'visitNo' ? 'result.vn' : columnName;
+        columnName = columnName.toUpperCase() === 'VISITNO' ? 'result.vn' : columnName;
         columnName = columnName === 'pid' ? 'result.hn' : columnName;
         const backwardService = moment().locale('th').subtract(1, 'year').format('YYYY-MM-DD');
 
         return db('hospdata.view_lab_result as result')
+            .select('*')
             .select(db.raw(`'${hospCode}' as hospcode`))
             .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
             .select(db.raw('"LAB" as TYPEINVEST'))
@@ -350,7 +348,7 @@ export class PccHisEzhospModel {
 
     libDrug(db: Knex, searchType, searchValue) {
         return db('pharmacy_inventory as drug')
-            .select('drug.*', 'drug.unit_use as unitusage', 
+            .select('drug.*', 'drug.unit_use as unitusage',
                 'drug.price as sellcaldrugstore',
                 'drug.paytype as chargeitem',
                 'drug.last_tmt as drugflag')

@@ -653,7 +653,7 @@ const router = (fastify, { }, next) => {
   })
 
   fastify.post('/lab-result', { preHandler: [fastify.serviceMonitoring, fastify.checkRequestKey] }, async (req: fastify.Request, reply: fastify.Reply) => {
-    const searchType = req.body.searchType || 'pid';
+    const searchType = req.body.searchType || 'visitno';
     const searchValue = req.body.searchValue;
 
     if (searchType && searchValue) {
@@ -680,7 +680,7 @@ const router = (fastify, { }, next) => {
     } else {
       reply.send({
         statusCode: HttpStatus.BAD_REQUEST,
-        message: HttpStatus.getStatusText(HttpStatus.BAD_REQUEST)
+        message: 'Invalid parameter'
       });
     }
   })

@@ -81,7 +81,6 @@ export class HisHosxpv3Model {
                 ,pn.provis_code PRENAME
                 ,p.fname NAME
                 ,p.lname LNAME
-                ,ifnull(right(concat('00000000', p.person_id), ${hn_len}),pt.hn) PID2  
                 ,pt.hn HN
                 ,pt.hn PID
                 ,p.sex SEX
