@@ -186,7 +186,7 @@ export class HisHosxpv4Model {
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as HOSPCODE,
-                pt.hn as PID, o.hn as HN, pt.CID, os.seq_id, os.vn as SEQ, os.vn as VN,
+                pt.hn as PID, o.hn as HN, pt.CID, os.seq_id, os.vn as SEQ,
                 if(
                     o.vstdate  is null 
                         or trim(o.vstdate )='' 
@@ -977,7 +977,7 @@ export class HisHosxpv4Model {
                 ,ifnull(d.packqty,'') UNIT_PACKING
                 ,cast(ifnull(d.unitprice,0) as decimal(11,2)) DRUGPRICE
                 ,cast(if(d.unitcost is null or d.unitcost=0,ifnull(d.unitprice,0),d.unitcost) as decimal(11,2)) DRUGCOST
-                ,provider(o.doctor,'doctor') PROVIDER
+                ,o.doctor PROVIDER
                 ,ifnull(date_format(concat(o.rxdate,' ',o.rxtime),'%Y-%m-%d %H:%i:%s'),'') D_UPDATE
                 ,pt.cid as CID
             from ipt i
