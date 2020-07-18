@@ -32,8 +32,31 @@ export class HisJhcisModel {
                 , 'visit.symptoms as CHIEFCOMP', 'visit.vitalcheck as PI'
                 , 'visit.symptomsco as PH', 'visit.healthsuggest1 as PHYSICALEXAM'
             )
-            .select(db.raw(`'jhcis' as his`))
             .whereBetween('visit.visitdate', [date1, date2])
+            .whereRaw('!isnull(visit.numberrefer)')
+            .whereRaw('!isnull(refertohos)')
+            .orderBy('visit.visitdate')
+            .limit(maxLimit);
+    }
+
+    getReferHistory(db, columnName, searchNo, hospCode = hcode) {
+        columnName = columnName === 'visitNo' ? 'visit.visitno' : columnName;
+        columnName = columnName === 'hn' ? 'visit.pid' : columnName;
+        columnName = columnName === 'cid' ? 'person.idcard' : columnName;
+        columnName = columnName === 'referid' ? 'visit.numberrefer' : columnName;
+        return db('visit')
+            .leftJoin('person', 'visit.pid', 'person.pid')
+            .select('visit.pcucode as HOSPCODE'
+                , 'visit.refertohos as HOSP_DESTINATION', 'visit.numberrefer as REFERID')
+            .select(db.raw(`concat(visit.pcucode,'-',visit.numberrefer) as REFERID_PROVINCE`))
+            .select('visit.pid as PID', 'person.idcard as CID', 'visit.visitno as SEQ'
+                , 'person.prename', 'person.fname', 'person.lname'
+                , 'person.birth as dob', 'person.sex'
+                , 'visit.visitdate as DATETIME_REFER', 'visit.visitdate as DATETIME_SERV'
+                , 'visit.symptoms as CHIEFCOMP', 'visit.vitalcheck as PI'
+                , 'visit.symptomsco as PH', 'visit.healthsuggest1 as PHYSICALEXAM'
+            )
+            .where(columnName, "=", searchNo)
             .whereRaw('!isnull(visit.numberrefer)')
             .whereRaw('!isnull(refertohos)')
             .orderBy('visit.visitdate')
@@ -171,11 +194,7 @@ export class HisJhcisModel {
     }
 
     getChargeOpd(db, visitNo, hospCode = hcode) {
-        return db('view_opd_charge_item')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('vn', visitNo)
-            .limit(maxLimit);
+        return [];
     }
 
     getLabRequest(db, columnName, searchNo, hospCode = hcode) {
@@ -187,22 +206,6 @@ export class HisJhcisModel {
     getLabResult(db, columnName, searchNo, hospCode = hcode) {
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
         return [];
-    }
-
-    getDrug(db: Knex, visitNo) {
-        return db('visitdrug as drug')
-            .innerJoin('visit', 'drug.visitno', 'visit.visitno')
-            .leftJoin('cdrug as lib', 'drug.drugcode', 'lib.drugcode')
-            .leftJoin('chospital', 'visit.pcucode', 'chospital.hoscode')
-            .select('drug.*', 'drug.pcucode as hospcode', 'chospital.hosname as hospname'
-                , 'lib.drugname', 'visit.visitdate as date_serv', 'visit.timestart as time_serv'
-                , 'lib.pack', 'lib.unitsell as unit_sell', 'lib.unitusage as unit_use', 'lib.cost', 'lib.sell as price'
-                , 'lib.drugcaution as caution', 'lib.drugcode24 as code24'
-                , 'lib.tcode as tmt', 'lib.drugproperties as comment')
-            .where('drug.visitno', "=", visitNo)
-            .where('lib.drugtype', "=", '01')
-            .orderBy('visit.visitdate', 'desc')
-            .orderBy('visit.timestart', 'desc');
     }
 
     getDrugOpd(db, visitNo, hospCode = hcode) {
@@ -252,71 +255,31 @@ export class HisJhcisModel {
     }
 
     getAccident(db, visitNo, hospCode = hcode) {
-        return db('accident')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('vn', visitNo)
-            .limit(maxLimit);
+        return [];
     }
 
     getDrugAllergy(db, hn, hospCode = hcode) {
-        return db('view_drug_allergy')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('hn', hn)
-            .limit(maxLimit);
+        return [];
     }
 
     getAppointment(db, visitNo, hospCode = hcode) {
-        return db('view_opd_fu')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('vn', "=", visitNo)
-            .limit(maxLimit);
-    }
-
-    getReferHistory(db, columnName, searchNo, hospCode = hcode) {
-        //columnName = visitNo, referNo
-        columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        columnName = columnName === 'referNo' ? 'refer_no' : columnName;
-        return db('view_refer_history')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where(columnName, "=", searchNo)
-            .limit(maxLimit);
+        return [];
     }
 
     getClinicalRefer(db, referNo, hospCode = hcode) {
-        return db('view_clinical_refer')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('refer_no', "=", referNo)
-            .limit(maxLimit);
+        return [];
     }
 
     getInvestigationRefer(db, referNo, hospCode = hcode) {
-        return db('view_investigation_refer')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('refer_no', "=", referNo)
-            .limit(maxLimit);
+        return [];
     }
 
     getCareRefer(db, referNo, hospCode = hcode) {
-        return db('view_care_refer')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('refer_no', "=", referNo)
-            .limit(maxLimit);
+        return [];
     }
 
     getReferResult(db, hospDestination, referNo, hospCode = hcode) {
-        return db('view_refer_result')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('refer_hcode', "=", hospDestination)
-            .where('refer_no', "=", referNo)
-            .limit(maxLimit);
+        return [];
     }
 
     getData(db, tableName, columnName, searchNo, hospCode = hcode) {
