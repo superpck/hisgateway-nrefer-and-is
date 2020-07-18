@@ -113,6 +113,11 @@ async function sendMoph(req, reply, db) {
     // await startSending(req, reply, db, date);
   }
 
+  let dateOld = moment().locale('th').subtract(2, 'days').format('YYYY-MM-DD');
+  await getRefer_out(db, dateOld);
+  dateOld = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
+  await getRefer_out(db, dateOld);
+
   return await getRefer_out(db, dateNow);
   // return await startSending(req, reply, db, dateNow);
 }
@@ -191,15 +196,15 @@ async function sendReferOut(row, sentResult) {
     const dRefer = row.DATETIME_REFER || row.REFER_DATE || row.refer_date || dServe || null;
     const destHosp = row.HOSP_DESTINATION || row.hosp_destination;
 
-    const data: any = await {
+    const data = {
       HOSPCODE: hcode,
       REFERID: referId,
       PID: row.PID || row.pid || row.HN || row.hn,
-      SEQ: row.SEQ || row.seq || '',
+      SEQ: (row.SEQ || row.seq || '')+'',
       AN: row.AN || row.an || '',
       CID: row.CID || row.cid,
       DATETIME_SERV: moment(dServe).format('YYYY-MM-DD'),
-      DATETIME_ADMIT: moment(dAdmit).format('YYYY-MM-DD'),
+      DATETIME_ADMIT: moment(dAdmit).format('YYYY-MM-DD') || null,
       DATETIME_REFER: moment(dRefer).format('YYYY-MM-DD'),
       HOSP_DESTINATION: destHosp,
       REFERID_ORIGIN: row.REFERID_ORIGIN || row.referid_origin || '',
@@ -218,17 +223,17 @@ async function sendReferOut(row, sentResult) {
       PROVIDER: row.PROVIDER || row.provider || '',
       REFERID_PROVINCE: referProvId,
       D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-      his: his,
+      his: hisProvider,
       typesave: 'autosent'
     }
     
     const saveResult: any = await referSending('/save-refer-history', data);
-    // console.log('sent refer result', data.REFERID, saveResult);
-    if (saveResult.statusCode === 200) {
+    // console.log('save-refer-history', data, saveResult);
+    if (saveResult.statusCode == 200) {
       sentResult.referout.success += 1;
     } else {
       sentResult.referout.fail += 1;
-      console.log(data.REFERID, saveResult);
+      console.log('save-refer-history', data.REFERID, saveResult);
     }
     sentContent += '  - refer_history ' + data.REFERID + ' ' + (saveResult.result || saveResult.message) + '\r';
     return saveResult;
@@ -362,7 +367,7 @@ async function getPerson(db, pid, sentResult) {
         sentResult.person.success += 1;
       } else {
         sentResult.person.fail += 1;
-        console.log(person.HN, saveResult);
+        console.log('save-person', person.HN, saveResult);
       }
       sentContent += '    -- PID ' + person.HN + ' ' + (saveResult.result || saveResult.message) + '\r';
     }
@@ -456,7 +461,7 @@ async function getService(db, visitNo, sentResult) {
         sentResult.service.success += 1;
       } else {
         sentResult.service.fail += 1;
-        console.log(data.SEQ, saveResult);
+        console.log('save-service' ,data.SEQ, saveResult);
       }
     }
   }
@@ -493,7 +498,7 @@ async function getDiagnosisOpd(db, visitNo, sentResult) {
       sentResult.diagnosisOpd.success += 1;
     } else {
       sentResult.diagnosisOpd.fail += 1;
-      console.log(visitNo, saveResult);
+      console.log('save-diagnosis-opd' ,visitNo, saveResult);
     }
   }
   return rows;
@@ -526,7 +531,7 @@ async function getProcedureOpd(db, visitNo, sentResult) {
       sentResult.procedureOpd.success += 1;
     } else {
       sentResult.procedureOpd.fail += 1;
-      console.log(visitNo, saveResult);
+      console.log('save-procedure-opd', visitNo, saveResult);
     }
   }
   return rowSave;

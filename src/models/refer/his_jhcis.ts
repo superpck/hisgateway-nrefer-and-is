@@ -17,80 +17,160 @@ export class HisJhcisModel {
     }
 
     // select รายชื่อเพื่อแสดงทะเบียน
-    getReferOut(db: Knex, date, hospCode=hcode) {
-        return db('hospdata.refer_out as refer')
-            .leftJoin('hospdata.patient as pt', 'refer.hn', 'pt.hn')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('refer.refer_hcode as hosp_destination',
-                'refer.hn', 'pt.person_id as cid', 'refer.vn as seq', 'refer.an',
-                'pt.title as prename', 'pt.name as fname', 'pt.surname as lname',
-                'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx'
+    getReferOut(db: Knex, date, hospCode = hcode) {
+        const date1 = moment(date).format('YYYY-MM-DD');
+        const date2 = moment(date).format('YYYY-MM-DD') + ' 23:59:59';
+        return db('visit')
+            .leftJoin('person', 'visit.pid', 'person.pid')
+            .select('visit.pcucode as HOSPCODE'
+                , 'visit.refertohos as HOSP_DESTINATION', 'visit.numberrefer as REFERID')
+            .select(db.raw(`concat(visit.pcucode,'-',visit.numberrefer) as REFERID_PROVINCE`))
+            .select('visit.pid as PID', 'person.idcard as CID', 'visit.visitno as SEQ'
+                , 'person.prename', 'person.fname', 'person.lname'
+                , 'person.birth as dob', 'person.sex'
+                , 'visit.visitdate as DATETIME_REFER', 'visit.visitdate as DATETIME_SERV'
+                , 'visit.symptoms as CHIEFCOMP', 'visit.vitalcheck as PI'
+                , 'visit.symptomsco as PH', 'visit.healthsuggest1 as PHYSICALEXAM'
             )
-            .where('refer.refer_date', date)
-            .orderBy('refer.refer_date')
+            .select(db.raw(`'jhcis' as his`))
+            .whereBetween('visit.visitdate', [date1, date2])
+            .whereRaw('!isnull(visit.numberrefer)')
+            .whereRaw('!isnull(refertohos)')
+            .orderBy('visit.visitdate')
             .limit(maxLimit);
     }
 
-    getPerson(db: Knex, columnName, searchText, hospCode=hcode) {
+    getPerson(db: Knex, columnName, searchText, hospCode = hcode) {
         //columnName = cid, hn
-        columnName = columnName === 'cid' ? 'no_card' : columnName;
-        return db('hospdata.patient')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('hn', 'no_card as cid', 'title as prename',
-                'name as fname', 'middlename as mname', 'surname as lname',
-                'birth as dob', 'sex', 'address', 'moo', 'road', 'soi',
-                'add as addcode', 'tel', 'zip', 'occupa as occupation')
+        columnName = columnName === 'hn' ? 'pid' : columnName;
+        columnName = columnName === 'cid' ? 'idcard' : columnName;
+        return db('person')
+            .select('person.pcucodeperson as HOSPCODE', 'person.pid as PID', 'person.pid as HN'
+                , 'person.idcard as CID', 'person.prename as PRENAME'
+                , 'person.fname as NAME', 'person.fname as FNAME', 'person.lname as LNAME'
+                , 'person.birth as BIRTH', 'person.sex as SEX', 'person.marystatus as MSTATUS'
+                , 'person.occupa as OCCUPATION_OLD'
+                , 'person.fatherid as FATHER', 'person.motherid as MOTHER'
+                , 'person.educate as EDUCATION', 'person.nation as NATION', 'person.origin as RACE'
+                , 'person.religion as RELIGION'
+                , 'person.bloodgroup as ABOGROUP', 'person.bloodrh as RHGROUP'
+                , 'person.telephoneperson as TELEPHONE', 'person.mobile as MOBILE'
+                , 'person.datestart as MOVEIN', 'person.dateexpire as DISCHARGE'
+                , 'person.dateupdate as D_UPDATE'
+            )
             .where(columnName, "=", searchText)
             .limit(maxLimit);
+
+        /*
+`HID` varchar(14) DEFAULT NULL,
+`OCCUPATION_NEW` varchar(3) DEFAULT NULL,
+`FSTATUS` varchar(1) DEFAULT NULL,
+`COUPLE` varchar(13) DEFAULT NULL,
+`VSTATUS` varchar(1) DEFAULT NULL,
+`DDISCHARGE` date DEFAULT NULL,
+`LABOR` varchar(2) DEFAULT NULL,
+`PASSPORT` varchar(15) DEFAULT NULL,
+`TYPEAREA` varchar(1) NOT NULL,
+`ID` varchar(25) DEFAULT NULL,
+`lastupdate` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP, 
+        */
     }
 
-    getAddress(db, columnName, searchNo, hospCode=hcode) {
-        columnName = columnName === 'cid' ? 'no_card' : columnName;
-        return db('view_address')
+    getAddress(db, columnName, searchNo, hospCode = hcode) {
+        columnName = columnName === 'cid' ? 'idcard' : columnName;
+        columnName = columnName === 'hn' ? 'pid' : columnName;
+        return db('person')
             .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
+            .select('pcucodeperson as HOSPCODE'
+                , 'pid as PID', 'hnomoi as HOUSENO'
+                , 'mumoi as VILLAGE', 'roadmoi as ROAD', 'subdistcodemoi as TAMBON'
+                , 'distcodemoi as AMPUR', 'provcodemoi as CHANGWAT'
+                , 'postcodemoi as ZIP', 'telephoneperson as TELEPHONE'
+                , 'mobile as MOBILE', 'person.idcard as CID'
+            )
+            .select(db.raw(`'1' as ADDRESSTYPE`))
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
+        /* 
+  `HOUSE_ID` varchar(11) DEFAULT NULL,
+  `HOUSETYPE` varchar(1) NOT NULL,
+  `ROOMNO` varchar(10) DEFAULT NULL,
+  `CONDO` varchar(75) DEFAULT NULL,
+  `SOISUB` varchar(255) DEFAULT NULL,
+  `SOIMAIN` varchar(255) DEFAULT NULL,
+  `VILLANAME` varchar(255) DEFAULT NULL,
+        */
     }
 
-    getService(db, columnName, searchText, hospCode=hcode) {
+    getService(db, columnName, searchText, hospCode = hcode) {
         //columnName = visitNo, hn
-        columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        return db('view_opd_visit')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('hn', 'vn as visitno', 'date as dateserv', 'time',
-                'time_drug as time_end', 'pttype_std2 as pttype',
-                'insclass as payment',
-                'dep_standard as clinic', 'dr',
-                'bp as bp_systolic', 'bp1 as bp_diastolic',
-                'puls as pr', 'rr', 'fu as appoint',
-                'status as result', 'refer as referin')
+        columnName = columnName === 'visitNo' ? 'visit.visitno' : columnName;
+        columnName = columnName === 'hn' ? 'visit.pid' : columnName;
+        columnName = columnName === 'cid' ? 'person.idcard' : columnName;
+        return db('visit')
+            .leftJoin('person', 'visit.pid', 'person.pid')
+            .leftJoin('cright', 'visit.rightcode', 'cright.rightcode')
+            .select('visit.pcucode as HOSPCODE', 'visit.pid as PID', 'visit.pid as HN'
+                , 'person.idcard as CID', 'visit.visitno as SEQ'
+                , 'visit.visitdate as DATE_SERV'
+                , 'visit.rightcode', 'cright.mapright as INSTYPE', 'visit.rightno as INSID'
+                , 'visit.hosmain as MAIN', 'visit.hosmain as HMAIN'
+                , 'visit.hossub as SUB', 'visit.hossub as HSUB'
+                , 'visit.symptoms as CHIEFCOMP', 'visit.vitalcheck as PRESENTILLNESS'
+                , 'visit.symptomsco as PASTHISTORY', 'visit.healthsuggest1 as PHYSICALEXAM'
+                , 'visit.weight as WEIGHT', 'visit.height as HEIGHT'
+                , 'visit.weight as temperature', 'visit.pulse as PR'
+                , 'visit.respri as RR', 'visit.waist as WAIST'
+                , 'visit.money1 as PRICE'
+                , 'visit.receivefromhos as REFERINHOSP', 'visit.refertohos as REFEROUTHOSP'
+            )
+            .select(db.raw(`REPLACE(visit.timestart, ':', '') as TIME_SERV`))
+            .select(db.raw(`case when isnull(visit.refertohos) then '' when visit.refer='06' then '3' else '1' end as CAUSEOUT`))
+            .select(db.raw(`case when isnull(visit.receivefromhos) then '1' else '3' end as TYPEIN`))
+            .select(db.raw(`case when LOCATE('/', visit.pressure)>0 then substr(visit.pressure,1,LOCATE('/', visit.pressure)-1) else '' end as SBP`))
+            .select(db.raw(`case when LOCATE('/', visit.pressure)>0 then substr(visit.pressure,LOCATE('/', visit.pressure)+1) else '' end as DBP`))
+            .select(db.raw(`'1' as LOCATION`))
+            .select(db.raw(`'1' as SERVPLACE`))
+            .select(db.raw(`concat(visit.visitdate,' ', visit.timestart) as D_UPDATE`))
             .where(columnName, searchText)
-            .orderBy('date', 'desc')
+            .orderBy('visit.visitdate', 'desc')
             .limit(maxLimit);
+        /* 
+        CAUSEIN
+  `INTIME` varchar(1) DEFAULT NULL,
+  `FAMILYHISTORY` text COMMENT 'ประวัติครอบครัว',
+  `TYPEOUT` varchar(1) DEFAULT NULL,
+  `COST` decimal(11,2) DEFAULT NULL,
+  `PAYPRICE` double(11,2) NOT NULL,
+  `ACTUALPAY` int(11) DEFAULT NULL,
+  `ID` varchar(25) DEFAULT NULL,
+  `OCCUPATION_NEW` varchar(6) DEFAULT NULL,
+
+  */
     }
 
-    getDiagnosisOpd(db, visitno, hospCode=hcode) {
-        return db('view_opd_dx as dx')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('vn as visitno', 'diag as diagcode', 'desc as diag_name',
-                'short_eng as en', 'short_thi as thi',
-                'type as diag_type', 'dr_dx as dr')
+    getDiagnosisOpd(db, visitno, hospCode = hcode) {
+        return db('visitdiag as dx')
+            .leftJoin('visit', 'dx.visitno', 'visit.visitno')
+            .leftJoin('person', 'visit.pid', 'person.pid')
+            .select('dx.pcucode as HOSPCODE', 'dx.visitno as SEQ'
+                , 'visit.pid as PID', 'person.idcard as CID', 'dx.clinic as CLINIC'
+                , 'dx.dxtype as DIAGTYPE', 'dx.doctordiag as PROVIDER'
+                , 'visit.visitdate as DATE_SERV', 'dx.dateupdate as D_UPDATE'
+            )
+            .select(db.raw(`REPLACE(dx.diagcode, '.', '') as DIAGCODE`))
             .select(db.raw(' "IT" as codeset'))
-            .where('vn', visitno)
+            .where('dx.visitno', visitno)
+            .orderBy('dx.dxtype')
             .limit(maxLimit);
+        /* DIAGNAME, `ID` ,`BR` `AIS` */
     }
 
-    getProcedureOpd(db, visitno, hospCode=hcode) {
-        return db('view_opd_op')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('vn as visitno', 'date', 'hn', 'op as op_code',
-                'desc as op_name', 'icd_9 as icdcm', 'dr')
-            .where('vn', "=", visitno)
-            .limit(maxLimit);
+    getProcedureOpd(db, visitno, hospCode = hcode) {
+        return [];
     }
 
-    getChargeOpd(db, visitNo, hospCode=hcode) {
+    getChargeOpd(db, visitNo, hospCode = hcode) {
         return db('view_opd_charge_item')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
@@ -98,83 +178,80 @@ export class HisJhcisModel {
             .limit(maxLimit);
     }
 
-    getLabRequest(db, columnName, searchNo, hospCode=hcode) {
+    getLabRequest(db, columnName, searchNo, hospCode = hcode) {
+        columnName = columnName === 'visitNo' ? 'visitno' : columnName;
+        columnName = columnName === 'hn' ? 'pid' : columnName;
+        return [];
+    }
+
+    getLabResult(db, columnName, searchNo, hospCode = hcode) {
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        return db('view_lab_request_item as lab')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('vn as visitno', 'lab.hn as hn', 'lab.an as an',
-                'lab.lab_no as request_id',
-                'lab.lab_code as lab_code',
-                'lab.lab_name as lab_name',
-                'lab.loinc as loinc',
-                'lab.icdcm as icdcm',
-                'lab.standard as cgd',
-                'lab.cost as cost',
-                'lab.lab_price as price',
-                'lab.date as request_date')
-            .where(columnName, "=", searchNo)
+        return [];
+    }
+
+    getDrug(db: Knex, visitNo) {
+        return db('visitdrug as drug')
+            .innerJoin('visit', 'drug.visitno', 'visit.visitno')
+            .leftJoin('cdrug as lib', 'drug.drugcode', 'lib.drugcode')
+            .leftJoin('chospital', 'visit.pcucode', 'chospital.hoscode')
+            .select('drug.*', 'drug.pcucode as hospcode', 'chospital.hosname as hospname'
+                , 'lib.drugname', 'visit.visitdate as date_serv', 'visit.timestart as time_serv'
+                , 'lib.pack', 'lib.unitsell as unit_sell', 'lib.unitusage as unit_use', 'lib.cost', 'lib.sell as price'
+                , 'lib.drugcaution as caution', 'lib.drugcode24 as code24'
+                , 'lib.tcode as tmt', 'lib.drugproperties as comment')
+            .where('drug.visitno', "=", visitNo)
+            .where('lib.drugtype', "=", '01')
+            .orderBy('visit.visitdate', 'desc')
+            .orderBy('visit.timestart', 'desc');
+    }
+
+    getDrugOpd(db, visitNo, hospCode = hcode) {
+        return db('visitdrug as drug')
+            .leftJoin('visit', 'drug.visitno', 'visit.visitno')
+            .leftJoin('person', 'visit.pid', 'person.pid')
+            .leftJoin('cdrug', 'drug.drugcode', 'cdrug.drugcode')
+            .leftJoin('cdrugunitsell', 'cdrug.unitsell', 'cdrugunitsell.unitsellcode')
+            .select('drug.pcucode as HOSPCODE'
+                , 'drug.visitno as SEQ', 'visit.pid as PID', 'person.idcard as CID'
+                , 'visit.visitdate as DATE_SERV', 'drug.clinic as CLINIC'
+                , 'drug.drugcode', 'drug.unit as AMOUNT'
+                , 'cdrug.unitsell as UNIT', 'cdrugunitsell.unitsellname as UNIT_PACKING'
+                , 'cdrug.drugname as DNAME', 'drug.realprice as DRUGPRICE'
+                , 'drug.costprice as DRUGCOST'
+                , 'drug.dose as drug_usage', 'cdrug.drugproperties as caution'
+                , 'cdrug.drugcode24 as DIDSTD', 'cdrug.drugcode24 as DID'
+                , 'cdrug.tmtcode as DID_TMT'
+                , 'drug.doctor1 as PROVIDER', 'drug.dateupdate as D_UPDATE'
+            )
+            // .select(db.raw(`drug.unit*drug.realprice as DRUGPRICE`))
+            // .select(db.raw(`drug.unit*drug.costprice as DRUGCOST`))
+            .where('drug.visitno', visitNo)
+            .where('cdrug.drugtype', '01')
             .limit(maxLimit);
     }
 
-    getLabResult(db, columnName, searchNo, hospCode=hcode) {
+    getAdmission(db, columnName, searchNo, hospCode = hcode) {
+        return [];
+    }
+
+    getDiagnosisIpd(db, columnName, searchNo, hospCode = hcode) {
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        return db('view_lab_result')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where(columnName, "=", searchNo)
-            .limit(maxLimit);
+        return [];
     }
 
-    getDrugOpd(db, visitNo, hospCode=hcode) {
-        return db('view_pharmacy_opd_drug as drug')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('drug.*')
-            .where('vn', visitNo)
-            .limit(maxLimit);
+    getProcedureIpd(db, an, hospCode = hcode) {
+        return [];
     }
 
-    getAdmission(db, columnName, searchNo, hospCode=hcode) {
-        return db('view_ipd')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where(columnName, "=", searchNo)
-            .limit(maxLimit);
+    getChargeIpd(db, an, hospCode = hcode) {
+        return [];
     }
 
-    getDiagnosisIpd(db, columnName, searchNo, hospCode=hcode) {
-        columnName = columnName === 'visitNo' ? 'vn' : columnName;
-        return db('diagnosis_ipd')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where(columnName, "=", searchNo)
-            .limit(maxLimit);
+    getDrugIpd(db, an, hospCode = hcode) {
+        return [];
     }
 
-    getProcedureIpd(db, an, hospCode=hcode) {
-        return db('procedure_ipd')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('an', an)
-            .limit(maxLimit);
-    }
-
-    getChargeIpd(db, an, hospCode=hcode) {
-        return db('charge_ipd')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('an', "=", an)
-            .limit(maxLimit);
-    }
-
-    getDrugIpd(db, an, hospCode=hcode) {
-        return db('drug_ipd')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('an', an)
-            .limit(maxLimit);
-    }
-
-    getAccident(db, visitNo, hospCode=hcode) {
+    getAccident(db, visitNo, hospCode = hcode) {
         return db('accident')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
@@ -182,7 +259,7 @@ export class HisJhcisModel {
             .limit(maxLimit);
     }
 
-    getDrugAllergy(db, hn, hospCode=hcode) {
+    getDrugAllergy(db, hn, hospCode = hcode) {
         return db('view_drug_allergy')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
@@ -190,7 +267,7 @@ export class HisJhcisModel {
             .limit(maxLimit);
     }
 
-    getAppointment(db, visitNo, hospCode=hcode) {
+    getAppointment(db, visitNo, hospCode = hcode) {
         return db('view_opd_fu')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
@@ -198,7 +275,7 @@ export class HisJhcisModel {
             .limit(maxLimit);
     }
 
-    getReferHistory(db, columnName, searchNo, hospCode=hcode) {
+    getReferHistory(db, columnName, searchNo, hospCode = hcode) {
         //columnName = visitNo, referNo
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
         columnName = columnName === 'referNo' ? 'refer_no' : columnName;
@@ -209,7 +286,7 @@ export class HisJhcisModel {
             .limit(maxLimit);
     }
 
-    getClinicalRefer(db, referNo, hospCode=hcode) {
+    getClinicalRefer(db, referNo, hospCode = hcode) {
         return db('view_clinical_refer')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
@@ -217,7 +294,7 @@ export class HisJhcisModel {
             .limit(maxLimit);
     }
 
-    getInvestigationRefer(db, referNo, hospCode=hcode) {
+    getInvestigationRefer(db, referNo, hospCode = hcode) {
         return db('view_investigation_refer')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
@@ -225,7 +302,7 @@ export class HisJhcisModel {
             .limit(maxLimit);
     }
 
-    getCareRefer(db, referNo, hospCode=hcode) {
+    getCareRefer(db, referNo, hospCode = hcode) {
         return db('view_care_refer')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
@@ -233,7 +310,7 @@ export class HisJhcisModel {
             .limit(maxLimit);
     }
 
-    getReferResult(db, hospDestination, referNo, hospCode=hcode) {
+    getReferResult(db, hospDestination, referNo, hospCode = hcode) {
         return db('view_refer_result')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
@@ -242,7 +319,7 @@ export class HisJhcisModel {
             .limit(maxLimit);
     }
 
-    getData(db, tableName, columnName, searchNo, hospCode=hcode) {
+    getData(db, tableName, columnName, searchNo, hospCode = hcode) {
         return db(tableName)
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('*')
