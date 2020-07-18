@@ -17,9 +17,7 @@ export class HisJhcisModel {
     }
 
     // select รายชื่อเพื่อแสดงทะเบียน
-    getReferOut(db: Knex, date, hospCode = hcode) {
-        const date1 = moment(date).format('YYYY-MM-DD');
-        const date2 = moment(date).format('YYYY-MM-DD') + ' 23:59:59';
+    getReferOut(db: Knex, date: any, hospCode = hcode) {
         return db('visit')
             .leftJoin('person', 'visit.pid', 'person.pid')
             .select('visit.pcucode as HOSPCODE'
@@ -28,15 +26,40 @@ export class HisJhcisModel {
             .select('visit.pid as PID', 'person.idcard as CID', 'visit.visitno as SEQ'
                 , 'person.prename', 'person.fname', 'person.lname'
                 , 'person.birth as dob', 'person.sex'
-                , 'visit.visitdate as DATETIME_REFER', 'visit.visitdate as DATETIME_SERV'
                 , 'visit.symptoms as CHIEFCOMP', 'visit.vitalcheck as PI'
                 , 'visit.symptomsco as PH', 'visit.healthsuggest1 as PHYSICALEXAM'
+                , 'visit.diagnote as DIAGLAST'
+                , 'visit.receivefromhos as HOSPCODE_ORIGIN'
             )
-            .whereBetween('visit.visitdate', [date1, date2])
+            .select(db.raw(`concat(visit.visitdate,' ',visit.timestart) as DATETIME_SERV`))
+            .select(db.raw(`concat(visit.visitdate,' ',visit.timeend) as DATETIME_REFER`))
+            .select(db.raw(`case when isnull(visit.refertohos) then '' when visit.refer='06' then '3' else '1' end as CAUSEOUT`))
+            .select(db.raw(`'5' as EMERGENCY`))
+            .select(db.raw(`'1' as PTYPE`))
+            .select(db.raw(`'99' as PTYPEDIS`))
+            .select(db.raw(`'1' as referout_type`))
+            .select(db.raw(`concat(visit.visitdate,' ', visit.timeend) as D_UPDATE`))
+            .where('visit.visitdate', date)
             .whereRaw('!isnull(visit.numberrefer)')
             .whereRaw('!isnull(refertohos)')
             .orderBy('visit.visitdate')
             .limit(maxLimit);
+        /*
+        `AN` varchar(9) DEFAULT NULL,
+        `REFERID_ORIGIN` varchar(10) DEFAULT NULL,
+        `DATETIME_ADMIT` datetime DEFAULT NULL,
+        `CLINIC_REFER` varchar(5) DEFAULT NULL,
+        `FH` text COMMENT 'Famiry history',
+        `DIAGFIRST` varchar(255) DEFAULT NULL,
+        `PSTATUS` varchar(255) DEFAULT NULL,
+        `REQUEST` varchar(255) DEFAULT NULL,
+        `PROVIDER` varchar(15) DEFAULT NULL,
+        `ID` varchar(21) DEFAULT NULL,
+        `MAKEDATETIME` datetime DEFAULT NULL,
+        `RECORDSTATUS` varchar(10) DEFAULT NULL,
+        `destination_req` varchar(6) DEFAULT NULL,
+        `destination_seq` varchar(15) DEFAULT NULL,
+        */
     }
 
     getReferHistory(db, columnName, searchNo, hospCode = hcode) {
@@ -52,10 +75,19 @@ export class HisJhcisModel {
             .select('visit.pid as PID', 'person.idcard as CID', 'visit.visitno as SEQ'
                 , 'person.prename', 'person.fname', 'person.lname'
                 , 'person.birth as dob', 'person.sex'
-                , 'visit.visitdate as DATETIME_REFER', 'visit.visitdate as DATETIME_SERV'
                 , 'visit.symptoms as CHIEFCOMP', 'visit.vitalcheck as PI'
                 , 'visit.symptomsco as PH', 'visit.healthsuggest1 as PHYSICALEXAM'
+                , 'visit.diagnote as DIAGLAST'
+                , 'visit.receivefromhos as HOSPCODE_ORIGIN'
             )
+            .select(db.raw(`concat(visit.visitdate,' ',visit.timestart) as DATETIME_SERV`))
+            .select(db.raw(`concat(visit.visitdate,' ',visit.timeend) as DATETIME_REFER`))
+            .select(db.raw(`case when isnull(visit.refertohos) then '' when visit.refer='06' then '3' else '1' end as CAUSEOUT`))
+            .select(db.raw(`'5' as EMERGENCY`))
+            .select(db.raw(`'1' as PTYPE`))
+            .select(db.raw(`'99' as PTYPEDIS`))
+            .select(db.raw(`'1' as referout_type`))
+            .select(db.raw(`concat(visit.visitdate,' ', visit.timeend) as D_UPDATE`))
             .where(columnName, "=", searchNo)
             .whereRaw('!isnull(visit.numberrefer)')
             .whereRaw('!isnull(refertohos)')
