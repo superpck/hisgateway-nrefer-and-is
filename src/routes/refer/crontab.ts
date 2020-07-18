@@ -105,10 +105,18 @@ async function sendMoph(req, reply, db) {
   }
 
   const hourNow = +moment().locale('th').get('hours');
-  if (hourNow < 8 || hourNow === 12 ||
-    hourNow === 18 || hourNow === 22) {
+  const minuteNow = +moment().locale('th').get('minutes');
+  if ((hourNow == 1 || hourNow == 8 || hourNow == 12 || hourNow == 18 || hourNow == 22) 
+    && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
     const date = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
     await getRefer_out(db, date);
+  } else if (hourNow == 3 && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
+    // ตี 3 get ย้อนหลัง 1 สัปดาห์
+    let oldDate = moment(dateNow).subtract(7, 'days').format('YYYY-MM-DD');
+    while (oldDate < dateNow) {
+      await getRefer_out(db, oldDate);
+      oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
+    }
   }
 
   return await getRefer_out(db, dateNow);
@@ -186,12 +194,12 @@ async function sendReferOut(row, sentResult) {
       HOSPCODE: hcode,
       REFERID: referId,
       PID: row.PID || row.pid || row.HN || row.hn,
-      SEQ: (row.SEQ || row.seq || '')+'',
+      SEQ: (row.SEQ || row.seq || '') + '',
       AN: row.AN || row.an || '',
       CID: row.CID || row.cid,
-      DATETIME_SERV: moment(dServe).format('YYYY-MM-DD'),
-      DATETIME_ADMIT: moment(dAdmit).format('YYYY-MM-DD') || null,
-      DATETIME_REFER: moment(dRefer).format('YYYY-MM-DD'),
+      DATETIME_SERV: moment(dServe).format('YYYY-MM-DD HH:mm:ss'),
+      DATETIME_ADMIT: moment(dAdmit).format('YYYY-MM-DD HH:mm:ss') || null,
+      DATETIME_REFER: moment(dRefer).format('YYYY-MM-DD HH:mm:ss'),
       HOSP_DESTINATION: destHosp,
       REFERID_ORIGIN: row.REFERID_ORIGIN || row.referid_origin || '',
       HOSPCODE_ORIGIN: row.HOSPCODE_ORIGIN || row.hospcode_origin || '',
@@ -201,18 +209,19 @@ async function sendReferOut(row, sentResult) {
       DIAGFIRST: row.DIAGFIRST || row.diagfirst || '',
       DIAGLAST: row.DIAGLAST || row.diaglast || '',
       PSTATUS: row.PSTATUS || row.ptstatus || '',
-      PTYPE: row.PTYPE || row.ptype || '',
-      EMERGENCY: row.EMERGENCY || row.emergency || '',
-      PTYPEDIS: row.PTYPEDIS || row.ptypedis || '',
+      PTYPE: row.PTYPE || row.ptype || '1',
+      EMERGENCY: row.EMERGENCY || row.emergency || '5',
+      PTYPEDIS: row.PTYPEDIS || row.ptypedis || '99',
       CAUSEOUT: row.CAUSEOUT || row.causeout || '',
       REQUEST: row.REQUEST || row.request || '',
       PROVIDER: row.PROVIDER || row.provider || '',
       REFERID_PROVINCE: referProvId,
+      referout_type: row.referout_type || 1,
       D_UPDATE: row.D_UPDATE || row.d_update || d_update,
       his: hisProvider,
       typesave: 'autosent'
     }
-    
+
     const saveResult: any = await referSending('/save-refer-history', data);
     if (saveResult.statusCode == 200) {
       sentResult.referout.success += 1;
@@ -355,7 +364,7 @@ async function getService(db, visitNo, sentResult) {
         sentResult.service.success += 1;
       } else {
         sentResult.service.fail += 1;
-        console.log('save-service' ,data.SEQ, saveResult);
+        console.log('save-service', data.SEQ, saveResult);
       }
     }
   }
@@ -369,19 +378,19 @@ async function getDiagnosisOpd(db, visitNo, sentResult) {
     let r = [];
     for (const row of rows) {
       await r.push({
-        HOSPCODE: row.HOSPCODE || row.hospcode ,
-        PID: row.PID || row.pid ,
-        SEQ: row.SEQ || row.seq ,
-        DATE_SERV: row.DATE_SERV || row.date_serv ,
-        DIAGTYPE: row.DIAGTYPE || row.diagtype ,
-        DIAGCODE: row.DIAGCODE || row.diagcode ,
+        HOSPCODE: row.HOSPCODE || row.hospcode,
+        PID: row.PID || row.pid,
+        SEQ: row.SEQ || row.seq,
+        DATE_SERV: row.DATE_SERV || row.date_serv,
+        DIAGTYPE: row.DIAGTYPE || row.diagtype,
+        DIAGCODE: row.DIAGCODE || row.diagcode,
         DIAGNAME: row.DIAGNAME || row.diagname || '',
         CLINIC: row.CLINIC || row.clinic || '',
         PROVIDER: row.PROVIDER || row.provider || '',
         D_UPDATE: row.D_UPDATE || row.d_update,
-        ID: row.ID || row.id || '' ,
-        BR: row.BR || row.br || '' ,
-        AIS: row.AIS || row.ais || '' ,
+        ID: row.ID || row.id || '',
+        BR: row.BR || row.br || '',
+        AIS: row.AIS || row.ais || '',
         CID: row.CID || row.cid || ''
       });
     }
@@ -392,7 +401,7 @@ async function getDiagnosisOpd(db, visitNo, sentResult) {
       sentResult.diagnosisOpd.success += 1;
     } else {
       sentResult.diagnosisOpd.fail += 1;
-      console.log('save-diagnosis-opd' ,visitNo, saveResult);
+      console.log('save-diagnosis-opd', visitNo, saveResult);
     }
   }
   return rows;
