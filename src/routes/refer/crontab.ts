@@ -84,6 +84,7 @@ const resultText = 'sent_result.txt';
 let sentContent = '';
 let nReferToken: any = '';
 let crontabConfig: any;
+let apiVersion: string = '-';
 
 async function sendMoph(req, reply, db) {
   const dateNow = moment().locale('th').format('YYYY-MM-DD');
@@ -111,7 +112,7 @@ async function sendMoph(req, reply, db) {
     const date = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
     await getRefer_out(db, date);
   } else if (hourNow == 3 && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
-    // ตี 3 get ย้อนหลัง 1 สัปดาห์
+    // เวลา 03:00 get ย้อนหลัง 1 สัปดาห์
     let oldDate = moment(dateNow).subtract(7, 'days').format('YYYY-MM-DD');
     while (oldDate < dateNow) {
       await getRefer_out(db, oldDate);
@@ -614,7 +615,7 @@ async function referSending(path, dataArray) {
   const dataSending = querystring.stringify({
     hospcode: hcode, data: JSON.stringify(dataArray),
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    sourceApiName: 'HIS-Gateway-API'
+    sourceApiName: 'HIS-Gateway version ' + apiVersion
   });
 
   const options = {
@@ -762,12 +763,10 @@ async function writeResult(file, content) {
   });
 }
 
-
-
-
 const router = (request: fastify.Request, reply: fastify.Reply, dbConn: any, config = {}) => {
   crontabConfig = config;
   console.log(crontabConfig);
+  apiVersion = crontabConfig.version ? crontabConfig.version : '-';
   return sendMoph(request, reply, dbConn);
 };
 module.exports = router;

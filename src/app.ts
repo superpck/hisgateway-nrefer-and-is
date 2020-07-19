@@ -168,8 +168,8 @@ app.register(require('./plugins/db'), {
 // node-cron =========================================
 const timingSch = '0 */1 * * * *';  // every minute
 let timingSchedule: any = [];
-timingSchedule['isonline'] = {};
-timingSchedule['nrefer'] = {};
+timingSchedule['isonline'] = { version: '3.1.1' };
+timingSchedule['nrefer'] = { version: '3.1.1' };
 
 // Check IS-Online Auto Send
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;
