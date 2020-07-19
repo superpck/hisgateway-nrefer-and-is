@@ -765,7 +765,6 @@ async function writeResult(file, content) {
 
 const router = (request: fastify.Request, reply: fastify.Reply, dbConn: any, config = {}) => {
   crontabConfig = config;
-  console.log(crontabConfig);
   apiVersion = crontabConfig.version ? crontabConfig.version : '-';
   return sendMoph(request, reply, dbConn);
 };
