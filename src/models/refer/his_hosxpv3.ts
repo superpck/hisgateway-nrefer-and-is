@@ -16,29 +16,32 @@ export class HisHosxpv3Model {
 
     //select รายชื่อเพื่อแสดงทะเบียน refer
     async getReferOut(db: Knex, date, hospCode = hcode) {
-        //columnName => date
-        // IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,(SELECT vn from ovst WHERE an=r.vn),r.vn) as vn,
-        // IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,(SELECT seq_id from ovst_seq WHERE vn=((SELECT vn from ovst WHERE an=r.vn))),(SELECT seq_id from ovst_seq WHERE vn=r.vn)) as seq,
         const sql = `
-            SELECT (SELECT hospitalcode FROM opdconfig ) AS hospcode,
-                concat(r.refer_date, ' ', r.refer_time) AS refer_date,
-                r.refer_number AS referid,
-                r.refer_hospcode AS hosp_destination,
-                r.hn AS PID, r.hn AS hn, pt.cid AS CID, r.vn, r.vn as SEQ,
-                pt.pname AS prename,
-                pt.fname AS fname,
-                pt.lname AS lname,
-                pt.birthday AS dob,
-                pt.sex AS sex,
-                r.pdx AS dx, r.pdx AS DIAGFIRST,
-                IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,r.vn,null) as an
-            FROM
-                referout r
-                INNER JOIN patient pt ON pt.hn = r.hn
-            WHERE
-                r.refer_date = '${date}' and r.refer_hospcode!='' and !isnull(r.refer_hospcode)
-            ORDER BY
-                r.refer_date`;
+        SELECT (SELECT hospitalcode FROM opdconfig ) AS hospcode,
+            concat(r.refer_date, ' ', r.refer_time) AS refer_date,
+            r.refer_number AS referid,
+            r.refer_hospcode AS hosp_destination,
+            r.hn AS PID, r.hn AS hn, pt.cid AS CID, r.vn, r.vn as SEQ,
+            an_stat.an as AN, pt.pname AS prename,
+            pt.fname AS fname,
+            pt.lname AS lname,
+            pt.birthday AS dob,
+            pt.sex AS sex,
+            r.request_text as REQUEST,
+            r.pdx AS dx, r.pre_diagnosis AS DIAGFIRST,
+            r.pmh as PH,
+            r.hpi as PI,
+            r.treatment_text as PHYSICALEXAM,
+            r.pre_diagnosis as DISGLAST,
+            IF((SELECT count(an) as cc from an_stat WHERE an =r.vn) = 1,r.vn,null) as an
+        FROM
+            referout r
+            INNER JOIN patient pt ON pt.hn = r.hn
+            left join an_stat on r.vn=an_stat.vn
+        WHERE
+            r.refer_date = '${date}' and r.refer_hospcode!='' and !isnull(r.refer_hospcode)
+        ORDER BY
+            r.refer_date`;
 
         // const sql2 = `
         //     select 
@@ -72,66 +75,67 @@ export class HisHosxpv3Model {
     }
 
     async getPerson(db: Knex, columnName, searchText, hospCode = hcode) {
-        //columnName => hn
+        columnName = columnName == 'hn' ? 'p.hn' : columnName;
+        columnName = columnName == 'cid' ? 'p.cid' : columnName;
+        columnName = columnName == 'name' ? 'p.fname' : columnName;
+        columnName = columnName == 'hid' ? 'h.house_id' : columnName;
         const sql = `
-            select
-                (select hospitalcode from opdconfig) HOSPCODE
-                ,p.cid CID
-                ,h.house_id HID
-                ,pn.provis_code PRENAME
-                ,p.fname NAME
-                ,p.lname LNAME
-                ,pt.hn HN
-                ,pt.hn PID
-                ,p.sex SEX
-                ,p.birthdate BIRTH
-                ,if(p.marrystatus in (1,2,3,4,5,6),p.marrystatus,'9') MSTATUS
-                ,ifnull(o.occupation,'000') OCCUPATION_OLD
-                ,ifnull(o.nhso_code,'9999') OCCUPATION_NEW
-                ,ifnull(nt0.nhso_code,'099') RACE
-                ,ifnull(nt1.nhso_code,'099') NATION
-                ,ifnull(p.religion,'01') RELIGION
-                ,if(e.provis_code is null,'9',e.provis_code) EDUCATION
-                ,if(p.person_house_position_id=1,'1','2') FSTATUS
-                ,p.father_cid FATHER
-                ,p.mother_cid MOTHER
-                ,p.sps_cid COUPLE
-                ,(select case 
-                    when (select person_duty_id from person_village_duty where person_id =p.person_id) in ('1','2','4','5') then '1'
-                    when (select person_duty_id from person_village_duty where person_id =p.person_id) in ('6') then '2'
-                    when (select person_duty_id from person_village_duty where person_id =p.person_id) in ('3') then '3'
-                    when (select person_duty_id from person_village_duty where person_id =p.person_id) in ('10') then '4'
-                    when (select person_duty_id from person_village_duty where person_id =p.person_id) in ('7','8','9') then '5'
-                    else '5' 
-                end) VSTATUS
-                ,p.movein_date MOVEIN
-                ,ifnull(p.person_discharge_id,'9') DISCHARGE
-                ,p.discharge_date DDISCHARGE
-                ,case 
-                    when @blood='A' then '1'
-                    when @blood='B' then '2'
-                    when @blood='AB' then '3'
-                    when @blood='O' then '4'
-                    else '9' 
-                end ABOGROUP
-                ,p.bloodgroup_rh RHGROUP                
-                ,pl.nhso_code LABOR
-                ,space(8) PASSPORT
-                ,if(p.house_regist_type_id in (1,2,3,4),p.house_regist_type_id,'4') TYPEAREA
-                ,p.last_update D_UPDATE
-            
-            from person p
-                left join house h on p.house_id=h.house_id
-                left join pname pn on pn.name=p.pname
-                left join occupation o on o.occupation=p.occupation
-                left join nationality nt0 on nt0.nationality=p.citizenship
-                left join nationality nt1 on nt1.nationality=p.nationality
-                left join provis_religion r on r.code=p.religion
-                left join education e on e.education=p.education
-                left join person_labor_type pl on pl.person_labor_type_id=p.person_labor_type_id   
-                left join (select hn,cid as pt_cid from patient) pt ON pt.pt_cid=p.cid
-
-            where pt.${columnName}="${searchText}"
+        SELECT  (select hospitalcode from opdconfig) as HOSPCODE
+            ,h.house_id HID
+            ,p.cid as CID
+            ,p.pname as PRENAME
+            ,p.fname as NAME
+            ,p.lname as LNAME
+            ,p.hn as HN
+            ,p.hn as PID
+            ,p.sex as SEX
+            ,p.birthday as BIRTH
+            ,if(p.marrystatus in (1,2,3,4,5,6),p.marrystatus,'9') as MSTATUS
+            ,if(person.person_house_position_id=1,'1','2') FSTATUS
+            ,ifnull(o.occupation,'000') as OCCUPATION_OLD
+            ,ifnull(o.nhso_code,'9999') as OCCUPATION_NEW
+            ,ifnull(nt0.nhso_code,'099') as RACE
+            ,ifnull(nt1.nhso_code,'099') as NATION
+            ,ifnull(p.religion,'01') as RELIGION
+            ,if(e.provis_code is null,'9',e.provis_code) as EDUCATION
+            ,p.father_cid as FATHER
+            ,p.mother_cid as MOTHER
+            ,p.couple_cid COUPLE
+            ,(select case 
+                when (select person_duty_id from person_village_duty where person_id =p.cid) in ('1','2','4','5') then '1'
+                when (select person_duty_id from person_village_duty where person_id =p.cid) in ('6') then '2'
+                when (select person_duty_id from person_village_duty where person_id =p.cid) in ('3') then '3'
+                when (select person_duty_id from person_village_duty where person_id =p.cid) in ('10') then '4'
+                when (select person_duty_id from person_village_duty where person_id =p.cid) in ('7','8','9') then '5'
+                else '5' 
+            end) VSTATUS
+            ,person.movein_date MOVEIN
+            ,ifnull(person.person_discharge_id,'9') DISCHARGE
+            ,person.discharge_date DDISCHARGE
+            ,case 
+                when @blood='A' then '1'
+                when @blood='B' then '2'
+                when @blood='AB' then '3'
+                when @blood='O' then '4'
+                else '9' 
+            end ABOGROUP
+            ,p.bloodgroup_rh as RHGROUP                
+            ,pl.nhso_code LABOR
+            ,p.passport_no as PASSPORT
+            ,p.type_area as TYPEAREA
+            ,p.mobile_phone_number as MOBILE
+            ,p.deathday as dead
+            ,p.last_update as D_UPDATE
+        from patient as p
+            left join person on p.hn=person.patient_hn
+            left join house h on person.house_id=h.house_id
+            left join occupation o on o.occupation=p.occupation
+            left join nationality nt0 on nt0.nationality=p.citizenship
+            left join nationality nt1 on nt1.nationality=p.nationality
+            left join provis_religion r on r.code=p.religion
+            left join education e on e.education=p.educate
+            left join person_labor_type pl on person.person_labor_type_id=pl.person_labor_type_id
+            where ${columnName}="${searchText}"
         `;
         const result = await db.raw(sql);
         return result[0];
