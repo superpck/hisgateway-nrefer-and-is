@@ -42,7 +42,7 @@ http://localhost:<port>/setup-api
 
 หากต้องการให้ OS start pm2 ทุกครั้งที่เปิดเครื่องให้ใช้คำสั่งดังนี้
 
-# Linux} MacOS
+# Linux, MacOS
 -------------------
 > pm2 startup  ทำครั้งเดียว
 
