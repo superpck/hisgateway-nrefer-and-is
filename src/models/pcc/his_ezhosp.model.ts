@@ -19,8 +19,8 @@ export class PccHisEzhospModel {
         columnName = columnName === 'cid' ? 'no_card' : columnName;
         columnName = columnName === 'pid' ? 'hn' : columnName;
         return db('patient')
-            .select(db.raw(`'${hospCode}' as hospcode`))
-            .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
+            .select(db.raw(`(select hcode from sys_hospital limit 1) as hospcode
+                ,(select hname from sys_hospital limit 1) as hospname`))
             .select('patient.hn', 'patient.hn as pid', 'patient.no_card as cid'
                 , 'patient.no_card as idcard', 'patient.title as prename'
                 , 'patient.name as fname', 'patient.surname as lname'
@@ -41,8 +41,8 @@ export class PccHisEzhospModel {
             where += ` and surname like "${lname}%" `;
         }
         return db('patient')
-            .select(db.raw(`'${hospCode}' as hospcode`))
-            .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
+            .select(db.raw(`(select hcode from sys_hospital limit 1) as hospcode
+                ,(select hname from sys_hospital limit 1) as hospname`))
             .select('patient.hn', 'patient.hn as pid', 'patient.no_card as cid'
                 , 'patient.no_card as idcard', 'patient.title as prename'
                 , 'patient.name as fname', 'patient.surname as lname'
@@ -62,20 +62,25 @@ export class PccHisEzhospModel {
         return db('opd_visit as visit')
             .leftJoin('opd_vs as vs', 'visit.vn', 'vs.vn')
             .leftJoin('patient', 'visit.hn', 'patient.hn')
-            .select(db.raw(`'${hospCode}' as hospcode`))
-            .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
+            .leftJoin('lib_pttype as p', 'visit.pttype', 'p.code')
+            .leftJoin('lib_clinic as clinic', 'visit.dep', 'clinic.code')
+            .leftJoin('lib_dr as dr', 'visit.dr', 'dr.code')
+            .select(db.raw(`(select hcode from sys_hospital limit 1) as hospcode
+                ,(select hname from sys_hospital limit 1) as hospname`))
             .select('patient.no_card as idcard', 'visit.hn as pid', 'visit.hn'
                 , 'visit.vn as visitno'
                 , 'visit.date', 'visit.date as date_serv', 'visit.time_reg as time'
                 , 'visit.time as time_serv', 'vs.time_vs'
-                , 'visit.pttype', 'visit.hospmain'
+                , 'visit.dep as clinic', 'clinic.clinic as clinic_name'
+                , 'visit.pttype', 'p.text as pttype_text', 'visit.hospmain'
                 , 'visit.hospsub', 'patient.tel'
                 , 'vs.bp as bp_systolic', 'vs.bp1 as bp_diastolic'
                 , 'vs.weigh as weight', 'vs.high as height'
                 , 'vs.bmi', 'vs.puls as pr', 'vs.rr', 'vs.t as temperature'
                 , 'vs.t as tem', 'vs.waistline as waist'
                 , 'vs.cc', 'vs.pi'
-                , 'vs.nurse_ph as ph')
+                , 'vs.nurse_ph as ph', 'visit.dr as provider')
+            .select(db.raw(`concat(dr.title, dr.fname, ' ', dr.lname) as provider_name`))
             .where(where)
             .whereNotIn('visit.status', [8, 20])
             .where('visit.date', '>', backwardService)
@@ -96,20 +101,25 @@ export class PccHisEzhospModel {
         return db('opd_visit as visit')
             .leftJoin('opd_vs as vs', 'visit.vn', 'vs.vn')
             .leftJoin('patient', 'visit.hn', 'patient.hn')
-            .select(db.raw(`'${hospCode}' as hospcode`))
-            .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
+            .leftJoin('lib_pttype as p', 'visit.pttype', 'p.code')
+            .leftJoin('lib_clinic as clinic', 'visit.dep', 'clinic.code')
+            .leftJoin('lib_dr as dr', 'visit.dr', 'dr.code')
+            .select(db.raw(`(select hcode from sys_hospital limit 1) as hospcode
+                ,(select hname from sys_hospital limit 1) as hospname`))
             .select('patient.no_card as idcard', 'visit.hn as pid', 'visit.hn'
                 , 'visit.vn as visitno'
                 , 'visit.date', 'visit.date as visitdate', 'visit.time_reg as time'
                 , 'visit.time as timestart', 'vs.time_vs'
-                , 'visit.pttype', 'visit.hospmain'
+                , 'visit.dep as clinic', 'clinic.clinic as clinic_name'
+                , 'visit.pttype', 'p.text as pttype_text', 'visit.hospmain'
                 , 'visit.hospsub'
                 , 'vs.bp as bp_systolic', 'vs.bp1 as bp_diastolic'
                 , 'vs.weigh as weight', 'vs.high as height'
                 , 'vs.bmi', 'vs.puls as pr', 'vs.rr', 'vs.t as temperature'
                 , 'vs.t as tem', 'vs.waistline as waist'
                 , 'vs.cc', 'vs.pi'
-                , 'vs.nurse_ph as ph')
+                , 'vs.nurse_ph as ph', 'visit.dr as provider')
+            .select(db.raw(`concat(dr.title, dr.fname, ' ', dr.lname) as provider_name`))
             .where(searchType, searchValue)
             .whereNotIn('visit.status', [8, 20])
             .where('visit.date', '>', backwardService)
@@ -121,8 +131,8 @@ export class PccHisEzhospModel {
         return db('opd_dx as dx')
             .innerJoin('opd_visit as visit', 'dx.vn', 'visit.vn')
             .leftJoin('lib_icd10 as lib', 'dx.diag', 'lib.code')
-            .select(db.raw(`'${hospCode}' as hospcode`))
-            .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
+            .select(db.raw(`(select hcode from sys_hospital limit 1) as hospcode
+                ,(select hname from sys_hospital limit 1) as hospname`))
             .select('dx.*', 'dx.diag as diagcode'
                 , 'lib.desc as diagname', 'lib.short_thi as diagnamethai'
                 , 'visit.date as date_serv', 'visit.time as time_serv')
@@ -135,8 +145,8 @@ export class PccHisEzhospModel {
     getDiagnosis(db: Knex, visitNo) {
         return db('view_opd_dx')
             .select('*')
-            .select(db.raw(`'${hospCode}' as hospcode`))
-            .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
+            .select(db.raw(`(select hcode from sys_hospital limit 1) as hospcode
+                ,(select hname from sys_hospital limit 1) as hospname`))
             .select('diag as diagcode'
                 , 'desc as diagname', 'short_thi as diagnamethai'
                 , 'date as date_serv', 'time as time_serv')
@@ -150,8 +160,8 @@ export class PccHisEzhospModel {
         return db('view_pharmacy_opd_drug_item as drug')
             .select('*')
             .select(db.raw(`'${hospCode}' as hospcode`))
-            .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
-            .select('vn as visitno', 'caution as comment')
+            .select(db.raw(`(select hcode from sys_hospital limit 1) as hospcode
+                ,(select hname from sys_hospital limit 1) as hospname`))
             .select(db.raw(`concat(methodname,' ', no_use ,' ', unit_use, ' ', freqname, ' ', timesname) as dose`))
             .where('vn', "=", visitNo)
             .whereNotIn('visit_status', [8, 20])
@@ -163,8 +173,8 @@ export class PccHisEzhospModel {
     getDrugByHn(db: Knex, pid) {
         return db('view_pharmacy_opd_drug_item as drug')
             .innerJoin('visit', 'drug.vn', 'visit.vn')
-            .select(db.raw(`'${hospCode}' as hospcode`))
-            .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
+            .select(db.raw(`(select hcode from sys_hospital limit 1) as hospcode
+                ,(select hname from sys_hospital limit 1) as hospname`))
             .select('drug.*', 'visit.vn', 'visit.vn as visitno'
                 , 'visit.date as date_serv', 'visit.time as time_serv'
                 , 'drug.caution as comment')
@@ -177,143 +187,143 @@ export class PccHisEzhospModel {
 
     getAnc(db: Knex, visitNo) {
         return [];
-        return db('visitanc as anc')
-            .leftJoin('visit', 'anc.visitno', 'visit.visitno')
-            .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
-            .select('anc.*', 'anc.pcucodeperson as hospcode', 'chospital.hosname as hospname'
-                , 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
-            .where('anc.visitno', "=", visitNo)
-            .orderBy('anc.datecheck', 'desc')
-            .orderBy('visit.visitdate', 'desc');
+        // return db('visitanc as anc')
+        //     .leftJoin('visit', 'anc.visitno', 'visit.visitno')
+        //     .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
+        //     .select('anc.*', 'anc.pcucodeperson as hospcode', 'chospital.hosname as hospname'
+        //         , 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
+        //     .where('anc.visitno', "=", visitNo)
+        //     .orderBy('anc.datecheck', 'desc')
+        //     .orderBy('visit.visitdate', 'desc');
     }
 
     getAncByHn(db: Knex, pid) {
         return [];
-        return db('visitanc as anc')
-            .leftJoin('visit', 'anc.visitno', 'visit.visitno')
-            .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
-            .select('anc.*', 'anc.pcucodeperson as hospcode', 'chospital.hosname as hospname'
-                , 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
-            .where('visit.pid', "=", pid)
-            .orderBy('anc.datecheck', 'desc')
-            .orderBy('visit.visitdate', 'desc');
+        // return db('visitanc as anc')
+        //     .leftJoin('visit', 'anc.visitno', 'visit.visitno')
+        //     .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
+        //     .select('anc.*', 'anc.pcucodeperson as hospcode', 'chospital.hosname as hospname'
+        //         , 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
+        //     .where('visit.pid', "=", pid)
+        //     .orderBy('anc.datecheck', 'desc')
+        //     .orderBy('visit.visitdate', 'desc');
     }
 
     getEpi(db: Knex, visitNo) {
         return [];
-        return db('visitepi as epi')
-            .leftJoin('visit', 'epi.visitno', 'visit.visitno')
-            .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
-            .leftJoin('cvaccinegroup as lib', 'epi.vaccinecode', 'lib.vaccode')
-            .select('epi.*', 'epi.pcucodeperson as hospcode', 'chospital.hosname as hospname'
-                , 'visit.visitdate as date_serv', 'visit.timestart as time_serv',
-                'lib.vacname')
-            .where('epi.visitno', "=", visitNo)
-            .orderBy('epi.dateepi', 'desc');
+        // return db('visitepi as epi')
+        //     .leftJoin('visit', 'epi.visitno', 'visit.visitno')
+        //     .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
+        //     .leftJoin('cvaccinegroup as lib', 'epi.vaccinecode', 'lib.vaccode')
+        //     .select('epi.*', 'epi.pcucodeperson as hospcode', 'chospital.hosname as hospname'
+        //         , 'visit.visitdate as date_serv', 'visit.timestart as time_serv',
+        //         'lib.vacname')
+        //     .where('epi.visitno', "=", visitNo)
+        //     .orderBy('epi.dateepi', 'desc');
     }
 
     getEpiByHn(db: Knex, pid) {
         return [];
-        return db('visitepi as epi')
-            .innerJoin('person', 'epi.pid', 'person.pid')
-            .leftJoin('visit', 'epi.visitno', 'visit.visitno')
-            .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
-            .leftJoin('cvaccinegroup as lib', 'epi.vaccinecode', 'lib.vaccode')
-            .select('epi.*', 'epi.pcucodeperson as hospcode', 'chospital.hosname as hospname'
-                , 'visit.visitdate as date_serv', 'visit.timestart as time_serv'
-                , 'lib.vacname')
-            .where('person.pid', "=", pid)
-            .orderBy('epi.dateepi', 'desc');
+        // return db('visitepi as epi')
+        //     .innerJoin('person', 'epi.pid', 'person.pid')
+        //     .leftJoin('visit', 'epi.visitno', 'visit.visitno')
+        //     .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
+        //     .leftJoin('cvaccinegroup as lib', 'epi.vaccinecode', 'lib.vaccode')
+        //     .select('epi.*', 'epi.pcucodeperson as hospcode', 'chospital.hosname as hospname'
+        //         , 'visit.visitdate as date_serv', 'visit.timestart as time_serv'
+        //         , 'lib.vacname')
+        //     .where('person.pid', "=", pid)
+        //     .orderBy('epi.dateepi', 'desc');
     }
 
     getFp(db: Knex, visitNo) {
         return [];
-        return db('visitfp as fp')
-            .innerJoin('person', 'fp.pid', 'person.pid')
-            .leftJoin('visit', 'fp.visitno', 'visit.visitno')
-            .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
-            .join('cdrug', function () {
-                this.on('fp.fpcode', '=', 'cdrug.drugcode')
-            })
-            .select('fp.*', 'fp.pcucodeperson as hospcode', 'chospital.hosname as hospname'
-                , 'visit.visitdate as date_serv', 'visit.timestart as time_serv',
-                'cdrug.drugname')
-            .where('fp.visitno', "=", visitNo)
-            .where('cdrug.drugtype', "=", '04')
-            .orderBy('fp.datefp', 'desc');
+        // return db('visitfp as fp')
+        //     .innerJoin('person', 'fp.pid', 'person.pid')
+        //     .leftJoin('visit', 'fp.visitno', 'visit.visitno')
+        //     .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
+        //     .join('cdrug', function () {
+        //         this.on('fp.fpcode', '=', 'cdrug.drugcode')
+        //     })
+        //     .select('fp.*', 'fp.pcucodeperson as hospcode', 'chospital.hosname as hospname'
+        //         , 'visit.visitdate as date_serv', 'visit.timestart as time_serv',
+        //         'cdrug.drugname')
+        //     .where('fp.visitno', "=", visitNo)
+        //     .where('cdrug.drugtype', "=", '04')
+        //     .orderBy('fp.datefp', 'desc');
     }
 
     getFpByHn(db: Knex, pid) {
         return [];
-        return db('visitfp as fp')
-            .innerJoin('person', 'fp.pid', 'person.pid')
-            .innerJoin('visit', 'fp.visitno', 'visit.visitno')
-            .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
-            .join('cdrug', function () {
-                this.on('fp.fpcode', '=', 'cdrug.drugcode')
-            })
-            .select('fp.*', 'fp.pcucodeperson as hospcode', 'chospital.hosname as hospname'
-                , 'visit.visitdate as date_serv', 'visit.timestart as time_serv',
-                'cdrug.drugname')
-            .where('person.pid', "=", pid)
-            .where('cdrug.drugtype', "=", '04')
-            .orderBy('fp.datefp', 'desc');
+        // return db('visitfp as fp')
+        //     .innerJoin('person', 'fp.pid', 'person.pid')
+        //     .innerJoin('visit', 'fp.visitno', 'visit.visitno')
+        //     .leftJoin('chospital', 'visit.pcucodeperson', 'chospital.hoscode')
+        //     .join('cdrug', function () {
+        //         this.on('fp.fpcode', '=', 'cdrug.drugcode')
+        //     })
+        //     .select('fp.*', 'fp.pcucodeperson as hospcode', 'chospital.hosname as hospname'
+        //         , 'visit.visitdate as date_serv', 'visit.timestart as time_serv',
+        //         'cdrug.drugname')
+        //     .where('person.pid', "=", pid)
+        //     .where('cdrug.drugtype', "=", '04')
+        //     .orderBy('fp.datefp', 'desc');
     }
 
     getNutrition(db: Knex, visitNo) {
         return [];
-        return db('visitnutrition as nutrition')
-            .innerJoin('visit', 'nutrition.visitno', 'visit.visitno')
-            .innerJoin('person', 'visit.pid', 'person.pid')
-            .leftJoin('chospital', 'visit.pcucode', 'chospital.hoscode')
-            .select('nutrition.*', 'nutrition.pcucode as hospcode', 'chospital.hosname as hospname'
-                , 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
-            .where('nutrition.visitno', "=", visitNo)
-            .orderBy('visit.visitdate', 'desc')
-            .orderBy('visit.timestart', 'desc');
+        // return db('visitnutrition as nutrition')
+        //     .innerJoin('visit', 'nutrition.visitno', 'visit.visitno')
+        //     .innerJoin('person', 'visit.pid', 'person.pid')
+        //     .leftJoin('chospital', 'visit.pcucode', 'chospital.hoscode')
+        //     .select('nutrition.*', 'nutrition.pcucode as hospcode', 'chospital.hosname as hospname'
+        //         , 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
+        //     .where('nutrition.visitno', "=", visitNo)
+        //     .orderBy('visit.visitdate', 'desc')
+        //     .orderBy('visit.timestart', 'desc');
     }
 
     getNutritionByHn(db: Knex, pid) {
         return [];
-        return db('visitnutrition as nutrition')
-            .innerJoin('visit', 'nutrition.visitno', 'visit.visitno')
-            .innerJoin('person', 'visit.pid', 'person.pid')
-            .leftJoin('chospital', 'visit.pcucode', 'chospital.hoscode')
-            .select('nutrition.*', 'nutrition.pcucode as hospcode', 'chospital.hosname as hospname'
-                , 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
-            .where('visit.pid', "=", pid)
-            .orderBy('visit.visitdate', 'desc')
-            .orderBy('visit.timestart', 'desc');
+        // return db('visitnutrition as nutrition')
+        //     .innerJoin('visit', 'nutrition.visitno', 'visit.visitno')
+        //     .innerJoin('person', 'visit.pid', 'person.pid')
+        //     .leftJoin('chospital', 'visit.pcucode', 'chospital.hoscode')
+        //     .select('nutrition.*', 'nutrition.pcucode as hospcode', 'chospital.hosname as hospname'
+        //         , 'visit.visitdate as date_serv', 'visit.timestart as time_serv')
+        //     .where('visit.pid', "=", pid)
+        //     .orderBy('visit.visitdate', 'desc')
+        //     .orderBy('visit.timestart', 'desc');
     }
 
     getDrugAllergy(db: Knex, pid, cid) {
         return [];
-        if (!pid && !cid)
-            return null;
+        // if (!pid && !cid)
+        //     return null;
 
-        let where = 'alg.drugcode!=""';
-        if (pid) {
-            where += ` and alg.pid="${pid}" `;
-        }
-        if (cid) {
-            where += ` and person.idcard="${cid}" `;
-        }
-        return db('personalergic as alg')
-            .innerJoin('person', 'alg.pid', 'person.pid')
-            .leftJoin('chospital', 'alg.pcucodeperson', 'chospital.hoscode')
-            .leftJoin('cdrugallergysymtom as lib', 'alg.symptom', 'lib.symtomcode')
-            .join('cdrug', function () {
-                this.on('alg.drugcode', '=', 'cdrug.drugcode')
-            })
-            .select('alg.*', 'alg.pcucodeperson as hospcode'
-                , 'chospital.hosname as hospname'
-                , 'cdrug.drugname', 'person.idcard'
-                , 'lib.symtomname', 'lib.icd10tm')
-            .whereRaw(db.raw(where))
-            .where('cdrug.drugtype', "=", '01')
-            .orderBy('person.fname')
-            .orderBy('person.lname')
-            .limit(maxLimit);
+        // let where = 'alg.drugcode!=""';
+        // if (pid) {
+        //     where += ` and alg.pid="${pid}" `;
+        // }
+        // if (cid) {
+        //     where += ` and person.idcard="${cid}" `;
+        // }
+        // return db('personalergic as alg')
+        //     .innerJoin('person', 'alg.pid', 'person.pid')
+        //     .leftJoin('chospital', 'alg.pcucodeperson', 'chospital.hoscode')
+        //     .leftJoin('cdrugallergysymtom as lib', 'alg.symptom', 'lib.symtomcode')
+        //     .join('cdrug', function () {
+        //         this.on('alg.drugcode', '=', 'cdrug.drugcode')
+        //     })
+        //     .select('alg.*', 'alg.pcucodeperson as hospcode'
+        //         , 'chospital.hosname as hospname'
+        //         , 'cdrug.drugname', 'person.idcard'
+        //         , 'lib.symtomname', 'lib.icd10tm')
+        //     .whereRaw(db.raw(where))
+        //     .where('cdrug.drugtype', "=", '01')
+        //     .orderBy('person.fname')
+        //     .orderBy('person.lname')
+        //     .limit(maxLimit);
     }
 
     getChronic(db: Knex, pid, cid) {
@@ -327,8 +337,8 @@ export class PccHisEzhospModel {
 
         return db('hospdata.view_lab_result as result')
             .select('*')
-            .select(db.raw(`'${hospCode}' as hospcode`))
-            .select(db.raw(`'โรงพยาบาลขอนแก่น' as hospname`))
+            .select(db.raw(`(select hcode from sys_hospital limit 1) as hospcode
+                ,(select hname from sys_hospital limit 1) as hospname`))
             .select(db.raw('"LAB" as TYPEINVEST'))
             .select(db.raw('CONCAT(result.date," ",result.time) as DATETIME_INVEST'))
             .select('result.hn as PID', 'result.vn as SEQ', 'result.no_card as cid'

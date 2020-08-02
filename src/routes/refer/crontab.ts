@@ -120,6 +120,7 @@ async function sendMoph(req, reply, db) {
     }
   }
 
+  // await getRefer_out(db, '2020-06-30');
   return await getRefer_out(db, dateNow);
 }
 
@@ -207,6 +208,9 @@ async function sendReferOut(row, sentResult) {
       CLINIC_REFER: row.CLINIC_REFER || row.clinic_refer || '',
       CHIEFCOMP: row.CHIEFCOMP || row.chiefcomp || '',
       PHYSICALEXAM: row.PHYSICALEXAM || row.physicalexam || '',
+      PH: row.PH || row.ph || '',
+      PI: row.PI || row.pi || '',
+      FH: row.FH || row.fh || '',
       DIAGFIRST: row.DIAGFIRST || row.diagfirst || '',
       DIAGLAST: row.DIAGLAST || row.diaglast || '',
       PSTATUS: row.PSTATUS || row.ptstatus || '',

@@ -189,24 +189,24 @@ export class HisEzhospModel {
     getAdmission(db, columnName, searchNo, hospCode = hcode) {
         columnName = columnName === 'visitNo' ? 'ipd.vn' : columnName;
         return db('view_ipd_ipd as ipd')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('ipd.hn as pid', 'ipd.vn as seq',
-                'ipd.an')
-            .select(db.raw('concat(ipd.admite, " " , ipd.time) as datetime_admit'))
-            .select('ipd.ward_std as wardadmit', 'ipd.pttype_std1 as instype')
-            .select(db.raw('case when ipd.refer="" then 1 else 3 end as typein '))
-            .select('ipd.refer as referinhosp')
-            .select(db.raw('1 as causein'))
-            .select('ipd.weight as admitweight', 'ipd.height as admitheight')
-            .select(db.raw('concat(ipd.disc, " " , ipd.timedisc) as datetime_disch'))
-            .select('ipd.ward_std as warddisch', 'ipd.dischstatus', 'ipd.dischtype',
-                'ipd.price', 'ipd.paid as payprice')
-            .select(db.raw('0 as actualpay'))
-            .select('ipd.dr_disc as provider')
-            .select(db.raw('concat(ipd.disc, " " , ipd.timedisc) as d_update'))
-            .select('ipd.drg', 'ipd.rw', 'ipd.adjrw', 'ipd.drg_error as error',
-                'ipd.drg_warning as warning', 'ipd.los as actlos',
-                'ipd.grouper_version', 'ipd.no_card as cid')
+            .select(db.raw('"' + hcode + '" as HOSPCODE'))
+            .select('ipd.hn as PID', 'ipd.vn as SEQ',
+                'ipd.AN')
+            .select(db.raw('concat(ipd.admite, " " , ipd.time) as DATETIME_ADMIT'))
+            .select('ipd.ward_std as wardadmit', 'ipd.pttype_std1 as INSTYPE')
+            .select(db.raw('case when ipd.refer="" then 1 else 3 end as TYPEIN '))
+            .select('ipd.refer as REFERINHOSP')
+            .select(db.raw('1 as CAUSEIN'))
+            .select('ipd.weight as ADMITWEIGHT', 'ipd.height as ADMITHEIGHT')
+            .select(db.raw('concat(ipd.disc, " " , ipd.timedisc) as DATETIME_DISCH'))
+            .select('ipd.ward_std as WARDDISCH', 'ipd.dischstatus as DISCHSTATUS', 'ipd.dischtype as DISCHTYPE',
+                'ipd.price', 'ipd.paid as PAYPRICE')
+            .select(db.raw('0 as ACTUALPAY'))
+            .select('ipd.dr_disc as PROVIDER')
+            .select(db.raw('concat(ipd.disc, " " , ipd.timedisc) as D_UPDATE'))
+            .select('ipd.drg as DRG', 'ipd.rw as RW', 'ipd.adjrw as ADJRW', 'ipd.drg_error as ERROR',
+                'ipd.drg_warning as WARNING', 'ipd.los as ACTLOS',
+                'ipd.grouper_version as GROUPER_VERSION', 'ipd.no_card as CID')
             .where(columnName, "=", searchNo)
             .limit(maxLimit);
     }
