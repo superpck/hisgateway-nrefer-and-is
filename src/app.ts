@@ -17,6 +17,32 @@ const fastifyCookie = require('fastify-cookie');
 var cron = require('node-cron');
 var shell = require("shelljs");
 
+// MQTT ===========================================================
+var mqtt = require('mqtt');
+var mqttClient = mqtt.connect(`mqtt://${process.env.NOTIFY_URL}`, {
+  clientId: `hospital_${process.env.HOSPCODE}`,
+  // username: process.env.NOTIFY_TOKEN,
+  // password: process.env.NOTIFY_TOKEN,
+  clean: true
+});
+mqttClient.on('connect', () => {
+  mqttClient.subscribe(`hospital_${process.env.HOSPCODE}`, (err) => {
+    if (err) {
+      console.log('mqtt error:', err);
+    } else {
+      console.log('mqtt connect on ' + process.env.NOTIFY_URL);
+    }
+  });
+
+});
+
+mqttClient.on('message', (topic, message) => {
+  console.log(moment().format('YYYY-MM-DD HH:mm:ss'), topic.toString(), message.toString());
+  mqttClient.end();
+});
+// end MQTT =======================================================
+
+
 const app: fastify.FastifyInstance<Server, IncomingMessage, ServerResponse> = fastify({
   logger: {
     level: 'error',
@@ -54,6 +80,7 @@ app.register(require('fastify-jwt'), {
 
 app.register(require('fastify-ws'), {});
 
+// check token ===========================================================
 app.decorate("authenticate", async (request, reply) => {
   let token: string = null;
 
@@ -74,6 +101,7 @@ app.decorate("authenticate", async (request, reply) => {
     })
   }
 });
+// end: check token ===========================================================
 
 app.decorate("checkRequestKey", async (request, reply) => {
   let skey = null;
@@ -279,7 +307,7 @@ app.listen(port, host, (err) => {
     console.log('WebSocket server error!', error);
   });
 
-  console.log('>>> ', app.startServerTime, 'HIS Gateway API start on port', port, 'PID' ,process.pid);
+  console.log('>>> ', app.startServerTime, 'HIS Gateway API start on port', port, 'PID', process.pid);
 });
 
 function createConnectionOption(db: any) {
@@ -387,9 +415,17 @@ async function doAutoSend(req, res, serviceName, functionName) {
   }
 
   if (firstProcess.pid === process.pid) {
+    const now = moment().locale('th').format('HH:mm:ss');
     const db = serviceName == 'isonline' ? app.dbISOnline : app.dbHIS;
-    console.log(moment().locale('th').format('HH:mm:ss')
-      , `start cronjob '${serviceName}' on PID ${process.pid}`);
+    console.log(`${now} start cronjob '${serviceName}' on PID ${process.pid}`);
+
+    if (mqttClient.connected) {
+      var options = { retain: true, qos: 1 };
+      const topic = `${process.env.HOSPCODE} sending '${serviceName}'`;
+      const message = `${process.env.HOSPCODE} start ${serviceName} on PID ${process.pid}, ${now}`;
+      mqttClient.publish(topic, message, options);
+    }
+
     await require(functionName)(req, res, db, timingSchedule[serviceName]);
   }
 }
