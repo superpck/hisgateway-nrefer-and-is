@@ -27,7 +27,7 @@ var hisModel: any;
 switch (hisProvider) {
   case 'ezhosp':
     pccHisModel = new PccHisEzhospModel();
-    hisModel = new HisEzhospModel();
+    // hisModel = new HisEzhospModel();
     break;
   case 'thiades':
     hisModel = new HisThiadesModel();
@@ -58,7 +58,7 @@ switch (hisProvider) {
     // hisModel = new HisHimproModel();
     break;
   case 'jhcis':
-    hisModel = new HisJhcisModel();
+    // hisModel = new HisJhcisModel();
     pccHisModel = new PccHisJhcisModel();
     break;
   case 'hosxppcu':
@@ -241,18 +241,8 @@ const router = (fastify, { }, next) => {
 
     if (hn + cid) {
       try {
-        const result = await pccHisModel.getServiceByHn(dbHIS, hn, cid, date, visitNo);
-        if (result) {
-          reply.status(HttpStatus.OK).send({
-            statusCode: HttpStatus.OK,
-            rows: result
-          });
-        } else {
-          reply.status(HttpStatus.BAD_REQUEST).send({
-            statusCode: HttpStatus.BAD_REQUEST,
-            message: 'record not found'
-          });
-        }
+        const rows = await pccHisModel.getServiceByHn(dbHIS, hn, cid, date, visitNo);
+        reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
       } catch (error) {
         console.log(error.message);
         reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
