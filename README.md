@@ -39,6 +39,23 @@ http://localhost:<port>/setup-api
 
 # run จาก source code ที่ยังคงเป็น typescript
 > pm2 start --interpreter ts-node src/app.ts his_gateway
+
+หากต้องการให้ OS start pm2 ทุกครั้งที่เปิดเครื่องให้ใช้คำสั่งดังนี้
+
+# Linux, MacOS
+-------------------
+> pm2 startup  ทำครั้งเดียว
+
+บันทึกสถานะปัจจุบันเพื่อใช้ในการ Start ครั้งต่อไป
+> pm2 save
+
+# Windows
+-------------------
+ติดตั้ง plugin และ Start การใช้งาน
+> npm install pm2-windows-startup -g
+> pm2-startup install
+บันทึกสถานะปัจจุบันเพื่อใช้ในการ Start ครั้งต่อไป
+> pm2 save
 ```
 
 # Update
