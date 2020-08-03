@@ -107,21 +107,27 @@ async function sendMoph(req, reply, db) {
 
   const hourNow = +moment().locale('th').get('hours');
   const minuteNow = +moment().locale('th').get('minutes');
-  if ((hourNow == 1 || hourNow == 8 || hourNow == 12 || hourNow == 18 || hourNow == 22) 
+  if ((hourNow == 1 || hourNow == 8 || hourNow == 12 || hourNow == 18 || hourNow == 22)
     && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
     const date = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
     await getRefer_out(db, date);
+    await getReferResult(db, date);
   } else if (hourNow == 3 && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
     // เวลา 03:00 get ย้อนหลัง 1 สัปดาห์
     let oldDate = moment(dateNow).subtract(7, 'days').format('YYYY-MM-DD');
     while (oldDate < dateNow) {
       await getRefer_out(db, oldDate);
+      await getReferResult(db, oldDate);
       oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
     }
   }
 
   // await getRefer_out(db, '2020-06-30');
-  return await getRefer_out(db, dateNow);
+  const referOut_ = getRefer_out(db, dateNow);
+  const referResult_ = getReferResult(db, dateNow);
+  const referOut = await referOut_;
+  const referResult = await referResult_;
+  return { referOut, referResult };
 }
 
 async function getRefer_out(db, date) {
@@ -173,6 +179,61 @@ async function getRefer_out(db, date) {
     }
     console.log(process.env.HOSPCODE, ' nrefer sent result ', sentResult);
     return referout;
+  } catch (error) {
+    console.log('crontab error:', error.message)
+    sentContent += moment().locale('th').format('HH:mm:ss.SSS') + 'crontab error ' + error.message + '\r\r';
+    return [];
+  }
+}
+
+async function getReferResult(db, date) {
+  try {
+    const referResult = await hisModel.getReferResult(db, date, hcode);
+    sentContent += `\rsave refer_result ${date} \r`;
+    sentContent += `\rsave refer service data ${date} \r`;
+    let index = 0;
+    let sentResultResult: any = {
+      pid: process.pid,
+      referresult: { success: 0, fail: 0 },
+      person: { success: 0, fail: 0 },
+      address: { success: 0, fail: 0 },
+      service: { success: 0, fail: 0 },
+      diagnosisOpd: { success: 0, fail: 0 },
+      procedureOpd: { success: 0, fail: 0 },
+      drugOpd: { success: 0, fail: 0 },
+      investigationRefer: { success: 0, fail: 0 },
+    };
+    for (let row of referResult) {
+      const hn = row.PID_IN;
+      const seq = row.SEQ_IN;
+      const referid = row.REFERID_SOURCE;
+      sentContent += (index + 1) + '. refer no.' + referid + ', hn ' + hn + ', seq ' + seq + '\r';
+
+      await sendReferResult(row, sentResultResult);
+      await getPerson(db, hn, sentResultResult);
+      await getAddress(db, hn, sentResultResult);
+      await getService(db, seq, sentResultResult);
+      await getDiagnosisOpd(db, seq, sentResultResult);
+      await getProcedureOpd(db, seq, sentResultResult);
+      await getDrugOpd(db, seq, sentResultResult);
+      const ipd = await getAdmission(db, seq);
+
+      const an = ipd && ipd.length ? ipd[0].an : '';
+      const procedureIpd = await getProcedureIpd(db, an);
+
+      // const drug_ipd = await getDrugIpd(db, an);
+
+      // await getLabResult(db, row, sentResultResult);
+
+      index += 1;
+      if (referResult.length <= index) {
+        sentContent += moment().locale('th').format('HH:mm:ss.SSS') + ' crontab finished...\r\r';
+        await writeResult(resultText, sentContent);
+        console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'finished...');
+      }
+    }
+    console.log(process.env.HOSPCODE, ' nrefer sent refer result ', sentResultResult);
+    return referResult;
   } catch (error) {
     console.log('crontab error:', error.message)
     sentContent += moment().locale('th').format('HH:mm:ss.SSS') + 'crontab error ' + error.message + '\r\r';
@@ -235,6 +296,41 @@ async function sendReferOut(row, sentResult) {
       console.log('save-refer-history', data.REFERID, saveResult);
     }
     sentContent += '  - refer_history ' + data.REFERID + ' ' + (saveResult.result || saveResult.message) + '\r';
+    return saveResult;
+  } else {
+    return null;
+  }
+}
+
+async function sendReferResult(row, sentResult) {
+  const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+  if (row) {
+    const data = {
+      HOSPCODE: row.HOSPCODE,
+      REFERID_SOURCE: row.REFERID_SOURCE,
+      REFERID_PROVINCE: row.REFERID_PROVINCE,
+      PID_IN: row.PID_IN,
+      SEQ_IN: row.SEQ_IN + '',
+      AN_IN: row.AN_IN,
+      CID_IN: row.CID_IN + '',
+      HOSP_SOURCE: row.HOSP_SOURCE,
+      REFER_RESULT: row.REFER_RESULT || 1,
+      DATETIME_REFER: row.DATETIME_REFER ? moment(row.DATETIME_REFER).format('YYYY-MM-DD HH:mm:ss') : null,
+      DATETIME_IN: moment(row.DATETIME_IN).format('YYYY-MM-DD HH:mm:ss'),
+      REASON: row.REASON || null,
+      D_UPDATE: row.D_UPDATE || d_update,
+      his: process.env.HIS_PROVIDER,
+      typesave: 'autoreply'
+    };
+
+    const saveResult: any = await referSending('/save-refer-result', data);
+    if (saveResult.statusCode == 200) {
+      sentResult.referresult.success += 1;
+    } else {
+      sentResult.referresult.fail += 1;
+      console.log('save-refer-result', data.REFERID_SOURCE, saveResult);
+    }
+    sentContent += '  - refer_result ' + data.REFERID_SOURCE + ' ' + (saveResult.result || saveResult.message) + '\r';
     return saveResult;
   } else {
     return null;
@@ -486,8 +582,8 @@ async function getDrugOpd(db, visitNo, sentResult) {
 }
 
 async function getLabResult(db, row, sentResult) {
-  const visitNo = row.seq || row.SEQ;
-  const referID = row.REFERID || row.referid;
+  const visitNo = row.seq || row.SEQ || row.SEQ_IN;
+  const referID = row.REFERID || row.referid || row.REFERID_SOURCE;
   const rowsLabResult = await hisModel.getLabResult(db, 'visitNo', visitNo, referID, hcode);
   let rowsSave = [];
   const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');

@@ -103,7 +103,7 @@ export class HisEzhospModel {
             .orderBy('dx.D_UPDATE')
             .limit(maxLimit);
     }
-   
+
     getProcedureOpd(db, visitno, hospCode = hcode) {
         return db('view_opd_op')
             .select(db.raw('"' + hcode + '" as hospcode'))
@@ -143,11 +143,36 @@ export class HisEzhospModel {
     }
 
     getLabResult(db, columnName, searchNo, referID = '', hospCode = hcode) {
-        columnName = columnName === 'visitNo' ? 'vn' : columnName;
+        columnName = columnName === 'visitNo' ? 'result.vn' : columnName;
+        columnName = columnName === 'pid' ? 'result.hn' : columnName;
+        columnName = columnName === 'cid' ? 'result.no_card' : columnName;
         return db('hospdata.view_lab_result as result')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select(db.raw('"' + hcode + referID + '" as REFERID'))
             .select(db.raw('"' + referID + '" as REFERID_PROVINCE'))
+            .select(db.raw('"LAB" as INVESTTYPE'))
+            .select(db.raw('CONCAT(result.date," ",result.time) as DATETIME_INVEST'))
+            .select('result.hn as PID', 'result.vn as SEQ', 'result.pid as CID'
+                , 'an as AN', 'result.type_result as LH'
+                , 'result.lab_code as LOCALCODE', 'result.icdcm as INVESTCODE'
+                , 'result.lab_name as INVESTNAME'
+                , 'result.result as INVESTVALUE', 'result.unit as UNIT'
+                , 'result.result_obj as INVESTRESULT'
+                , 'result.minresult as NORMAL_MIN', 'result.maxresult as NORMAL_MAX'
+                , 'result.date_result as DATETIME_REPORT')
+            .select(db.raw('CONCAT(result.date," ",result.time) as D_UPDATE'))
+            .where(columnName, "=", searchNo)
+            .limit(maxLimit);
+
+        // `LOINC` varchar(20) DEFAULT NULL,
+    }
+
+    getInvestigation(db, columnName, searchNo, hospCode = hcode) {
+        columnName = columnName === 'visitNo' ? 'result.vn' : columnName;
+        columnName = columnName === 'pid' ? 'result.hn' : columnName;
+        columnName = columnName === 'cid' ? 'result.no_card' : columnName;
+        return db('hospdata.view_lab_result as result')
+            .select(db.raw('"' + hcode + '" as hospcode'))
             .select(db.raw('"LAB" as INVESTTYPE'))
             .select(db.raw('CONCAT(result.date," ",result.time) as DATETIME_INVEST'))
             .select('result.hn as PID', 'result.vn as SEQ', 'result.pid as CID'
@@ -339,12 +364,21 @@ export class HisEzhospModel {
             .limit(maxLimit);
     }
 
-    getReferResult(db, hospDestination, referNo, hospCode = hcode) {
-        return db('view_refer_result')
-            .select('*')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .where('refer_hcode', "=", hospDestination)
-            .where('refer_no', "=", referNo)
+    getReferResult(db, visitDate, hospCode = hcode) {
+        visitDate = moment(visitDate).format('YYYY-MM-DD');
+
+        return db('view_opd_visit as visit')
+            .select(db.raw(`(select hcode from sys_hospital) as HOSPCODE`))
+            .select('visit.refer as HOSP_SOURCE', 'visit.refer_no as REFERID_SOURCE')
+            .select(db.raw('concat(visit.refer,visit.refer_no) as REFERID_PROVINCE'))
+            .select('visit.date as DATETIME_IN'
+                , 'visit.hn as PID_IN', 'visit.vn as SEQ_IN'
+                , 'visit.ipd_an as AN_IN', 'visit.no_card as CID_IN')
+            .select(db.raw('1 as REFER_RESULT'))
+            .select(db.raw(`concat(visit.date,' ',visit.time) as D_UPDATE`))
+            .where('visit.date', visitDate)
+            .where('visit.refer', '!=', hcode)
+            .where(db.raw('length(visit.refer)=5'))
             .limit(maxLimit);
     }
 

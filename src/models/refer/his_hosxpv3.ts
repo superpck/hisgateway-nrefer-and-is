@@ -1232,12 +1232,7 @@ export class HisHosxpv3Model {
     }
 
     getReferResult(db, hospDestination, referNo, hospCode = hcode) {
-        return db('view_refer_result')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('refer_hcode', "=", hospDestination)
-            .where('refer_no', "=", referNo)
-            .limit(maxLimit);
+        return [];
     }
 
     async getProvider(db: Knex, columnName, searchNo, hospCode = hcode) {

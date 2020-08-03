@@ -303,12 +303,7 @@ DATESTART,DATEFINISH,AMOUNT,UNIT,UNIT_PACKING,DRUGPRICE,DRUGCOST,PROVIDER,D_UPDA
     }
 
     getReferResult(db, hospDestination, referNo, hospCode=hcode) {
-        return db('view_refer_result')
-            .select(db.raw('"' + hcode + '" as hospcode'))
-            .select('*')
-            .where('refer_hcode', "=", hospDestination)
-            .where('refer_no', "=", referNo)
-            .limit(maxLimit);
+        return [];
     }
 
     getData(db, tableName, columnName, searchNo, hospCode=hcode) {
