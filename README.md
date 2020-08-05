@@ -31,10 +31,10 @@ http://localhost:<port>/setup-api
 
 ## Running
 ```
-# run จาก javascript ที่ compile แล้ว
+# ควร run จาก javascript ที่ compile แล้ว
 1. Compile source code ด้วยคำสั่ง > tsc
 2. run API ด้วยคำสั่ง > pm2 start app/app.js -i 2 --name "his-connection"
-## ชื่อ --name จะต้องตรงกับค่า PM2_NAME ใน config
+## ชื่อ --name จะต้องตรงกับค่า PM2_NAME ใน config file
 3. เปิด browser แล้วเข้าไปที่ http://localhost:<port ที่กำหนดใน config>
 ```
 
