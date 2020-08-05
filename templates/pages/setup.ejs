@@ -4,6 +4,7 @@
 </header>
 
 <form method='post' action="/setup-api/save">
+    <input type="hidden" name="token" value="<%= token %>">
     <main>
         <div class="row">
             <div class="col-sm-12">
@@ -271,7 +272,8 @@
                     </div>
 
                     <div class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="headingNRefer" style="color: blue; background-color: aliceblue;">
+                        <div class="panel-heading" role="tab" id="headingNRefer"
+                            style="color: blue; background-color: aliceblue;">
                             <h4 class="panel-title">
                                 <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
                                     href="#collapseNRefer" aria-expanded="false" aria-controls="collapseNRefer">
@@ -347,7 +349,8 @@
                     </div>
 
                     <div class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="headingThree" style="color: blue; background-color: aliceblue;">
+                        <div class="panel-heading" role="tab" id="headingThree"
+                            style="color: blue; background-color: aliceblue;">
                             <h4 class="panel-title">
                                 <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
                                     href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
@@ -443,6 +446,7 @@
                                                 <% if(configs.ISONLINE.IS_DB_ENCRYPT==1) { %>checked <% } %>">
                                         </td>
                                     </tr>
+                                    <!--
                                     <tr>
                                         <td class="table-title">
                                             IS Auto Send:</td>
@@ -476,7 +480,7 @@
                                                 เป็นชั่วโมงจะไม่มีผล</span>
                                         </td>
                                     </tr>
-
+                                    -->
                                     <tr>
                                         <td class="table-title">
                                             IS@MOPH server:</td>
@@ -486,6 +490,7 @@
                                             <span class="comment">ตามที่กระทรวงฯ กำหนดเท่านั้น</span>
                                         </td>
                                     </tr>
+                                    <!--
                                     <tr>
                                         <td class="table-title">
                                             IS@MOPH User:</td>
@@ -506,13 +511,15 @@
                                                 http://ae.moph.go.th/moph/#/login</span>
                                         </td>
                                     </tr>
+                                    -->
                                 </table>
                             </div>
                         </div>
                     </div>
 
                     <div class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="headingCannabis" style="color: blue; background-color: aliceblue;">
+                        <div class="panel-heading" role="tab" id="headingCannabis"
+                            style="color: blue; background-color: aliceblue;">
                             <h4 class="panel-title">
                                 <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
                                     href="#collapseCannabis" aria-expanded="false" aria-controls="collapseCannabis">
@@ -530,7 +537,8 @@
                     </div>
 
                     <div class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="headingNotify"style="color: magenta; background-color: rgb(241, 211, 247);">
+                        <div class="panel-heading" role="tab" id="headingNotify"
+                            style="color: magenta; background-color: rgb(241, 211, 247);">
                             <h4 class="panel-title">
                                 <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
                                     href="#collapseNotify" aria-expanded="false" aria-controls="collapseNotify">
@@ -578,7 +586,8 @@
                     </div>
 
                     <div class="panel panel-default">
-                        <div class="panel-heading" role="tab" id="headingJWT" style="color: rgb(168, 83, 4); background-color: rgb(248, 242, 221);">
+                        <div class="panel-heading" role="tab" id="headingJWT"
+                            style="color: rgb(168, 83, 4); background-color: rgb(248, 242, 221);">
                             <h4 class="panel-title">
                                 <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
                                     href="#collapseJWT" aria-expanded="false" aria-controls="collapseJWT">
