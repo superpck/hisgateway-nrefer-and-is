@@ -193,11 +193,12 @@ app.register(require('./plugins/db'), {
 });
 
 
+const APIVersion = '3.1.2';
 // node-cron =========================================
 const timingSch = '0 */1 * * * *';  // every minute
 let timingSchedule: any = [];
-timingSchedule['isonline'] = { version: '3.1.2' };
-timingSchedule['nrefer'] = { version: '3.1.2' };
+timingSchedule['isonline'] = { version: APIVersion };
+timingSchedule['nrefer'] = { version: APIVersion };
 
 // Check IS-Online Auto Send
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;
