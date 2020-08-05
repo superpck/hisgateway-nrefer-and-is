@@ -13,8 +13,8 @@ AUTO_RESTART=1
 
 [DB]
 // valid db client type: mysql, pg, mssql
-// valid HIS provider name: ezhosp, hosxpv3, hosxpv4, infod, ssb, hospitalos, kpstat, md
-//      hospitalos, kpstat, md, mkhospital, thiades, nemo, other
+// valid HIS provider name: ezhosp, hosxpv3, hosxpv4, hosxppcu, infod, ssb, hospitalos
+//      kpstat, md, hospitalos, kpstat, md, mkhospital, thiades, nemo, mypcu other
 HIS_PROVIDER=hosxpv3
 HIS_DB_HOST=localhost
 HIS_DB_PORT=3306
