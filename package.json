@@ -1,5 +1,5 @@
 {
-  "name": "hisgateway-api",
+  "name": "his-connection-api",
   "version": "2.2.1",
   "private": true,
   "scripts": {

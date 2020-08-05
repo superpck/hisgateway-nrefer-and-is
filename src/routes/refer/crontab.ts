@@ -715,7 +715,7 @@ async function referSending(path, dataArray) {
   const dataSending = querystring.stringify({
     hospcode: hcode, data: JSON.stringify(dataArray),
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    sourceApiName: 'HIS-Gateway version ' + apiVersion
+    sourceApiName: 'HIS-connection version ' + apiVersion
   });
 
   const options = {
