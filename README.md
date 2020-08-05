@@ -10,7 +10,7 @@
 > npm install typescript ts-node pm2 nodemon -g
 ```
 
-### 2.Sourcecode API
+### 2.Source code
 ```
 > git clone https://github.com/superpck/hisgateway-nrefer-and-is his_connection
 > cd his_connection
@@ -20,7 +20,7 @@
 แก้ไขข้อมูลใน file config
 ```
 
-## Test
+## Test API
 ```
 > nodemon
 open browser and go to http://localhost:<port ที่กำหนดใน config>
@@ -31,27 +31,24 @@ http://localhost:<port>/setup-api
 
 ## Running
 ```
-# run จาก javascript ที่ compile แล้ว
-> tsc    ## ทำการ compile source code
-> pm2 start app/app.js -i 2 --name "his-connection"
-## ชื่อ --name จะต้องตรงกับค่า PM2_NAME ใน config
-ทำการเปิด http://localhost:<port ที่กำหนดใน config> ใน browser
-
-# run จาก source code ที่ยังคงเป็น typescript
-> pm2 start --interpreter ts-node src/app.ts his_connection
+# ควร run จาก javascript ที่ compile แล้ว
+1. Compile source code ด้วยคำสั่ง > tsc
+2. run API ด้วยคำสั่ง > pm2 start app/app.js -i 2 --name "his-connection"
+## ชื่อ --name จะต้องตรงกับค่า PM2_NAME ใน config file
+3. เปิด browser แล้วเข้าไปที่ http://localhost:<port ที่กำหนดใน config>
 ```
 
-# Update
+# การ Update Source code
 ```
-> cd his_connection  ## or API folder
-> git pull
-> npm install
-> npm audit fix --force
-> tsc
-> pm2 restart his-connection
+1. เข้าไปที่ folder ที่เก็บ API > cd his_connection
+2. update source code จาก github > git pull
+3. ติดตั้ง package (เผื่อมีการติดตั้งเพิ่มเติม) > npm install
+4. กรณีพบ vulnerabilities ให้ทำการ fix ด้วยคำสั่ง > npm audit fix --force
+5. ทำการ compile source code ด้วยคำสั่ง > tsc
+6. Restart ที่เคย run ไว้แล้วด้วยคำสั่ง > pm2 restart his-connection
 ```
 
-# push to git
+# push to git กรณีเป็นทีมพัฒนา (Develop@MOPH)
 ```
 > git add .
 > git commit -m "คำอธิบายสิ่งที่แก้ไข"

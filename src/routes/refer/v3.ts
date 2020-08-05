@@ -19,6 +19,8 @@ import { HisMkhospitalModel } from '../../models/refer/his_mkhospital';
 import { HisModel } from '../../models/refer/his';
 import { HisNemoModel } from '../../models/refer/his_nemo';
 import { HisPmkModel } from '../../models/refer/his_pmk';
+import { HisHosxppcuModel } from '../../models/isonline/his_hosxppcu.model';
+import { HisMyPcuModel } from '../../models/refer/his_mypcu';
 
 const hisProvider = process.env.HIS_PROVIDER;
 let hisModel: any;
@@ -34,6 +36,9 @@ switch (hisProvider) {
     break;
   case 'hosxpv4':
     hisModel = new HisHosxpv4Model();
+    break;
+  case 'hosxppcu':
+    hisModel = new HisHosxppcuModel();
     break;
   case 'mkhospital':
     hisModel = new HisMkhospitalModel();
@@ -57,8 +62,8 @@ switch (hisProvider) {
   case 'jhcis':
     hisModel = new HisJhcisModel();
     break;
-  case 'hosxppcu':
-    // hisModel = new HisHosxppcuModel();
+  case 'mypcu':
+    hisModel = new HisMyPcuModel();
     break;
   case 'hospitalos':
     // hisModel = new HisHospitalOsModel();
