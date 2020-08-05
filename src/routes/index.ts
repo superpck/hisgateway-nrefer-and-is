@@ -28,11 +28,11 @@ const router = (fastify, { }, next) => {
     const cookieValue = req.cookies;
     reply.send({
       ok: true,
-      apiCode: 'HISGATEWAY',
-      apiName: 'HIS-Gateway',
+      apiCode: 'HISCONNECT',
+      apiName: 'HIS-Connection',
       apiDesc: 'API for IS-Online, nRefer, PCC, CMI',
-      version: "2.2.2",
-      subVersion: "63.06.20-01",
+      version: "3.1.2",
+      subVersion: "63.07.25-01",
       serviceName: "isonline",   // for isonline only
       his_provider: process.env.HIS_PROVIDER,
       hospcode: process.env.HOSPCODE,
@@ -50,7 +50,7 @@ const router = (fastify, { }, next) => {
       var skey = crypto.createHash('md5').update(now+key).digest('hex');
       const token = fastify.jwt.sign({
         uid: 0,
-        api: 'his-gateway'
+        api: 'his-connect'
       }, { expiresIn: '3h' });
       reply.send({
         statusCode: 200,
@@ -69,7 +69,7 @@ const router = (fastify, { }, next) => {
     var hashRequestKey = crypto.createHash('md5').update(process.env.REQUEST_KEY).digest('hex');
     if (requestKey === hashRequestKey) {
       const token = fastify.jwt.sign({
-        api: 'his-gateway'
+        api: 'his-connect'
       }, { expiresIn: '3h' });
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, token: token })
     } else {
@@ -192,7 +192,7 @@ const router = (fastify, { }, next) => {
     reply.send({
       statusCode: 200,
       date_response: moment().locale('th').format('YYYY-MM-DD HH:mm:ss'),
-      serviceName: 'HIS Gateway',
+      serviceName: 'HIS Connection API',
       startServer: startServer,
       hospcode: process.env.HOSPCODE,
       hisProvider: hisProvider,

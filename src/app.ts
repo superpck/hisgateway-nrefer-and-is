@@ -196,8 +196,8 @@ app.register(require('./plugins/db'), {
 // node-cron =========================================
 const timingSch = '0 */1 * * * *';  // every minute
 let timingSchedule: any = [];
-timingSchedule['isonline'] = { version: '3.1.1' };
-timingSchedule['nrefer'] = { version: '3.1.1' };
+timingSchedule['isonline'] = { version: '3.1.2' };
+timingSchedule['nrefer'] = { version: '3.1.2' };
 
 // Check IS-Online Auto Send
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;
@@ -307,7 +307,7 @@ app.listen(port, host, (err) => {
     console.log('WebSocket server error!', error);
   });
 
-  console.log('>>> ', app.startServerTime, 'HIS Gateway API start on port', port, 'PID', process.pid);
+  console.log('>>> ', app.startServerTime, 'HIS Connection API start on port', port, 'PID', process.pid);
 });
 
 function createConnectionOption(db: any) {

@@ -1,4 +1,5 @@
 import * as Knex from 'knex';
+import * as moment from 'moment';
 
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
@@ -1203,8 +1204,26 @@ export class HisHosxpv4Model {
         return result[0];
     }
 
-    getReferResult(db, hospDestination, referNo, hospCode = hcode) {
-        return [];
+    getReferResult(db, visitDate, hospCode = hcode) {
+        let ret = [];
+
+        visitDate = moment(visitDate).format('YYYY-MM-DD');
+
+        const a = db('view_opd_visit as visit')
+            .select(db.raw(`(select hcode from sys_hospital) as HOSPCODE`))
+            .select('visit.refer as HOSP_SOURCE', 'visit.refer_no as REFERID_SOURCE')
+            .select(db.raw('concat(visit.refer,visit.refer_no) as REFERID_PROVINCE'))
+            .select('visit.date as DATETIME_IN'
+                , 'visit.hn as PID_IN', 'visit.vn as SEQ_IN'
+                , 'visit.ipd_an as AN_IN', 'visit.no_card as CID_IN')
+            .select(db.raw('1 as REFER_RESULT'))
+            .select(db.raw(`concat(visit.date,' ',visit.time) as D_UPDATE`))
+            .where('visit.date', visitDate)
+            .where('visit.refer', '!=', hcode)
+            .where(db.raw('length(visit.refer)=5'))
+            .limit(maxLimit);
+        return ret;
+
     }
 
     async getProvider(db: Knex, columnName, searchNo, hospCode = hcode) {
