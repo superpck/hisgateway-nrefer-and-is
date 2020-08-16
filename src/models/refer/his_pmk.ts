@@ -68,6 +68,12 @@ export class HisPmkModel {
     }
 
     getService(db, columnName, searchText, hospCode = hcode) {
+        columnName = columnName === 'visitNo' ? 'vn' : columnName;
+        // columnName = columnName === 'vn' ? 'service.SEQ' : columnName;
+        // columnName = columnName === 'pid' ? 'PAT_RUN_HN' : columnName;
+        // columnName = columnName === 'hn' ? 'PAT_RUN_HN' : columnName;
+        columnName = columnName === 'date_serv' ? 'OPD_DATE' : columnName;
+
         let where: any = {};
         let cdate = '';
         if (columnName === 'date') {
@@ -83,7 +89,7 @@ export class HisPmkModel {
             .select(db.raw(`'${hospCode}' AS "hospcode"`))
             .select(db.raw(`concat(concat(to_char(OPDS.PAT_RUN_HN),'/'),to_char(OPDS.PAT_YEAR_HN)) AS "hn"`))
             .select('PAT_RUN_HN as RUN_HN', 'PAT_YEAR_HN as YEAR_HN')
-            .select('OPD_NO as visitno', 'OPD_DATE as date')
+            .select('OPD_NO as visitno', 'OPD_DATE as date', 'OPD_DATE as DATE_SERV')
             .select(db.raw(`TO_CHAR(DATE_CREATED, 'HH24:MI:SS') AS time`))
             .select('BP_SYSTOLIC as bp_systolic', 'BP_DIASTOLIC as bp_diastolic'
                 , 'BP_SYSTOLIC as bp1', 'BP_DIASTOLIC as bp2'

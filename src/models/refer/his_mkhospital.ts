@@ -53,6 +53,7 @@ WHERE  date(r1.date)="${date}"`;
     async getService(db: Knex, columnName, searchText, hospCode=hcode) {
         //columnName = visitNo, hn
         columnName = columnName === 'visitNo' ? 'v1.vn' : columnName;
+        columnName = columnName === 'date_serv' ? 'v1.date' : columnName;
         const sql = `
         SELECT  '10707'  as hospcode,v1.hn as pid,v1.hn,v1.vn as seq,date_format(concat(v1.date),'%Y-%m-%d') as date_serv,v1.time as time_serv,
         v1.location as location,v1.intime as intime, r3.code_new  as instype,v1.insid,   '10707'  as main,v1.typein,r1.referinhosp,

@@ -96,6 +96,7 @@ export class HisNemoModel {
         //columnName = visitNo, hn
         
         columnName = columnName === 'visitNo' ? 'seq' : columnName;
+        columnName = columnName === 'date_serv' ? 'service.DATE_SERV' : columnName;
         const sql=`select * from nrefer_service 
                     where ${columnName}="${searchNo}" and hospcode="${hospCode}"`;
         const result = await db.raw(sql);

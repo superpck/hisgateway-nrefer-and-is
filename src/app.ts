@@ -21,8 +21,6 @@ var shell = require("shelljs");
 var mqtt = require('mqtt');
 var mqttClient = mqtt.connect(`mqtt://${process.env.NOTIFY_URL}`, {
   clientId: `hospital_${process.env.HOSPCODE}`,
-  // username: process.env.NOTIFY_TOKEN,
-  // password: process.env.NOTIFY_TOKEN,
   clean: true
 });
 mqttClient.on('connect', () => {
@@ -195,10 +193,12 @@ app.register(require('./plugins/db'), {
 
 const APIVersion = '3.1.2';
 // node-cron =========================================
-const timingSch = '0 */1 * * * *';  // every minute
+const secondNow = +moment().get('second');
+const timingSch = `${secondNow} */1 * * * *`;  // every minute
 let timingSchedule: any = [];
 timingSchedule['isonline'] = { version: APIVersion };
 timingSchedule['nrefer'] = { version: APIVersion };
+timingSchedule['cupDataCenter'] = { version: APIVersion };
 
 // Check IS-Online Auto Send
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;
@@ -228,7 +228,13 @@ if (timingSchedule['nrefer'].minute > 0) {
   timingSchedule['nrefer'].autosend = false;
 }
 
-// ตรวจสอบการ start ด้วยเวลาที่กำหนด
+// Auto send CUP Data Center
+timingSchedule['cupDataCenter'].autosend = +process.env.HIS_DATACENTER_ENABLE === 1 || false;
+timingSchedule['cupDataCenter'].hour = process.env.HIS_DATACENTER_SEND_EVERY_HOUR ? +process.env.HIS_DATACENTER_SEND_EVERY_HOUR : 2;
+timingSchedule['cupDataCenter'].hour = timingSchedule['cupDataCenter'].hour > 24 ? 24 : timingSchedule['cupDataCenter'].hour;
+timingSchedule['cupDataCenter'].minute = +moment().get('minute');
+
+// ตรวจสอบการ start ด้วยเวลาที่กำหนด (ทุกๆ 1 นาที)
 cron.schedule(timingSch, async (req, res) => {
   const minuteNow = +moment().get('minute') == 0 ? 60 : +moment().get('minute');
   const hourNow = +moment().get('hour');
@@ -250,45 +256,54 @@ cron.schedule(timingSch, async (req, res) => {
         minuteNow % timingSchedule['isonline'].minute == 0))) {
     doAutoSend(req, res, 'isonline', './routes/isonline/crontab');
   }
+
+  if (timingSchedule['cupDataCenter']['autosend'] &&
+    hourNow % timingSchedule['cupDataCenter'].hour == 0 &&
+    minuteNow == timingSchedule['cupDataCenter'].minute) {
+    doAutoSend(req, res, 'cupDataCenter', './routes/pcc/crontab');
+  }
 });
 
-app.register(require('./routes/index'), { prefix: '/', logger: true });
-app.register(require('./routes/setup'), { prefix: '/setup-api', logger: true });
-app.register(require('./routes/refer/v3'), { prefix: '/refer', logger: true });
-app.register(require('./routes/refer/v3'), { prefix: '/refer/his', logger: true });
-app.register(require('./routes/refer/local'), { prefix: '/refer/local', logger: true });
+let rootPrefix = process.env.ROUTE_PREFIX || '';
+rootPrefix = rootPrefix ? ('/' + rootPrefix) : '';
+
+app.register(require('./routes/index'), { prefix: `${rootPrefix}/`, logger: true });
+app.register(require('./routes/setup'), { prefix: `${rootPrefix}/setup-api`, logger: true });
+app.register(require('./routes/refer/v3'), { prefix: `${rootPrefix}/refer`, logger: true });
+app.register(require('./routes/refer/v3'), { prefix: `${rootPrefix}/refer/his`, logger: true });
+app.register(require('./routes/refer/local'), { prefix: `${rootPrefix}/refer/local`, logger: true });
 
 // save nrefer to local nRefer@Hospital
-app.register(require('./routes/refer/send'), { prefix: '/refer/send-moph', logger: true });
+app.register(require('./routes/refer/send'), { prefix: `${rootPrefix}/refer/send-moph`, logger: true });
 
 // HDC Connect (รอประสาน สสจ.)
-app.register(require('./routes/hdc/index'), { prefix: '/hdc', logger: true });
+app.register(require('./routes/hdc/index'), { prefix: `${rootPrefix}/hdc`, logger: true });
 
 // ISOnline service
-app.register(require('./routes/isonline/index'), { prefix: '/isonline', logger: true });
-app.register(require('./routes/isonline/login'), { prefix: '/login', logger: true });
-app.register(require('./routes/isonline/index'), { prefix: '/iswin', logger: true });
-app.register(require('./routes/isonline/index'), { prefix: '/is', logger: true });
-app.register(require('./routes/isonline/his'), { prefix: '/his', logger: true });
-app.register(require('./routes/isonline/his'), { prefix: '/isonline/his', logger: true });
-app.register(require('./routes/isonline/user'), { prefix: '/user', logger: true });
-app.register(require('./routes/isonline/user'), { prefix: '/isonline/user', logger: true });
-app.register(require('./routes/isonline/report'), { prefix: '/report', logger: true });
-app.register(require('./routes/isonline/report'), { prefix: '/isonline/report', logger: true });
-app.register(require('./routes/isonline/moph'), { prefix: '/moph', logger: true });
-app.register(require('./routes/isonline/ops'), { prefix: '/ops', logger: true });
+app.register(require('./routes/isonline/index'), { prefix: `${rootPrefix}/isonline`, logger: true });
+app.register(require('./routes/isonline/login'), { prefix: `${rootPrefix}/login`, logger: true });
+app.register(require('./routes/isonline/index'), { prefix: `${rootPrefix}/iswin`, logger: true });
+app.register(require('./routes/isonline/index'), { prefix: `${rootPrefix}/is`, logger: true });
+app.register(require('./routes/isonline/his'), { prefix: `${rootPrefix}/his`, logger: true });
+app.register(require('./routes/isonline/his'), { prefix: `${rootPrefix}/isonline/his`, logger: true });
+app.register(require('./routes/isonline/user'), { prefix: `${rootPrefix}/user`, logger: true });
+app.register(require('./routes/isonline/user'), { prefix: `${rootPrefix}/isonline/user`, logger: true });
+app.register(require('./routes/isonline/report'), { prefix: `${rootPrefix}/report`, logger: true });
+app.register(require('./routes/isonline/report'), { prefix: `${rootPrefix}/isonline/report`, logger: true });
+app.register(require('./routes/isonline/moph'), { prefix: `${rootPrefix}/moph`, logger: true });
+app.register(require('./routes/isonline/ops'), { prefix: `${rootPrefix}/ops`, logger: true });
 
 // PCC Data connect service
-app.register(require('./routes/pcc/index'), { prefix: '/pcc', logger: true });
+app.register(require('./routes/pcc/index'), { prefix: `${rootPrefix}/pcc`, logger: true });
 
 // Cannabis Connect ข้อมูลกัญชา
-app.register(require('./routes/cannabis/index'), { prefix: '/cannabis', logger: true });
+app.register(require('./routes/cannabis/index'), { prefix: `${rootPrefix}/cannabis`, logger: true });
 
 // ร้านยาคุณภาพ
-app.register(require('./routes/qdrugstore/index'), { prefix: '/qdrugstore', logger: true });
+app.register(require('./routes/qdrugstore/index'), { prefix: `${rootPrefix}/qdrugstore`, logger: true });
 
 // รายงาน 506
-app.register(require('./routes/rp506/index'), { prefix: '/rp506', logger: true });
+app.register(require('./routes/rp506/index'), { prefix: `${rootPrefix}/rp506`, logger: true });
 
 const port = +process.env.PORT || 3001;
 const host = '0.0.0.0';

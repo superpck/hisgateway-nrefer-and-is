@@ -162,6 +162,7 @@ export class HisJhcisModel {
         columnName = columnName === 'visitNo' ? 'visit.visitno' : columnName;
         columnName = columnName === 'hn' ? 'visit.pid' : columnName;
         columnName = columnName === 'cid' ? 'person.idcard' : columnName;
+        columnName = columnName === 'date_serv' ? 'visit.visitdate' : columnName;
         return db('visit')
             .leftJoin('person', 'visit.pid', 'person.pid')
             .leftJoin('cright', 'visit.rightcode', 'cright.rightcode')
