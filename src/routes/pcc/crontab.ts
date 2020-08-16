@@ -60,9 +60,6 @@ switch (hisProvider) {
   case 'jhcis':
     hisModel = new HisJhcisModel();
     break;
-  case 'hosxppcu':
-    // hisModel = new HisHosxppcuModel();
-    break;
   case 'hospitalos':
     // hisModel = new HisHospitalOsModel();
     break;
