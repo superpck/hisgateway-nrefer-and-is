@@ -17,6 +17,8 @@ import { HisMkhospitalModel } from '../../models/refer/his_mkhospital';
 import { HisModel } from '../../models/refer/his';
 import { HisNemoModel } from '../../models/refer/his_nemo';
 import { HisPmkModel } from '../../models/refer/his_pmk';
+import { HisMyPcuModel } from '../../models/refer/his_mypcu';
+import { HisHosxpPcuModel } from '../../models/refer/his_hosxppcu';
 
 const hisProvider = process.env.HIS_PROVIDER;
 let hisModel: any;
@@ -32,6 +34,9 @@ switch (hisProvider) {
     break;
   case 'hosxpv4':
     hisModel = new HisHosxpv4Model();
+    break;
+  case 'hosxppcu':
+    hisModel = new HisHosxpPcuModel();
     break;
   case 'mkhospital':
     hisModel = new HisMkhospitalModel();
@@ -73,6 +78,9 @@ switch (hisProvider) {
   case 'spdc':
   case 'kpstat':
     hisModel = new HisKpstatModel();
+    break;
+  case 'mypcu':
+    hisModel = new HisMyPcuModel();
     break;
   default:
     hisModel = new HisModel();

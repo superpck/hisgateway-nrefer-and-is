@@ -155,6 +155,7 @@ export class HisHosxpv4Model {
         columnName = columnName === 'vn' ? 'os.vn' : columnName;
         columnName = columnName === 'seq_id' ? 'os.seq_id' : columnName;
         columnName = columnName === 'hn' ? 'o.hn' : columnName;
+        columnName = columnName === 'date_serv' ? 'o.vstdate' : columnName;
         const sql = `
             select 
                 (select hospitalcode from opdconfig) as HOSPCODE,

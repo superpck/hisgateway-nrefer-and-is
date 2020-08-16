@@ -77,6 +77,7 @@ export class HisEzhospModel {
     getService(db, columnName, searchText, hospCode = hcode) {
         //columnName => visitNo, hn
         columnName = columnName === 'visitNo' ? 'vn' : columnName;
+        columnName = columnName === 'date_serv' ? 'visit.date' : columnName;
         return db('view_opd_visit as visit')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select('hn as pid', 'hn', 'vn as seq', 'date as date_serv',
