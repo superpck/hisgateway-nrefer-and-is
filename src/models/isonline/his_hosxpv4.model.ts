@@ -14,11 +14,11 @@ export class HisHosxpv4Model {
     getPerson(db: Knex, columnName, searchText) {
         return db('patient')
             .select('patient.hn', 'patient.cid', 'patient.pname as prename',
-                'patient.fname', 'patient.lname', 'patient.occupation as o1',
+                'patient.fname', 'patient.lname', 'patient.occupation as occupa',
                 'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road',
                 'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip',
                 'occupation.nhso_code as occupation')
-            .select(knex.raw('CONCAT(chwpart,amppart,tmbpart) as addcode'))
+            .select(db.raw('CONCAT(chwpart,amppart,tmbpart) as addcode'))
             .leftJoin(`occupation`, 'occupation.occupation', 'patient.occupation')
             .where(columnName, "=", searchText);
     }
