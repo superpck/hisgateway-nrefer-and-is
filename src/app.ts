@@ -191,7 +191,7 @@ app.register(require('./plugins/db'), {
 });
 
 app.apiVersion = '3.1.2';
-app.apiSubVersion = '2020-08-21';
+app.apiSubVersion = '2020-08-21-01';
 
 // node-cron =========================================
 const secondNow = +moment().get('second');
