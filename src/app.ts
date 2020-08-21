@@ -190,15 +190,16 @@ app.register(require('./plugins/db'), {
   connectionName: 'dbCannabis'
 });
 
+app.apiVersion = '3.1.2';
+app.apiSubVersion = '2020-08-21';
 
-const APIVersion = '3.1.2';
 // node-cron =========================================
 const secondNow = +moment().get('second');
 const timingSch = `${secondNow} */1 * * * *`;  // every minute
 let timingSchedule: any = [];
-timingSchedule['isonline'] = { version: APIVersion };
-timingSchedule['nrefer'] = { version: APIVersion };
-timingSchedule['cupDataCenter'] = { version: APIVersion };
+timingSchedule['isonline'] = { version: app.apiVersion };
+timingSchedule['nrefer'] = { version: app.apiVersion };
+timingSchedule['cupDataCenter'] = { version: app.apiVersion };
 
 // Check IS-Online Auto Send
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;

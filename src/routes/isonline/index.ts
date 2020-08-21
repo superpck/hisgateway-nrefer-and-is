@@ -14,8 +14,8 @@ const router = (fastify, { }, next) => {
     reply.send({
       statusCode: 200,
       apiCode: 'ISOnline',
-      version: '3.1.0',
-      subVersion: '2019-08-31-01'
+      version: fastify.apiVersion,
+      subVersion: fastify.apiSubVersion
     });
   })
 

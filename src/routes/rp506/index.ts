@@ -8,7 +8,8 @@ const router = (fastify, { }, next) => {
       apiCode: 'RP506',
       apiName: 'Report 506',
       apiDesc: 'Report 506 ระบาดวิทยา',
-      version: "1.0.0",
+      version: fastify.apiVersion,
+      subVersion: fastify.apiSubVersion,
       hospcode: process.env.HOSPCODE
     });
   })

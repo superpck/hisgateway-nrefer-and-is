@@ -22,6 +22,8 @@ declare module 'fastify' {
     startServerTime: string;
     setupSession: any;
     ws: any;
+    apiVersion: string;
+    apiSubVersion: string;
   }
 }
 
