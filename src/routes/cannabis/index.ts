@@ -12,7 +12,11 @@ const router = (fastify, { }, next) => {
   var db: Knex = fastify.dbCannabis;
 
   fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
-    reply.send({ api: 'Cannabis API Serivce' });
+    reply.send({ 
+      api: 'Cannabis API Serivce',
+      version: fastify.apiVersion,
+      subVersion: fastify.apiSubVersion
+    });
   })
 
   fastify.get('/test/db', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {

@@ -31,8 +31,8 @@ const router = (fastify, { }, next) => {
       apiCode: 'HISCONNECT',
       apiName: 'HIS-Connection',
       apiDesc: 'API for IS-Online, nRefer, PCC, CMI',
-      version: "3.1.2",
-      subVersion: "63.07.25-01",
+      version: fastify.apiVersion,
+      subVersion: fastify.apiSubVersion,
       serviceName: "isonline",   // for isonline only
       his_provider: process.env.HIS_PROVIDER,
       hospcode: process.env.HOSPCODE,

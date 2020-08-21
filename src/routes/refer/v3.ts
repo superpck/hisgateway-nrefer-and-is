@@ -91,7 +91,9 @@ const router = (fastify, { }, next) => {
   // =============================================================
   fastify.get('/', async (req: fastify.Request, reply: fastify.Reply) => {
     reply.send({
-      api: 'refer V.3'
+      api: 'refer V.3',
+      version: fastify.apiVersion,
+      subVersion: fastify.apiSubVersion
     });
   });
 
