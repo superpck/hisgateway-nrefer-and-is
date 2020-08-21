@@ -15,13 +15,17 @@ export class CannabisModel {
       .limit(1);
   }
 
-  async searchVisit(db: knex, hn: any): Promise<any> {
+  async searchVisit(db: knex, hn: any, startDate = null, endDate = null): Promise<any> {
+    let where = `ccd_opd_visit.hn='${hn}'`;
+    if (startDate && endDate) {
+      where = ` and ccd_opd_visit.vstdate between '${startDate}' and '${endDate}'  `
+    }
     return db(dbName + '.ccd_opd_visit')
       .innerJoin(dbName + '.ccd_person', 'ccd_opd_visit.hn', 'ccd_person.hn')
       .select('ccd_opd_visit.*', 'ccd_person.prename'
         , 'ccd_person.fname', 'ccd_person.lname', 'ccd_person.birthday'
         , 'ccd_person.sex', 'ccd_person.address_id', 'ccd_person.mobile')
-      .where('ccd_opd_visit.hn', hn)
+      .where(db.raw(where))
       .orderByRaw('ccd_opd_visit.vstdate DESC, ccd_opd_visit.vsttime DESC')
       .limit(10);
   }

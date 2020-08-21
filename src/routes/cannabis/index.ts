@@ -15,6 +15,19 @@ const router = (fastify, { }, next) => {
     reply.send({ api: 'Cannabis API Serivce' });
   })
 
+  fastify.get('/test/db', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    try {
+      const result: any = await cannabisModel.testConnection(db);
+      reply.send(result[0]);
+    } catch (error) {
+      reply.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
+        error
+      });
+    }
+  })
+
   fastify.post('/test-connection', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
     try {
       const result: any = await cannabisModel.testConnection(db);
@@ -26,6 +39,28 @@ const router = (fastify, { }, next) => {
       reply.send({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: error.message
+      });
+    }
+  })
+
+  fastify.post('/api/search/person/cid', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const cid = req.body.cid;
+
+    if (cid) {
+      try {
+        const rows: any = await cannabisModel.searchPatient(db, cid);
+        reply.send(rows);
+      } catch (error) {
+        console.log('patient', error.message);
+        reply.send({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message
+        });
+      }
+    } else {
+      reply.send({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'not found parameter.'
       });
     }
   })
@@ -55,17 +90,69 @@ const router = (fastify, { }, next) => {
     }
   })
 
-  fastify.post('/visit', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+  fastify.post('/api/search/visit', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
     const hn = req.body.hn || '';
+    const startDate = req.body.startDate;
+    const endDate = req.body.endDate;
+
     if (hn) {
       try {
-        const result: any = await cannabisModel.searchVisit(db, hn);
+        const result: any = await cannabisModel.searchVisit(db, hn, startDate, endDate);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
         });
       } catch (error) {
         console.log('visit', error.message);
+        reply.send({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message
+        });
+      }
+    } else {
+      reply.send({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'parameter not found.'
+      });
+    }
+  })
+
+  fastify.post('/visit', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const hn = req.body.hn || '';
+    const startDate = req.body.startDate;
+    const endDate = req.body.endDate;
+
+    if (hn) {
+      try {
+        const result: any = await cannabisModel.searchVisit(db, hn, startDate, endDate);
+        reply.send({
+          statusCode: HttpStatus.OK,
+          rows: result
+        });
+      } catch (error) {
+        console.log('visit', error.message);
+        reply.send({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message
+        });
+      }
+    } else {
+      reply.send({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'parameter not found.'
+      });
+    }
+  })
+
+  fastify.post('/api/patient/info', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const hn = req.body.hn || '';
+
+    if (hn) {
+      try {
+        const rows: any = await cannabisModel.patientInfo(db, hn);
+        reply.send(rows);
+      } catch (error) {
+        console.log('patient-info', error.message);
         reply.send({
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message
@@ -104,6 +191,37 @@ const router = (fastify, { }, next) => {
     }
   })
 
+  fastify.post('/api/visit/lab', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const hn = req.body.hn || '';
+    const vn = req.body.vn || '';
+
+    if (hn && vn) {
+      try {
+        const data: any = await cannabisModel.getVisitLab(db, hn, vn);
+        reply.send({
+          statusCode: HttpStatus.OK,
+          status: HttpStatus.OK,
+          data
+        });
+      } catch (error) {
+        console.log('lab', error.message);
+        reply.send({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message,
+          error: error.message
+        });
+      }
+    } else {
+      reply.send({
+        status: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: 'parameter not found.',
+        message: 'parameter not found.'
+      });
+    }
+  })
+
   fastify.post('/lab', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
     const hn = req.body.hn || '';
     const vn = req.body.vn || '';
@@ -125,6 +243,37 @@ const router = (fastify, { }, next) => {
     } else {
       reply.send({
         statusCode: HttpStatus.BAD_REQUEST,
+        message: 'parameter not found.'
+      });
+    }
+  })
+
+  fastify.post('/api/visit/drug', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const hn = req.body.hn || '';
+    const vn = req.body.vn || '';
+
+    if (hn && vn) {
+      try {
+        const data: any = await cannabisModel.getVisitDrug(db, hn, vn);
+        reply.send({
+          status: HttpStatus.OK,
+          statusCode: HttpStatus.OK,
+          data
+        });
+      } catch (error) {
+        console.log('getVisitDrug', error.message);
+        reply.send({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: error.message,
+          message: error.message
+        });
+      }
+    } else {
+      reply.send({
+        status: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: 'parameter not found.',
         message: 'parameter not found.'
       });
     }
@@ -156,6 +305,33 @@ const router = (fastify, { }, next) => {
     }
   })
 
+  fastify.post('/api/visit/appointment', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const hn = req.body.hn || '';
+    const vn = req.body.vn || '';
+
+    if (hn && vn) {
+      try {
+        const data: any = await cannabisModel.getVisitAppointment(db, hn, vn);
+        reply.send({
+          status: HttpStatus.OK,
+          data
+        });
+      } catch (error) {
+        console.log('getVisitAppointment', error.message);
+        reply.send({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: error.message,
+          message: error.message
+        });
+      }
+    } else {
+      reply.send({
+        status: HttpStatus.BAD_REQUEST,
+        message: 'parameter not found.'
+      });
+    }
+  })
+
   fastify.post('/appointment', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
     const hn = req.body.hn || '';
     const vn = req.body.vn || '';
@@ -169,6 +345,33 @@ const router = (fastify, { }, next) => {
         });
       } catch (error) {
         console.log('getVisitAppointment', error.message);
+        reply.send({
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message
+        });
+      }
+    } else {
+      reply.send({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'parameter not found.'
+      });
+    }
+  })
+
+  fastify.post('/api/visit/diag-text', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const hn = req.body.hn || '';
+    const vn = req.body.vn || '';
+
+    if (hn && vn) {
+      try {
+        const data: any = await cannabisModel.getVisitDiagText(db, hn, vn);
+        reply.send({
+          status: HttpStatus.OK,
+          statusCode: HttpStatus.OK,
+          data
+        });
+      } catch (error) {
+        console.log('diag-text', error.message);
         reply.send({
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
           message: error.message
@@ -208,6 +411,35 @@ const router = (fastify, { }, next) => {
     }
   })
 
+  fastify.post('/api/visit/diagnosis', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const hn = req.body.hn || '';
+    const vn = req.body.vn || '';
+
+    if (hn && vn) {
+      try {
+        const data: any = await cannabisModel.getVisitDiagnosis(db, hn, vn);
+        reply.send({
+          statusCode: HttpStatus.OK,
+          status: HttpStatus.OK,
+          data
+        });
+      } catch (error) {
+        console.log('diagnosis', error.message);
+        reply.send({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message
+        });
+      }
+    } else {
+      reply.send({
+        status: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'parameter not found.'
+      });
+    }
+  })
+
   fastify.post('/diagnosis', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
     const hn = req.body.hn || '';
     const vn = req.body.vn || '';
@@ -234,6 +466,35 @@ const router = (fastify, { }, next) => {
     }
   })
 
+  fastify.post('/api/visit/procedures', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const hn = req.body.hn || '';
+    const vn = req.body.vn || '';
+
+    if (hn && vn) {
+      try {
+        const data: any = await cannabisModel.getVisitProcedure(db, hn, vn);
+        reply.send({
+          status: HttpStatus.OK,
+          statusCode: HttpStatus.OK,
+          data
+        });
+      } catch (error) {
+        console.log('procedure', error.message);
+        reply.send({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message
+        });
+      }
+    } else {
+      reply.send({
+        status: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'parameter not found.'
+      });
+    }
+  })
+
   fastify.post('/procedure', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
     const hn = req.body.hn || '';
     const vn = req.body.vn || '';
@@ -254,6 +515,31 @@ const router = (fastify, { }, next) => {
       }
     } else {
       reply.send({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'parameter not found.'
+      });
+    }
+  })
+
+  fastify.post('/api/visit/screening', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    const hn = req.body.hn || '';
+    const vn = req.body.vn || '';
+
+    if (hn && vn) {
+      try {
+        const result: any = await cannabisModel.getVisitScreening(db, hn, vn);
+        reply.send(result);
+      } catch (error) {
+        console.log('screening', error.message);
+        reply.send({
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: error.message
+        });
+      }
+    } else {
+      reply.send({
+        status: HttpStatus.BAD_REQUEST,
         statusCode: HttpStatus.BAD_REQUEST,
         message: 'parameter not found.'
       });
