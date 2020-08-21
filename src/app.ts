@@ -343,7 +343,7 @@ function createConnectionOption(db: any) {
         }
       }
     };
-  } if (db.client === 'oracledb') {
+  } if (db.client == 'oracledb') {
     // testOracleConn(db);
     return {
       client: db.client,
@@ -357,6 +357,21 @@ function createConnectionOption(db: any) {
         fetchAsString: ['DATE'],
         // poolTimeout: 60,
         // queueTimeout: 3000
+      }
+    };
+  } if (db.client == 'pg') {
+    return {
+      client: db.client,
+      connection: {
+        host: db.host,
+        port: +db.port,
+        user: db.user,
+        password: db.password,
+        database: db.dbName,
+      },
+      pool: {
+        min: 0,
+        max: 100,
       }
     };
   } else {
