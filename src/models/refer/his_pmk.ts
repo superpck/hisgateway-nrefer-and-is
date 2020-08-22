@@ -27,7 +27,38 @@ export class HisPmkModel {
                 this.on('OPDS.PAT_RUN_HN', '=', 'patient.RUN_HN')
                     .andOn('OPDS.PAT_YEAR_HN', '=', 'patient.YEAR_HN')
             })
-            .select(db.raw(`'${hospCode}' AS "hospcode"`))
+            .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
+            .select(db.raw(`concat(concat(to_char(OPDS.PAT_RUN_HN),'/'),to_char(OPDS.PAT_YEAR_HN)) AS "hn"`))
+            .select('referout.OPD_NO as seq', 'referout.OPD_NO as vn'
+                , 'referout.REFER_NO as referid'
+                , 'referout.HOS_IN_CARD as hosp_destination'
+                , 'referout.REFER_IN_DATETIME as refer_date'
+                , 'patient.ID_CARD as cid'
+                , 'patient.PRENAME as prename'
+                , 'patient.NAME as fname', 'patient.SURNAME as lname'
+                , 'patient.BIRTHDAY as dob'
+            )
+            .select(db.raw(`case when SEX='F' then 2 else 1 end as "sex"`))
+            .whereRaw(db.raw(where));
+        return result;
+    }
+
+    async getReferResult(db, date, hospCode = hcode) {
+        return [];
+    }
+    
+    async getReferResult1(db, date, hospCode = hcode) {
+        let ret = [];
+
+        date = moment(date).format('YYYY-MM-DD');
+        let where: any = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS')`;
+        const result = await db('PATIENTS_REFER_HX as referout')
+            .join('OPDS', 'referout.OPD_NO', 'OPDS.OPD_NO')
+            .join('PATIENTS as patient', function () {
+                this.on('OPDS.PAT_RUN_HN', '=', 'patient.RUN_HN')
+                    .andOn('OPDS.PAT_YEAR_HN', '=', 'patient.YEAR_HN')
+            })
+            .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
             .select(db.raw(`concat(concat(to_char(OPDS.PAT_RUN_HN),'/'),to_char(OPDS.PAT_YEAR_HN)) AS "hn"`))
             .select('referout.OPD_NO as seq', 'referout.OPD_NO as vn'
                 , 'referout.REFER_NO as referid'
@@ -42,19 +73,36 @@ export class HisPmkModel {
             .whereRaw(db.raw(where));
         return result;
 
-        const sql = `
-                o.an as an,
-                refer.pdx as dx
-        `;
+        const a = db('view_opd_visit as visit')
+            .select('visit.refer as HOSP_SOURCE', 'visit.refer_no as REFERID_SOURCE')
+            .select(db.raw('concat(visit.refer,visit.refer_no) as REFERID_PROVINCE'))
+            .select('visit.date as DATETIME_IN'
+                , 'visit.hn as PID_IN', 'visit.vn as SEQ_IN'
+                , 'visit.ipd_an as AN_IN', 'visit.no_card as CID_IN')
+            .select(db.raw('1 as REFER_RESULT'))
+            .select(db.raw(`concat(visit.date,' ',visit.time) as D_UPDATE`))
+            .where('visit.date', date)
+            .where('visit.refer', '!=', hcode)
+            .where(db.raw('length(visit.refer)=5'))
+            .limit(maxLimit);
+        return ret;
+
     }
 
-    getPerson(db: Knex, columnName, searchText) {
-        columnName = columnName === 'hn' ? 'HN' : columnName;
-        columnName = columnName === 'pid' ? 'HN' : columnName;
-        columnName = columnName === 'cid' ? 'ID_CARD' : columnName;
-        columnName = columnName === 'fname' ? 'NAME' : columnName;
-        columnName = columnName === 'lname' ? 'SURNAME' : columnName;
+    getPerson(db: Knex, columnName, searchText, hospCode = hcode) {
+        let where: any = {};
+        if (['hn', 'HN', 'pid', 'PID'].indexOf(columnName) >= 0) {
+            const hn = searchText.split('/');
+            where['RUN_HN'] = hn[0];
+            where['YEAR_HN'] = hn[1];
+        } else {
+            columnName = columnName === 'cid' ? 'ID_CARD' : columnName;
+            columnName = columnName === 'fname' ? 'NAME' : columnName;
+            columnName = columnName === 'lname' ? 'SURNAME' : columnName;
+            where[columnName] = searchText;
+        }
         return db('PATIENTS')
+            .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
             .select('RUN_HN', 'YEAR_HN')
             .select('HN as hn', 'ID_CARD as cid', 'PRENAME as prename',
                 'NAME as fname', 'SURNAME as lname',
@@ -65,7 +113,7 @@ export class HisPmkModel {
             .select('TAMBON as addcode', 'TEL as tel')
             .select(db.raw(`'' as zip`))
             .select(db.raw(`'' as occupation`))
-            .whereRaw(db.raw(` ${columnName}='${searchText}' `))
+            .where(where)
             .limit(maxLimit);
     }
 
@@ -88,7 +136,7 @@ export class HisPmkModel {
             where['OPD_NO'] = searchText;
         }
         return db(`OPDS`)
-            .select(db.raw(`'${hospCode}' AS "hospcode"`))
+            .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
             .select(db.raw(`concat(concat(to_char(OPDS.PAT_RUN_HN),'/'),to_char(OPDS.PAT_YEAR_HN)) AS "hn"`))
             .select('PAT_RUN_HN as RUN_HN', 'PAT_YEAR_HN as YEAR_HN')
             .select('OPD_NO as visitno', 'OPD_DATE as date', 'OPD_DATE as DATE_SERV')
@@ -182,10 +230,6 @@ export class HisPmkModel {
             .where(columnName, "=", searchNo);
     }
 
-    getReferResult() {
-        return [];
-    }
-    
     getData(knex, tableName, columnName, searchNo, hospCode) {
         return knex
             .select('*')
