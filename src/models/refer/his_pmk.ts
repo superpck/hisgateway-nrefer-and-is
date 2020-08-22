@@ -182,6 +182,10 @@ export class HisPmkModel {
             .where(columnName, "=", searchNo);
     }
 
+    getReferResult() {
+        return [];
+    }
+    
     getData(knex, tableName, columnName, searchNo, hospCode) {
         return knex
             .select('*')

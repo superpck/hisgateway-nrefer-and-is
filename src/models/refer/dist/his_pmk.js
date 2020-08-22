@@ -199,6 +199,9 @@ var HisPmkModel = /** @class */ (function () {
             .from('appointment')
             .where(columnName, "=", searchNo);
     };
+    HisPmkModel.prototype.getReferResult = function () {
+        return [];
+    };
     HisPmkModel.prototype.getData = function (knex, tableName, columnName, searchNo, hospCode) {
         return knex
             .select('*')
