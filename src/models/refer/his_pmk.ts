@@ -1,4 +1,5 @@
 import Knex = require('knex');
+import * as moment from 'moment';
 
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
@@ -18,7 +19,8 @@ export class HisPmkModel {
     }
 
     async getReferOut(db: Knex, date, hospCode = hcode) {
-        let where: any = `REFER_IN_DATETIME=TO_DATE('${date}', 'YYYY-MM-DD HH24:MI:SS')`;
+        date = moment(date).format('YYYY-MM-DD');
+        let where: any = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS')`;
         const result = await db('PATIENTS_REFER_HX as referout')
             .join('OPDS', 'referout.OPD_NO', 'OPDS.OPD_NO')
             .join('PATIENTS as patient', function () {

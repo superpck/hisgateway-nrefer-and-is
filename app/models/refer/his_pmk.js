@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const moment = require("moment");
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
 const dbName = process.env.HIS_DB_NAME;
@@ -26,7 +27,8 @@ class HisPmkModel {
     }
     getReferOut(db, date, hospCode = hcode) {
         return __awaiter(this, void 0, void 0, function* () {
-            let where = `REFER_IN_DATETIME=TO_DATE('${date}', 'YYYY-MM-DD HH24:MI:SS')`;
+            date = moment(date).format('YYYY-MM-DD');
+            let where = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS')`;
             const result = yield db('PATIENTS_REFER_HX as referout')
                 .join('OPDS', 'referout.OPD_NO', 'OPDS.OPD_NO')
                 .join('PATIENTS as patient', function () {
