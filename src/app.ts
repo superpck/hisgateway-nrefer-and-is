@@ -191,7 +191,7 @@ app.register(require('./plugins/db'), {
 });
 
 app.apiVersion = '3.1.2';
-app.apiSubVersion = '2020-08-21-01';
+app.apiSubVersion = '2020-08-21-02';
 
 // node-cron =========================================
 const secondNow = +moment().get('second');
@@ -423,7 +423,6 @@ async function testOracleConn(db) {
       }
     }
   }
-
 }
 
 async function doAutoSend(req, res, serviceName, functionName) {
