@@ -41,25 +41,15 @@ class PmkModel {
     }
     searchVisit(db, hn, startDate = null, endDate = null) {
         return __awaiter(this, void 0, void 0, function* () {
-            let where = `ccd_opd_visit.hn='${hn}'`;
+            let where = `o.hn='${hn}'`;
             if (startDate && endDate) {
-                where = ` and ccd_opd_visit.vstdate between '${startDate}' and '${endDate}'  `;
+                where = ` and o.vstdate between TO_DATE('${startDate}', 'YYYY-MM-DD HH24:MI:SS') and TO_DATE('${endDate}', 'YYYY-MM-DD HH24:MI:SS')`;
             }
-            return db(`OPDS`)
-                .select('PAT_RUN_HN as RUN_HN', 'PAT_YEAR_HN as YEAR_HN')
-                .select(db.raw(`concat(concat(to_char(PAT_RUN_HN),'/'),to_char(PAT_YEAR_HN)) AS hn`))
-                .select('OPD_NO as visitno', 'OPD_DATE as date')
-                .select(db.raw(`TO_CHAR(DATE_CREATED, 'HH24:MI:SS') AS time`))
-                .select('BP_SYSTOLIC as bp_systolic', 'BP_DIASTOLIC as bp_diastolic', 'BP_SYSTOLIC as bp1', 'BP_DIASTOLIC as bp2', 'PALSE as pr', 'RESPIRATORY_RATE as rr', 'WT_KG as weight', 'HEIGHT_CM as height', 'TEMP_C as tem')
-                .where(where)
-                .whereRaw(db.raw(cdate))
+            return db(`CCD_OPD_VISIT as o`)
+                .innerJoin(db.raw('PATIENTS as p on o.PAT_RUN_HN=p.PAT_RUN_HN and o.PAT_YEAR_HN=p.PAT_YEAR_HN'))
+                .select('o.*')
+                .whereRaw(db.raw(where))
                 .limit(maxLimit);
-            return db(dbName + '.ccd_opd_visit')
-                .innerJoin(dbName + '.ccd_person', 'ccd_opd_visit.hn', 'ccd_person.hn')
-                .select('ccd_opd_visit.*', 'ccd_person.prename', 'ccd_person.fname', 'ccd_person.lname', 'ccd_person.birthday', 'ccd_person.sex', 'ccd_person.address_id', 'ccd_person.mobile')
-                .where(db.raw(where))
-                .orderByRaw('ccd_opd_visit.vstdate DESC, ccd_opd_visit.vsttime DESC')
-                .limit(10);
         });
     }
     patientInfo(db, hn) {
