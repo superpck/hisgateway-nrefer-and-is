@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HisKpstatModel = void 0;
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
 class HisKpstatModel {

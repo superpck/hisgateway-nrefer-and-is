@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.PccHisEzhospModel = void 0;
 const moment = require("moment");
 const dbName = process.env.HIS_DB_NAME;
 const hospCode = process.env.HOSPCODE;

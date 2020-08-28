@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HisModel = void 0;
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
 const dbName = process.env.HIS_DB_NAME;

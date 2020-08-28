@@ -11,15 +11,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const HttpStatus = require("http-status-codes");
 var http = require('http');
-const cannabis_1 = require("../../models/cannabis");
-const cannabisModel = new cannabis_1.CannabisModel();
+const cannabis_1 = require("../../models/cannabis/cannabis");
+const pmk_1 = require("../../models/cannabis/pmk");
+const hisProvider = process.env.HIS_PROVIDER;
+let cannabisModel;
+switch (hisProvider) {
+    case 'pmk':
+        cannabisModel = new pmk_1.PmkModel();
+        break;
+    default:
+        cannabisModel = new cannabis_1.CannabisModel();
+}
 const router = (fastify, {}, next) => {
     var db = fastify.dbCannabis;
     fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         reply.send({
             api: 'Cannabis API Serivce',
             version: fastify.apiVersion,
-            subVersion: fastify.apiSubVersion
+            subVersion: fastify.apiSubVersion,
+            his: hisProvider
         });
     }));
     fastify.get('/test/db', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
