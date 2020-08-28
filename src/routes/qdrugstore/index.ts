@@ -80,7 +80,7 @@ switch (hisProvider) {
     hisModel = new HisModel();
 }
 
-import { CannabisModel } from '../../models/cannabis';
+import { CannabisModel } from '../../models/cannabis/cannabis';
 const cannabisModel = new CannabisModel();
 
 const router = (fastify, { }, next) => {

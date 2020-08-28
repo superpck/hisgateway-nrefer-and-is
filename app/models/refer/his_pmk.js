@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HisPmkModel = void 0;
 const moment = require("moment");
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
@@ -49,34 +50,25 @@ class HisPmkModel {
         });
     }
     getReferResult1(db, date, hospCode = hcode) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let ret = [];
-            date = moment(date).format('YYYY-MM-DD');
-            let where = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS')`;
-            const result = yield db('PATIENTS_REFER_HX as referout')
-                .join('OPDS', 'referout.OPD_NO', 'OPDS.OPD_NO')
-                .join('PATIENTS as patient', function () {
-                this.on('OPDS.PAT_RUN_HN', '=', 'patient.RUN_HN')
-                    .andOn('OPDS.PAT_YEAR_HN', '=', 'patient.YEAR_HN');
-            })
-                .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
-                .select(db.raw(`concat(concat(to_char(OPDS.PAT_RUN_HN),'/'),to_char(OPDS.PAT_YEAR_HN)) AS "hn"`))
-                .select('referout.OPD_NO as seq', 'referout.OPD_NO as vn', 'referout.REFER_NO as referid', 'referout.HOS_IN_CARD as hosp_destination', 'referout.REFER_IN_DATETIME as refer_date', 'patient.ID_CARD as cid', 'patient.PRENAME as prename', 'patient.NAME as fname', 'patient.SURNAME as lname', 'patient.BIRTHDAY as dob')
-                .select(db.raw(`case when SEX='F' then 2 else 1 end as "sex"`))
-                .whereRaw(db.raw(where));
-            return result;
-            const a = db('view_opd_visit as visit')
-                .select('visit.refer as HOSP_SOURCE', 'visit.refer_no as REFERID_SOURCE')
-                .select(db.raw('concat(visit.refer,visit.refer_no) as REFERID_PROVINCE'))
-                .select('visit.date as DATETIME_IN', 'visit.hn as PID_IN', 'visit.vn as SEQ_IN', 'visit.ipd_an as AN_IN', 'visit.no_card as CID_IN')
-                .select(db.raw('1 as REFER_RESULT'))
-                .select(db.raw(`concat(visit.date,' ',visit.time) as D_UPDATE`))
-                .where('visit.date', date)
-                .where('visit.refer', '!=', hcode)
-                .where(db.raw('length(visit.refer)=5'))
-                .limit(maxLimit);
-            return ret;
-        });
+        date = moment(date).format('YYYY-MM-DD');
+        let where = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS')`;
+        return db('PATIENTS_REFER_HX as referout')
+            .join('OPDS', 'referout.OPD_NO', 'OPDS.OPD_NO')
+            .join('PATIENTS as patient', function () {
+            this.on('OPDS.PAT_RUN_HN', '=', 'patient.RUN_HN')
+                .andOn('OPDS.PAT_YEAR_HN', '=', 'patient.YEAR_HN');
+        })
+            .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
+            .select(db.raw(`concat(concat(to_char(OPDS.PAT_RUN_HN),'/'),to_char(OPDS.PAT_YEAR_HN)) AS "hn"`))
+            .select('referout.OPD_NO as seq', 'referout.OPD_NO as vn', 'referout.REFER_NO as referid', 'referout.HOS_IN_CARD as hosp_destination', 'referout.REFER_IN_DATETIME as DATETIME_IN', 'patient.ID_CARD as cid', 'patient.PRENAME as prename', 'patient.NAME as fname', 'patient.SURNAME as lname', 'patient.BIRTHDAY as dob', 'REFER_IN_DATETIME as D_UPDATE')
+            .select(db.raw(`case when SEX='F' then 2 else 1 end as "sex"`))
+            .select(db.raw('1 as REFER_RESULT'))
+            .whereRaw(db.raw(where))
+            .limit(maxLimit);
+        const a = db('view_opd_visit as visit')
+            .select('visit.refer as HOSP_SOURCE', 'visit.refer_no as REFERID_SOURCE')
+            .select(db.raw('concat(visit.refer,visit.refer_no) as REFERID_PROVINCE'))
+            .select('visit.date as DATETIME_IN', 'visit.hn as PID_IN', 'visit.vn as SEQ_IN', 'visit.ipd_an as AN_IN', 'visit.no_card as CID_IN');
     }
     getPerson(db, columnName, searchText, hospCode = hcode) {
         let where = {};
@@ -96,10 +88,8 @@ class HisPmkModel {
             .select('RUN_HN', 'YEAR_HN')
             .select('HN as hn', 'ID_CARD as cid', 'PRENAME as prename', 'NAME as fname', 'SURNAME as lname', 'BIRTHDAY as dob')
             .select(db.raw(`case when SEX='F' then 2 else 1 end as sex`))
-            .select('HOME as address', 'VILLAGE as moo', 'ROAD as road')
-            .select(db.raw(`'' as soi`))
-            .select('TAMBON as addcode', 'TEL as tel')
-            .select(db.raw(`'' as zip`))
+            .select('HOME as address', 'VILLAGE as moo', 'SOIMAIN as soi', 'ROAD as road')
+            .select('TAMBON as addcode', 'TEL as tel', 'ZIP_CODE as zip')
             .select(db.raw(`'' as occupation`))
             .where(where)
             .limit(maxLimit);

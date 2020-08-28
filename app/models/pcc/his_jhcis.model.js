@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.PccHisJhcisModel = void 0;
 const dbName = process.env.HIS_DB_NAME;
 const maxLimit = 500;
 class PccHisJhcisModel {

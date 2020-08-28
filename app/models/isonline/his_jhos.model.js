@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HisJhosModel = void 0;
 const dbName = process.env.HIS_DB_NAME;
 class HisJhosModel {
     getTableName(knex) {

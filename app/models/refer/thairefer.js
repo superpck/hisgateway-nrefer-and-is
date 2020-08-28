@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ThaiReferModel = void 0;
 const maxLimit = 500;
 const dbName = process.env.THAI_REFER_DB_NAME;
 const dbClient = process.env.THAI_REFER_DB_CLIENT;

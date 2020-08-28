@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.IswinModel = void 0;
 const dbName = process.env.DB_NAME;
 const defaultHCode = process.env.HOSPCODE;
 class IswinModel {

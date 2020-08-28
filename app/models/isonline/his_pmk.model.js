@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HisPmkModel = void 0;
 const dbClient = process.env.HIS_DB_CLIENT;
 const dbName = process.env.HIS_DB_NAME;
 const maxLimit = 500;
@@ -24,10 +25,8 @@ class HisPmkModel {
             .select('RUN_HN', 'YEAR_HN')
             .select('HN as hn', 'ID_CARD as cid', 'PRENAME as prename', 'NAME as fname', 'SURNAME as lname', 'BIRTHDAY as dob')
             .select(db.raw(`case when SEX='F' then 2 else 1 end as sex`))
-            .select('HOME as address', 'VILLAGE as moo', 'ROAD as road')
-            .select(db.raw(`'' as soi`))
-            .select('TAMBON as addcode', 'TEL as tel')
-            .select(db.raw(`'' as zip`))
+            .select('HOME as address', 'VILLAGE as moo', 'SOIMAIN as soi', 'ROAD as road')
+            .select('TAMBON as addcode', 'TEL as tel', 'ZIP_CODE as zip')
             .select(db.raw(`'' as occupation`))
             .whereRaw(db.raw(` ${columnName}='${searchText}' `))
             .limit(maxLimit);

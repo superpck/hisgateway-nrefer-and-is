@@ -68,6 +68,8 @@ IS_AUTO_SEND=0
 IS_AUTO_SEND_EVERY_MINUTE=30
 IS_AUTO_SEND_EVERY_HOUR=0
 IS_URL=http://ae.moph.go.th:3006
+
+#User from http://ae.moph.go.th/moph/#/login
 IS_MOPH_USER=??
 IS_MOPH_PASSWORD=??
 
@@ -76,8 +78,8 @@ NREFER_URL1=http://203.157.103.33:8080/nrefer
 NREFER_URL=203.157.103.33
 NREFER_PORT=8080
 NREFER_PATH=/nrefer
-NREFER_APIKEY=??
-NREFER_SECRETKEY=??
+NREFER_APIKEY=??_please_fill_this_value
+NREFER_SECRETKEY=??_please_fill_this_value
 NREFER_AUTO_SEND=1
 NREFER_AUTO_SEND_EVERY_MINUTE=15
 NREFER_AUTO_SEND_EVERY_HOUR=0
@@ -85,10 +87,10 @@ NREFER_AUTO_SEND_EVERY_HOUR=0
 [Notify]
 NOTIFY_URL=http://203.157.103.33:8080/nrefer/message
 NOTIFY_TOKEN=$nRefer@MoPH$
-NOTIFY_CHANNEL=nRefer@????
+NOTIFY_CHANNEL=nRefer@????_please_fill_this_value
 
 [JWT]
 // REQUEST_KEY <10-32 char>
 // SECRET_KEY <16-128 char>
-REQUEST_KEY=1234567890
-SECRET_KEY=[Hospital]
+REQUEST_KEY=1234567890_please_fill_this_value
+SECRET_KEY=[Hospital]_please_fill_this_value

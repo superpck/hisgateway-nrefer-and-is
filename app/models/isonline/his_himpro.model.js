@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HisHimproModel = void 0;
 const dbName = process.env.HIS_DB_NAME;
 class HisHimproModel {
     getTableName(knex) {

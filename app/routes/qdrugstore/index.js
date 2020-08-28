@@ -76,7 +76,7 @@ switch (hisProvider) {
     default:
         hisModel = new his_1.HisModel();
 }
-const cannabis_1 = require("../../models/cannabis");
+const cannabis_1 = require("../../models/cannabis/cannabis");
 const cannabisModel = new cannabis_1.CannabisModel();
 const router = (fastify, {}, next) => {
     var db = fastify.dbHIS;

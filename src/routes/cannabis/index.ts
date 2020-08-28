@@ -5,17 +5,28 @@ import * as fastify from 'fastify';
 import * as HttpStatus from 'http-status-codes';
 var http = require('http');
 
-import { CannabisModel } from '../../models/cannabis';
-const cannabisModel = new CannabisModel();
+import { CannabisModel } from '../../models/cannabis/cannabis';
+import { PmkModel } from '../../models/cannabis/pmk';
+
+const hisProvider = process.env.HIS_PROVIDER;
+let cannabisModel: any;
+switch (hisProvider) {
+  case 'pmk':
+    cannabisModel = new PmkModel();
+    break;
+  default:
+    cannabisModel = new CannabisModel();
+}
 
 const router = (fastify, { }, next) => {
   var db: Knex = fastify.dbCannabis;
 
   fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
-    reply.send({ 
+    reply.send({
       api: 'Cannabis API Serivce',
       version: fastify.apiVersion,
-      subVersion: fastify.apiSubVersion
+      subVersion: fastify.apiSubVersion,
+      his: hisProvider
     });
   })
 

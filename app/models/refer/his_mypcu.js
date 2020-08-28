@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HisMyPcuModel = void 0;
 const moment = require("moment");
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;

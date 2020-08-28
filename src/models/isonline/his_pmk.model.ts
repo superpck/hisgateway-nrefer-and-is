@@ -28,10 +28,9 @@ export class HisPmkModel {
                 'NAME as fname', 'SURNAME as lname',
                 'BIRTHDAY as dob')
             .select(db.raw(`case when SEX='F' then 2 else 1 end as sex`))
-            .select('HOME as address', 'VILLAGE as moo', 'ROAD as road')
-            .select(db.raw(`'' as soi`))
-            .select('TAMBON as addcode', 'TEL as tel')
-            .select(db.raw(`'' as zip`))
+            .select('HOME as address', 'VILLAGE as moo'
+                ,'SOIMAIN as soi', 'ROAD as road')
+            .select('TAMBON as addcode', 'TEL as tel', 'ZIP_CODE as zip')
             .select(db.raw(`'' as occupation`))
             .whereRaw(db.raw(` ${columnName}='${searchText}' `))
             .limit(maxLimit);

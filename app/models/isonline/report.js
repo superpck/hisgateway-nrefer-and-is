@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.IsReportModel = void 0;
 class IsReportModel {
     getReport1(knex, reportCond) {
         let date1 = reportCond.date1 + ' 00:00:00';

@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.HisHosxpv3Model = void 0;
 const maxLimit = 250;
 const hcode = process.env.HOSPCODE;
 const hn_len = +process.env.HN_LENGTH || 6;
