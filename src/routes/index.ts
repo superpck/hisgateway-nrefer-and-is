@@ -29,7 +29,7 @@ const router = (fastify, { }, next) => {
     reply.send({
       ok: true,
       apiCode: 'HISCONNECT',
-      apiName: 'HIS-Connection',
+      apiName: 'HIS-Connect',
       apiDesc: 'API for IS-Online, nRefer, PCC, CMI',
       version: fastify.apiVersion,
       subVersion: fastify.apiSubVersion,

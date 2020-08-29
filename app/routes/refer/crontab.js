@@ -719,7 +719,7 @@ function referSending(path, dataArray) {
         const dataSending = querystring.stringify({
             hospcode: hcode, data: JSON.stringify(dataArray),
             processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-            sourceApiName: 'HIS-connection version ' + apiVersion
+            sourceApiName: 'HIS-connect', apiVersion
         });
         const options = {
             hostname: process.env.NREFER_URL,
@@ -757,7 +757,10 @@ function getNReferToken(apiKey, secretKey) {
         let url = process.env.NREFER_URL1;
         url += url.substr(-1, 1) === '/' ? '' : '/';
         const postData = querystring.stringify({
-            apiKey: apiKey, secretKey: secretKey
+            apiKey: apiKey, secretKey: secretKey,
+            hospcode: hcode,
+            processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+            sourceApiName: 'HIS-connect', apiVersion
         });
         const options = {
             hostname: process.env.NREFER_URL,
