@@ -16,8 +16,8 @@
 ```
 1.สร้าง Folder ที่จะใช้เก็บ API เช่น mkdir c:\API
 2.cd api
-3.ทำการ clone source จาก github ด้วยคำสั่ง git clone https://github.com/superpck/hisgateway-nrefer-and-is his_connection
-4.cd his_connection
+3.ทำการ clone source จาก github ด้วยคำสั่ง git clone https://github.com/superpck/hisgateway-nrefer-and-is his_connect
+4.cd his_connect
 5.npm install
 6.กรณีพบ vulnerabilities ให้ทำการ fix ด้วยคำสั่ง npm audit fix --force
 7.copy file config.default แล้วตั้งชื่อ file ใหม่เป็น config
@@ -40,19 +40,19 @@
   2.1 npm install pm2-windows-startup -g
   2.2 pm2-startup install
 3. กรณี Linux ให้ใช้คำสั้ง pm2 startup
-4. start การใช้งาน API ด้วยคำสั่ง pm2 start app/app.js -i 2 --name "his-connection"
+4. start การใช้งาน API ด้วยคำสั่ง pm2 start app/app.js -i 2 --name "his-connect"
 ## ชื่อ --name จะต้องตรงกับค่า PM2_NAME ใน config file
 5. ใช้คำสั่ง pm2 save เพื่อบันทึกค่าที่ใช้งานในปัจจุบัน
 ```
 
 # การ Update Source code
 ```
-1. เข้าไปที่ folder ที่เก็บ API เช่น > cd \api\his_connection
+1. เข้าไปที่ folder ที่เก็บ API เช่น > cd \api\his_connect
 2. update source code จาก github > git pull
 3. ติดตั้ง package (เผื่อมีการติดตั้งเพิ่มเติม) > npm install
 4. กรณีพบ vulnerabilities ให้ทำการ fix ด้วยคำสั่ง > npm audit fix --force
 5. ทำการ compile source code ด้วยคำสั่ง > tsc
-6. Restart API ที่เคย run ไว้แล้วด้วยคำสั่ง > pm2 restart his-connection
+6. Restart API ที่เคย run ไว้แล้วด้วยคำสั่ง > pm2 restart his-connect
 ```
 
 # push to git กรณีเป็นทีมพัฒนา (Develop@MOPH)

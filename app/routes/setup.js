@@ -172,7 +172,7 @@ const router = (fastify, {}, next) => {
                     HTTPS: 0,
                     PORT: 3004,
                     START_TOOL: 'pm2',
-                    PM2_NAME: 'his-connection',
+                    PM2_NAME: 'his-connect',
                     PM2_INSTANCE: 3,
                     AUTO_RESTART: 1,
                     MAX_CONNECTION_PER_MINUTE: 100000
