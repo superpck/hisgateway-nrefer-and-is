@@ -97,6 +97,7 @@ export class HisEzhospModel {
     getDiagnosisOpd(db, visitno, hospCode = hcode) {
         return db('view_opd_dx_hdc as dx')
             .select('dx.*')
+            .select(db.raw('"' + hcode + '" as HOSPCODE'))
             .select(db.raw(' "IT" as codeset'))
             .select(db.raw(`case when substr(dx.DIAGCODE,1,1) in ('V','W','X','Y') then 4 else dx.DIAGTYPE end as dxtype`))
             .where('SEQ', visitno)
@@ -191,7 +192,7 @@ export class HisEzhospModel {
         // `LOINC` varchar(20) DEFAULT NULL,
     }
 
-    async getDrugOpd(db, visitNo, hospCode = hcode) {
+    async getDrugOpd(db: Knex, visitNo, hospCode = hcode) {
         const sql = `
             SELECT '${hospCode}' as hospcode, drug.hn as pid, drug.vn as seq
                 , concat(visit.date,' ',visit.time) as date_serv

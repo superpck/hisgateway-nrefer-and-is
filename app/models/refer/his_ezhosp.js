@@ -79,6 +79,7 @@ class HisEzhospModel {
     getDiagnosisOpd(db, visitno, hospCode = hcode) {
         return db('view_opd_dx_hdc as dx')
             .select('dx.*')
+            .select(db.raw('"' + hcode + '" as HOSPCODE'))
             .select(db.raw(' "IT" as codeset'))
             .select(db.raw(`case when substr(dx.DIAGCODE,1,1) in ('V','W','X','Y') then 4 else dx.DIAGTYPE end as dxtype`))
             .where('SEQ', visitno)
