@@ -376,7 +376,7 @@ function getAddress(db, pid, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
         const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
         const rows = yield hisModel.getAddress(db, 'hn', pid, hcode);
-        sentContent += '  - address = ' + rows.length + '\r';
+        sentContent += '  - address = ' + (rows ? rows.length : 0) + '\r';
         if (rows && rows.length) {
             for (const row of rows) {
                 const address = yield {

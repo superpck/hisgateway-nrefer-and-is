@@ -46,7 +46,7 @@ export class HisPmkModel {
     async getReferResult(db, date, hospCode = hcode) {
         return [];
     }
-    
+
     getReferResult1(db, date, hospCode = hcode) {
         date = moment(date).format('YYYY-MM-DD');
         let where: any = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS')`;
@@ -101,15 +101,52 @@ export class HisPmkModel {
                 'BIRTHDAY as dob')
             .select(db.raw(`case when SEX='F' then 2 else 1 end as sex`))
             .select('HOME as address', 'VILLAGE as moo'
-                ,'SOIMAIN as soi' , 'ROAD as road')
+                , 'SOIMAIN as soi', 'ROAD as road')
             .select('TAMBON as addcode', 'TEL as tel', 'ZIP_CODE as zip')
             .select(db.raw(`'' as occupation`))
             .where(where)
             .limit(maxLimit);
     }
 
-    getService(db, columnName, searchText, hospCode = hcode) {
-        columnName = columnName === 'visitNo' ? 'vn' : columnName;
+    async getAddress(db: Knex, columnName, searchText, hospCode = hcode) {
+        //columnName => hn
+        return [];
+        const sql = `
+            SELECT
+                (SELECT	hospitalcode FROM	opdconfig) AS hospcode,
+                pt.cid,
+                pt.hn, pt.hn as pid,
+                IF (p.house_regist_type_id IN (1, 2),'1','2') addresstype,
+                ifnull(h.census_id,'') house_id,
+                IF(p.house_regist_type_id IN (4),'9',h.house_type_id) housetype,
+                h.house_condo_roomno roomno,
+                h.house_condo_name condo,
+                IF(p.house_regist_type_id IN (4),pt.addrpart,h.address) houseno,
+                '' soisub,
+                '' soimain,
+                IF(p.house_regist_type_id IN (4),pt.road,h.road) road,
+                IF(p.house_regist_type_id IN (4),'',v.village_name)  villaname,
+                IF(p.house_regist_type_id IN (4),pt.moopart,v.village_moo) village,
+                IF(p.house_regist_type_id IN (4),pt.tmbpart,t.tmbpart) tambon,
+                IF(p.house_regist_type_id IN (4),pt.amppart,t.amppart) ampur,
+                IF(p.house_regist_type_id IN (4),pt.chwpart,t.chwpart) changwat,
+                p.last_update D_Update
+            FROM
+                person p
+                LEFT JOIN patient pt ON p.cid = pt.cid
+                LEFT JOIN house h ON h.house_id = p.house_id
+                LEFT JOIN village v ON v.village_id = h.village_id
+                LEFT JOIN thaiaddress t ON t.addressid=v.address_id
+                LEFT JOIN person_address pa ON pa.person_id = p.person_id
+
+            where ${columnName}="${searchText}"
+        `;
+        const result = await db.raw(sql);
+        return result[0];
+    }
+
+    getService(db: Knex, columnName, searchText, hospCode = hcode) {
+        // columnName = columnName === 'visitNo' ? 'vn' : columnName;
         // columnName = columnName === 'vn' ? 'service.SEQ' : columnName;
         // columnName = columnName === 'pid' ? 'PAT_RUN_HN' : columnName;
         // columnName = columnName === 'hn' ? 'PAT_RUN_HN' : columnName;
@@ -141,20 +178,44 @@ export class HisPmkModel {
             .limit(maxLimit);
     }
 
-    getDiagnosisOpd(db, visitno) {
-        return db('OPDDIAGS')
-            .select('PAT_RUN_HN as RUN_HN', 'PAT_YEAR_HN as YEAR_HN')
-            .select(db.raw(`concat(concat(to_char(PAT_RUN_HN),'/'),to_char(PAT_YEAR_HN)) AS hn`))
-            .select('OPD_OPD_NO as visitno', 'ICD_CODE as diagcode',
-                'TYPE as diag_type')
-            .where('OPD_OPD_NO', "=", visitno);
+    getDiagnosisOpd(db: Knex, visitno) {
+        return db('EXP18_DIAG')
+            .select('PCUCODE as HOSPCODE', 'PID', 'SEQ'
+                , 'DATE_SERV', 'DIAGCODE', 'DIAGTYPE'
+                , 'CLINIC', 'PROVIDER', 'CID'
+                , 'D_UPDATE')
+            .where('SEQ', "=", visitno + '');
+
+        // .select('PAT_RUN_HN as RUN_HN', 'PAT_YEAR_HN as YEAR_HN')
+        // .select(db.raw(`concat(concat(to_char(PAT_RUN_HN),'/'),to_char(PAT_YEAR_HN)) AS hn`))
+        // .select('OPD_OPD_NO as visitno', 'ICD_CODE as diagcode',
+        //     'TYPE as diag_type')
+        // .where('OPD_OPD_NO', "=", visitno);
+        /*
+            `DIAGNAME` varchar(255) DEFAULT NULL COMMENT 'Dr diag (text)',
+            `ID` varchar(25) DEFAULT NULL,
+            `BR` varchar(5) DEFAULT NULL,
+            `AIS` varchar(5) DEFAULT NULL,
+        */
     }
 
-    getProcedureOpd(knex, columnName, searchNo, hospCode) {
-        return knex
-            .select('*')
-            .from('procedure_opd')
-            .where(columnName, "=", searchNo);
+    async getProcedureOpd(db: Knex, visitNo, hospCode = hcode) {
+        if (visitNo) {
+            return db('EXP18_PROCED')
+                .select('PCUCODE as HOSPCODE', 'HN as PID', 'SEQ', 'DATE_SERV'
+                    , 'PROCED as PROCEDCODE', 'PROVIDER', 'CID'
+                    , 'SERVPRIC as SERVICEPRICE', 'CLINIC', 'D_UPDATE'
+                )
+                .where('SEQ', visitNo + '')
+                .limit(maxLimit);
+        } else {
+            return [];
+        }
+
+        /* 
+            `PROCEDNAME` varchar(200) DEFAULT NULL,
+        */
+
     }
 
     getChargeOpd(knex, columnName, searchNo, hospCode) {
@@ -164,12 +225,48 @@ export class HisPmkModel {
             .where(columnName, "=", searchNo);
     }
 
-    getDrugOpd(db, columnName, searchNo, hospCode) {
-        return db('DOC_DRUG_REQUEST_HEADER as drug')
-            .select('PAT_RUN_HN as RUN_HN', 'PAT_YEAR_HN as YEAR_HN')
-            .select(db.raw(`concat(concat(to_char(PAT_RUN_HN),'/'),to_char(PAT_YEAR_HN)) AS hn`))
-            .select('*')
-            .where(columnName, "=", searchNo);
+    async getDrugOpd(db: Knex, visitNo, hospCode = hcode) {
+        if (visitNo) {
+            const result: any = await db('H4U_DRUG as drug')
+                .where("SEQ", visitNo + '');
+
+            let data = [];
+            for (let row of result) {
+                const line = row.USAGE_LINE1 ? row.USAGE_LINE1.split('\r|\n') : [];
+                await data.push({
+                    HOSPCODE: hospCode,
+                    PID: row.HN, SEQ: row.SEQ,
+                    DATE_SERV: moment(row.DATE_SERV).format('YYYY-MM-DD') +
+                        moment(row.TIME_SERV).format(' HH:mm:ss'),
+                    AMOUNT: row.QTY, UNIT: row.UNIT,
+                    drug_usage: line[1] + ' ' + line[2],
+                    caution: line[3],
+                    D_UPDATE: moment(row.DATE_SERV).format('YYYY-MM-DD') +
+                        moment(row.TIME_SERV).format(' HH:mm:ss'),
+                });
+            }
+
+            return data;
+        } else {
+            return [];
+        }
+
+        /*
+        `CLINIC` varchar(5) DEFAULT '',
+        `DIDSTD` varchar(24) NOT NULL,
+        `UNIT_PACKING` varchar(20) DEFAULT NULL,
+        `DRUGPRICE` decimal(11,2) DEFAULT NULL,
+        `DRUGCOST` decimal(11,2) DEFAULT NULL,
+        `PROVIDER` varchar(15) DEFAULT NULL,
+        `DID` varchar(30) DEFAULT NULL COMMENT 'รหัสยา 24 หลัก',
+        `ID` varchar(25) DEFAULT NULL,
+        `CID` varchar(15) DEFAULT NULL,
+        `DID_TMT` varchar(6) DEFAULT NULL COMMENT 'รหัส TMT Code',
+        */
+    }
+
+    getLabResult(db, columnName, searchNo, referID = '', hospCode = hcode) {
+        return [];
     }
 
     getAdmission(knex, columnName, searchNo, hospCode) {

@@ -387,7 +387,7 @@ async function getPerson(db, pid, sentResult) {
 async function getAddress(db, pid, sentResult) {
   const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
   const rows = await hisModel.getAddress(db, 'hn', pid, hcode);
-  sentContent += '  - address = ' + rows.length + '\r';
+  sentContent += '  - address = ' + (rows ? rows.length : 0) + '\r';
   if (rows && rows.length) {
     for (const row of rows) {
       const address = await {
@@ -720,7 +720,7 @@ async function referSending(path, dataArray) {
   const dataSending = querystring.stringify({
     hospcode: hcode, data: JSON.stringify(dataArray),
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    sourceApiName: 'HIS-connect',apiVersion
+    sourceApiName: 'HIS-connect', apiVersion
   });
 
   const options = {
@@ -767,7 +767,7 @@ async function getNReferToken(apiKey, secretKey) {
     apiKey: apiKey, secretKey: secretKey,
     hospcode: hcode,
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    sourceApiName: 'HIS-connect',apiVersion
+    sourceApiName: 'HIS-connect', apiVersion
   });
 
   const options = {
