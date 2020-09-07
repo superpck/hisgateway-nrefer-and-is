@@ -385,41 +385,46 @@ async function getPerson(db, pid, sentResult) {
 }
 
 async function getAddress(db, pid, sentResult) {
-  const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
-  const rows = await hisModel.getAddress(db, 'hn', pid, hcode);
-  sentContent += '  - address = ' + (rows ? rows.length : 0) + '\r';
-  if (rows && rows.length) {
-    for (const row of rows) {
-      const address = await {
-        HOSPCODE: row.HOSPCODE || row.hospcode,
-        PID: row.PID || row.pid || row.HN || row.hn,
-        ADDRESSTYPE: row.ADDRESSTYPE || row.addresstype,
-        ROOMNO: row.ROOMNO || row.roomno,
-        HOUSENO: row.HOUSENO || row.HOUSENO,
-        CONDO: row.CONDO || row.condo || '',
-        SOIMAIN: row.SOIMAIN || row.soimain,
-        ROAD: row.ROAD || row.road,
-        VILLANAME: row.VILLANAME || row.villaname,
-        VILLAGE: row.VILLAGE || row.village,
-        TAMBON: row.TAMBON || row.tambon,
-        AMPUR: row.AMPUR || row.ampur,
-        CHANGWAT: row.CHANGWAT || row.changwat,
-        TELEPHONE: row.TELEPHONE || row.telephone || '',
-        MOBILE: row.MOBILE || row.mobile || '',
-        D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-      }
+  if (pid) {
+    const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+    const rows = await hisModel.getAddress(db, 'hn', pid, hcode);
+    sentContent += '  - address = ' + (rows ? rows.length : 0) + '\r';
+    if (rows && rows.length) {
+      for (const row of rows) {
+        const address = await {
+          HOSPCODE: row.HOSPCODE || row.hospcode,
+          PID: row.PID || row.pid || row.HN || row.hn,
+          ADDRESSTYPE: row.ADDRESSTYPE || row.addresstype,
+          ROOMNO: row.ROOMNO || row.roomno,
+          HOUSENO: row.HOUSENO || row.HOUSENO,
+          CONDO: row.CONDO || row.condo || '',
+          SOIMAIN: row.SOIMAIN || row.soimain,
+          ROAD: row.ROAD || row.road,
+          VILLANAME: row.VILLANAME || row.villaname,
+          VILLAGE: row.VILLAGE || row.village,
+          TAMBON: row.TAMBON || row.tambon,
+          AMPUR: row.AMPUR || row.ampur,
+          CHANGWAT: row.CHANGWAT || row.changwat,
+          TELEPHONE: row.TELEPHONE || row.telephone || '',
+          MOBILE: row.MOBILE || row.mobile || '',
+          D_UPDATE: row.D_UPDATE || row.d_update || d_update,
+        }
 
-      const saveResult: any = await referSending('/save-address', address);
-      if (saveResult.statusCode === 200) {
-        sentResult.address.success += 1;
-      } else {
-        sentResult.address.fail += 1;
-        console.log('save address fail', address.PID, saveResult);
+        const saveResult: any = await referSending('/save-address', address);
+        if (saveResult.statusCode === 200) {
+          sentResult.address.success += 1;
+        } else {
+          sentResult.address.fail += 1;
+          console.log('save address fail', address.PID, saveResult);
+        }
+        sentContent += '    -- PID ' + address.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
       }
-      sentContent += '    -- PID ' + address.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
     }
+    return rows;
+  } else {
+    console.log('Address error: not found HN');
+    return [];
   }
-  return rows;
 }
 
 async function getService(db, visitNo, sentResult) {
