@@ -108,41 +108,39 @@ export class HisPmkModel {
             .limit(maxLimit);
     }
 
-    async getAddress(db: Knex, columnName, searchText, hospCode = hcode) {
-        //columnName => hn
-        return [];
-        const sql = `
-            SELECT
-                (SELECT	hospitalcode FROM	opdconfig) AS hospcode,
-                pt.cid,
-                pt.hn, pt.hn as pid,
-                IF (p.house_regist_type_id IN (1, 2),'1','2') addresstype,
-                ifnull(h.census_id,'') house_id,
-                IF(p.house_regist_type_id IN (4),'9',h.house_type_id) housetype,
-                h.house_condo_roomno roomno,
-                h.house_condo_name condo,
-                IF(p.house_regist_type_id IN (4),pt.addrpart,h.address) houseno,
-                '' soisub,
-                '' soimain,
-                IF(p.house_regist_type_id IN (4),pt.road,h.road) road,
-                IF(p.house_regist_type_id IN (4),'',v.village_name)  villaname,
-                IF(p.house_regist_type_id IN (4),pt.moopart,v.village_moo) village,
-                IF(p.house_regist_type_id IN (4),pt.tmbpart,t.tmbpart) tambon,
-                IF(p.house_regist_type_id IN (4),pt.amppart,t.amppart) ampur,
-                IF(p.house_regist_type_id IN (4),pt.chwpart,t.chwpart) changwat,
-                p.last_update D_Update
-            FROM
-                person p
-                LEFT JOIN patient pt ON p.cid = pt.cid
-                LEFT JOIN house h ON h.house_id = p.house_id
-                LEFT JOIN village v ON v.village_id = h.village_id
-                LEFT JOIN thaiaddress t ON t.addressid=v.address_id
-                LEFT JOIN person_address pa ON pa.person_id = p.person_id
-
-            where ${columnName}="${searchText}"
-        `;
-        const result = await db.raw(sql);
-        return result[0];
+    getAddress(db: Knex, columnName, searchText, hospCode = hcode) {
+        let where: any = '';
+        if (['hn', 'HN', 'pid', 'PID'].indexOf(columnName) >= 0) {
+            // where['HN'] = searchText;    // ใช้ไม่ได้เพราะมีเครื่องหมาย /
+            where = `HN='${searchText.trim()}'`;
+        } else {
+            columnName = columnName === 'cid' ? 'ID_CARD' : columnName;
+            columnName = columnName === 'fname' ? 'NAME' : columnName;
+            columnName = columnName === 'lname' ? 'SURNAME' : columnName;
+            // where[columnName] = searchText;
+            where = `${columnName}='${searchText.trim()}'`;
+        }
+        return db('PATIENTS as p')
+            .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
+            .select('HN as PID')
+            .select(db.raw(`2 AS "ADDRESSTYPE"`))
+            .select('HOME as HOUSENO', 'VILLAGE as VILLAGE'
+                , 'SOIMAIN', 'ROAD'
+                , 'TAMBON as addcode'
+                , 'TEL as TELEPHONE', 'MOBILE'
+                , 'ZIP_CODE as zip', 'LAST_OPD as D_UPDATE')
+            .select(db.raw('substr(TAMBON,1,2) as CHANGWAT'))
+            .select(db.raw('substr(TAMBON,3,2) as AMPUR'))
+            .select(db.raw('substr(TAMBON,5,2) as TAMBON'))
+            .whereRaw(where);
+        /*
+        `HOUSE_ID` varchar(11) DEFAULT NULL,
+        `HOUSETYPE` varchar(1) NOT NULL,
+        `ROOMNO` varchar(10) DEFAULT NULL,
+        `CONDO` varchar(75) DEFAULT NULL,
+        `SOISUB` varchar(255) DEFAULT NULL,
+        `VILLANAME` varchar(255) DEFAULT NULL,
+        */
     }
 
     getService(db: Knex, columnName, searchText, hospCode = hcode) {
@@ -179,24 +177,20 @@ export class HisPmkModel {
     }
 
     getDiagnosisOpd(db: Knex, visitno) {
-        return db('EXP18_DIAG')
-            .select('PCUCODE as HOSPCODE', 'PID', 'SEQ'
-                , 'DATE_SERV', 'DIAGCODE', 'DIAGTYPE'
-                , 'CLINIC', 'PROVIDER', 'CID'
-                , 'D_UPDATE')
-            .where('SEQ', "=", visitno + '');
-
-        // .select('PAT_RUN_HN as RUN_HN', 'PAT_YEAR_HN as YEAR_HN')
-        // .select(db.raw(`concat(concat(to_char(PAT_RUN_HN),'/'),to_char(PAT_YEAR_HN)) AS hn`))
-        // .select('OPD_OPD_NO as visitno', 'ICD_CODE as diagcode',
-        //     'TYPE as diag_type')
-        // .where('OPD_OPD_NO', "=", visitno);
-        /*
-            `DIAGNAME` varchar(255) DEFAULT NULL COMMENT 'Dr diag (text)',
-            `ID` varchar(25) DEFAULT NULL,
-            `BR` varchar(5) DEFAULT NULL,
-            `AIS` varchar(5) DEFAULT NULL,
-        */
+        return db('OPDDIAGS')
+            .join('OPDS', 'OPDDIAGS.OPD_OPD_NO', 'OPDS.OPD_NO')
+            .join('PATIENTS as patient', function () {
+                this.on('OPDDIAGS.PAT_RUN_HN', '=', 'patient.RUN_HN')
+                    .andOn('OPDDIAGS.PAT_YEAR_HN', '=', 'patient.YEAR_HN')
+            })
+            .select(db.raw(`'${hcode}' AS "HOSPCODE"`))
+            .select('patient.HN as PID', 'OPDDIAGS.OPD_OPD_NO as SEQ'
+                , 'OPDDIAGS.ICD_CODE as DIAGCODE', 'OPDDIAGS.TYPE as DIAGTYPE'
+                , 'OPDDIAGS.DATE_CREATED as D_UPDATE', 'OPDDIAGS.OPD_DATE as DATE_SERV'
+                , 'patient.ID_CARD as CID', 'OPDS.DD_DOC_CODE as PROVIDER'
+            )
+            .where('OPDDIAGS.OPD_OPD_NO', visitno + '');
+        // CLINIC, DIAGNAME, ID, BR, AIS
     }
 
     async getProcedureOpd(db: Knex, visitNo, hospCode = hcode) {
