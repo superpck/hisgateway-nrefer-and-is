@@ -38,10 +38,10 @@ class HisHosxpv4Model {
             .where('opdscreen.hn', "=", hn)
             .where('opdscreen.vstdate', "=", date);
     }
-    getDiagnosisOpd(knex, visitno) {
-        return knex
-            .select('vn as visitno', 'icd10 as diagcode')
-            .from('ovstdiag')
+    getDiagnosisOpd(db, visitno) {
+        return db('ovstdiag')
+            .select('vn as visitno', 'icd10 as diagcode', 'diagtype as diag_type', 'hn', 'update_datetime as d_update')
+            .select(db.raw(`concat(vstdate,' ',vsttime) as date_serv`))
             .where('vn', "=", visitno);
     }
     getProcedureOpd(knex, columnName, searchNo, hospCode) {

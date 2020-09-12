@@ -21,16 +21,16 @@ export class HisEzhospModel {
         return knex
             .select('TABLE_NAME')
             .from('information_schema.tables')
-            .where('TABLE_SCHEMA','=',dbname);
+            .where('TABLE_SCHEMA', '=', dbname);
     }
-    
+
     getPerson(knex: Knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'no_card' : columnName;
         return knex
-            .select('hn','no_card as cid','title as prename',
-            'name as fname', 'middlename as mname', 'surname as lname',
-            'birth as dob', 'sex', 'address','moo','road','soi',
-            'add as addcode','tel','zip','occupa as occupation')
+            .select('hn', 'no_card as cid', 'title as prename',
+                'name as fname', 'middlename as mname', 'surname as lname',
+                'birth as dob', 'sex', 'address', 'moo', 'road', 'soi',
+                'add as addcode', 'tel', 'zip', 'occupa as occupation')
             .from('hospdata.patient')
             .where(columnName, "=", searchText);
     }
@@ -42,7 +42,7 @@ export class HisEzhospModel {
                 'insclass as payment',
                 'dep_standard as clinic', 'dr',
                 'bp as bp_systolic', 'bp1 as bp_diastolic',
-                'puls as pr' , 'rr', 'fu as appoint',
+                'puls as pr', 'rr', 'fu as appoint',
                 'status as result', 'refer as referin')
             .from('view_opd_visit')
             .where('hn', "=", hn)
@@ -51,12 +51,12 @@ export class HisEzhospModel {
 
     getOpdServiceByVN(knex, vn) {
         return knex
-        .select('hn', 'vn as visitno', 'date', 'time',
+            .select('hn', 'vn as visitno', 'date', 'time',
                 'time_drug as time_end', 'pttype_std2 as pttype',
                 'insclass as payment',
                 'dep_standard as clinic', 'dr',
                 'bp as bp_systolic', 'bp1 as bp_diastolic',
-                'puls as pr' , 'rr', 'fu as appoint',
+                'puls as pr', 'rr', 'fu as appoint',
                 'status as result', 'refer as referin')
             .from('view_opd_visit')
             .where('vn', "=", vn);
@@ -65,18 +65,22 @@ export class HisEzhospModel {
     getDiagnosisOpd(knex, visitno) {
         return knex
             .select('vn as visitno', 'diag as diagcode', 'desc as diag_name',
-            'short_eng as en', 'short_thi as thi',
-            'type as diag_type', 'dr_dx as dr' )
-            .select(knex.raw(' "IT" as codeset' ))
+                'short_eng as en', 'short_thi as thi',
+                'type as diag_type', 'dr_dx as dr')
+            .select(knex.raw(' "IT" as codeset'))
             .from('view_opd_dx as dx')
             .where('vn', "=", visitno);
+        // .select('vn as visitno', 'icd10 as diagcode'
+        //     , 'diagtype', 'hn'
+        //     , 'update_datetime as d_update')
+        // .select(db.raw(`concat(vstdate,' ',vsttime) as date_serv`))
     }
 
     getProcedureOpd(knex, columnName, searchNo, hospCode) {
         columnName = columnName === 'visitno' ? 'vn' : columnName;
         return knex
             .select('vn as visitno', 'date', 'hn', 'op as op_code',
-                    'desc as op_name', 'icd_9 as icdcm', 'dr')
+                'desc as op_name', 'icd_9 as icdcm', 'dr')
             .from('view_opd_op')
             .where(columnName, "=", searchNo);
     }
@@ -93,15 +97,15 @@ export class HisEzhospModel {
         columnName = columnName === 'visitno' ? 'vn' : columnName;
         return knex
             .select('vn as visitno', 'lab.hn as hn', 'lab.an as an',
-                    'lab.lab_no as request_id', 
-                    'lab.lab_code as lab_code',
-                    'lab.lab_name as lab_name',
-                    'lab.loinc as loinc',
-                    'lab.icdcm as icdcm',
-                    'lab.standard as cgd',
-                    'lab.cost as cost',
-                    'lab.lab_price as price',
-                    'lab.date as request_date')
+                'lab.lab_no as request_id',
+                'lab.lab_code as lab_code',
+                'lab.lab_name as lab_name',
+                'lab.loinc as loinc',
+                'lab.icdcm as icdcm',
+                'lab.standard as cgd',
+                'lab.cost as cost',
+                'lab.lab_price as price',
+                'lab.date as request_date')
             .from('view_lab_request_item as lab')
             .where(columnName, "=", searchNo);
     }
@@ -122,7 +126,7 @@ export class HisEzhospModel {
             .where(columnName, "=", searchNo);
     }
 
-    getDrugName(knex, columnName, textSearch, typeCompare='=', hospCode) {
+    getDrugName(knex, columnName, textSearch, typeCompare = '=', hospCode) {
         columnName = columnName === 'code' ? 'drug.aliascode' : columnName;
         columnName = columnName === 'id' ? 'drug.drugcode' : columnName;
         // ใน ezhosp aliascode = รหัสยา
@@ -198,7 +202,7 @@ export class HisEzhospModel {
             .select('opd_fu.hn', 'opd_fu.vn as seq',
                 'opd_visit.date as date_serv', 'opd_visit.time as time_serv',
                 'opd_fu.date', 'opd_fu.fu_date as appointment_date',
-                'opd_fu.fu_time as appointment_time', 
+                'opd_fu.fu_time as appointment_time',
                 'opd_visit.dep as local_code',
                 'lib_clinic.standard as clinic_code',
                 'lib_clinic.clinic',
