@@ -13,6 +13,7 @@ const path = require("path");
 const HttpStatus = require("http-status-codes");
 const fastify = require("fastify");
 const moment = require("moment");
+const router_1 = require("./router");
 const serveStatic = require('serve-static');
 var crypto = require('crypto');
 require('dotenv').config({ path: path.join(__dirname, '../config') });
@@ -47,6 +48,7 @@ app.register(require('fastify-jwt'), {
     secret: process.env.SECRET_KEY
 });
 app.register(require('fastify-ws'), {});
+app.register(router_1.default);
 app.decorate("authenticate", (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     let token = null;
     if (request.headers.authorization && request.headers.authorization.split(' ')[0] === 'Bearer') {
@@ -175,9 +177,16 @@ else {
     timingSchedule['nrefer'].autosend = false;
 }
 timingSchedule['cupDataCenter'].autosend = +process.env.HIS_DATACENTER_ENABLE === 1 || false;
-timingSchedule['cupDataCenter'].hour = process.env.HIS_DATACENTER_SEND_EVERY_HOUR ? +process.env.HIS_DATACENTER_SEND_EVERY_HOUR : 2;
-timingSchedule['cupDataCenter'].hour = timingSchedule['cupDataCenter'].hour > 24 ? 24 : timingSchedule['cupDataCenter'].hour;
-timingSchedule['cupDataCenter'].minute = +moment().get('minute');
+timingSchedule['cupDataCenter'].minute = process.env.HIS_DATACENTER_SEND_EVERY_MINUTE ? +process.env.HIS_DATACENTER_SEND_EVERY_MINUTE : 0;
+timingSchedule['cupDataCenter'].minute = timingSchedule['cupDataCenter'].minute < 5 ? 5 : timingSchedule['cupDataCenter'].minute;
+if (timingSchedule['cupDataCenter'].minute == 0) {
+    timingSchedule['cupDataCenter'].hour = process.env.HIS_DATACENTER_SEND_EVERY_HOUR ? +process.env.HIS_DATACENTER_SEND_EVERY_HOUR : 2;
+    timingSchedule['cupDataCenter'].hour = timingSchedule['cupDataCenter'].hour > 24 ? 24 : timingSchedule['cupDataCenter'].hour;
+    timingSchedule['cupDataCenter'].minute = +moment().get('minute');
+}
+else {
+    timingSchedule['cupDataCenter'].hour = 0;
+}
 cron.schedule(timingSch, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const minuteNow = +moment().get('minute') == 0 ? 60 : +moment().get('minute');
     const hourNow = +moment().get('hour');
@@ -203,31 +212,6 @@ cron.schedule(timingSch, (req, res) => __awaiter(void 0, void 0, void 0, functio
         doAutoSend(req, res, 'cupDataCenter', './routes/pcc/crontab');
     }
 }));
-let rootPrefix = process.env.ROUTE_PREFIX || '';
-rootPrefix = rootPrefix ? ('/' + rootPrefix) : '';
-app.register(require('./routes/index'), { prefix: `${rootPrefix}/`, logger: true });
-app.register(require('./routes/setup'), { prefix: `${rootPrefix}/setup-api`, logger: true });
-app.register(require('./routes/refer/v3'), { prefix: `${rootPrefix}/refer`, logger: true });
-app.register(require('./routes/refer/v3'), { prefix: `${rootPrefix}/refer/his`, logger: true });
-app.register(require('./routes/refer/local'), { prefix: `${rootPrefix}/refer/local`, logger: true });
-app.register(require('./routes/refer/send'), { prefix: `${rootPrefix}/refer/send-moph`, logger: true });
-app.register(require('./routes/hdc/index'), { prefix: `${rootPrefix}/hdc`, logger: true });
-app.register(require('./routes/isonline/index'), { prefix: `${rootPrefix}/isonline`, logger: true });
-app.register(require('./routes/isonline/login'), { prefix: `${rootPrefix}/login`, logger: true });
-app.register(require('./routes/isonline/index'), { prefix: `${rootPrefix}/iswin`, logger: true });
-app.register(require('./routes/isonline/index'), { prefix: `${rootPrefix}/is`, logger: true });
-app.register(require('./routes/isonline/his'), { prefix: `${rootPrefix}/his`, logger: true });
-app.register(require('./routes/isonline/his'), { prefix: `${rootPrefix}/isonline/his`, logger: true });
-app.register(require('./routes/isonline/user'), { prefix: `${rootPrefix}/user`, logger: true });
-app.register(require('./routes/isonline/user'), { prefix: `${rootPrefix}/isonline/user`, logger: true });
-app.register(require('./routes/isonline/report'), { prefix: `${rootPrefix}/report`, logger: true });
-app.register(require('./routes/isonline/report'), { prefix: `${rootPrefix}/isonline/report`, logger: true });
-app.register(require('./routes/isonline/moph'), { prefix: `${rootPrefix}/moph`, logger: true });
-app.register(require('./routes/isonline/ops'), { prefix: `${rootPrefix}/ops`, logger: true });
-app.register(require('./routes/pcc/index'), { prefix: `${rootPrefix}/pcc`, logger: true });
-app.register(require('./routes/cannabis/index'), { prefix: `${rootPrefix}/cannabis`, logger: true });
-app.register(require('./routes/qdrugstore/index'), { prefix: `${rootPrefix}/qdrugstore`, logger: true });
-app.register(require('./routes/rp506/index'), { prefix: `${rootPrefix}/rp506`, logger: true });
 const port = +process.env.PORT || 3001;
 const host = '0.0.0.0';
 app.listen(port, host, (err) => {

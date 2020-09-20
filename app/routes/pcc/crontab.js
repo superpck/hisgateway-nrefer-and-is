@@ -95,7 +95,7 @@ function sendMoph(req, reply, db) {
         const apiKey = process.env.NREFER_APIKEY || 'api-key';
         const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
         sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
-        const resultToken = yield getNReferToken(apiKey, secretKey);
+        const resultToken = yield getToken(apiKey, secretKey);
         if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
             nReferToken = resultToken.token;
             sentContent += `token ${resultToken.token}\r`;
@@ -366,7 +366,7 @@ function referSending(path, dataArray) {
         });
     });
 }
-function getNReferToken(apiKey, secretKey) {
+function getToken(apiKey, secretKey) {
     return __awaiter(this, void 0, void 0, function* () {
         let url = process.env.NREFER_URL1;
         url += url.substr(-1, 1) === '/' ? '' : '/';

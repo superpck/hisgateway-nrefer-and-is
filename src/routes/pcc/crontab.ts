@@ -99,7 +99,7 @@ async function sendMoph(req, reply, db) {
 
   sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
 
-  const resultToken: any = await getNReferToken(apiKey, secretKey);
+  const resultToken: any = await getToken(apiKey, secretKey);
   if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
     nReferToken = resultToken.token;
     sentContent += `token ${resultToken.token}\r`;
@@ -391,7 +391,7 @@ async function referSending(path, dataArray) {
 
 }
 
-async function getNReferToken(apiKey, secretKey) {
+async function getToken(apiKey, secretKey) {
   let url = process.env.NREFER_URL1;
   url += url.substr(-1, 1) === '/' ? '' : '/';
 

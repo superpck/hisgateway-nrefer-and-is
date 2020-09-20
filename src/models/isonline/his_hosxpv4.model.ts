@@ -70,12 +70,13 @@ export class HisHosxpv4Model {
 
     }
 
-    getDiagnosisOpd(knex, visitno) {
-        return knex
-            .select('vn as visitno', 'icd10 as diagcode')
-            .from('ovstdiag')
+    getDiagnosisOpd(db: Knex, visitno) {
+        return db('ovstdiag')
+            .select('vn as visitno', 'icd10 as diagcode'
+                , 'diagtype as diag_type', 'hn'
+                , 'update_datetime as d_update')
+            .select(db.raw(`concat(vstdate,' ',vsttime) as date_serv`))
             .where('vn', "=", visitno);
-
     }
 
     getProcedureOpd(knex, columnName, searchNo, hospCode) {
