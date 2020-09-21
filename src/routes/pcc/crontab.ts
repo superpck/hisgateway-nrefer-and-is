@@ -87,25 +87,23 @@ const hcode = process.env.HOSPCODE;
 const his = process.env.HIS_PROVIDER;
 const resultText = 'sent_result.txt';
 let sentContent = '';
-let nReferToken: any = '';
+let dcToken: any = '';
+let reqToken: any = {};
 let crontabConfig: any;
 let apiVersion: string = '-';
 
 async function sendMoph(req, reply, db) {
   const dateNow = moment().locale('th').format('YYYY-MM-DD');
 
-  const apiKey = process.env.NREFER_APIKEY || 'api-key';
-  const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
-
   sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
 
-  const resultToken: any = await getToken(apiKey, secretKey);
-  if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
-    nReferToken = resultToken.token;
-    sentContent += `token ${resultToken.token}\r`;
+  reqToken = await getToken();
+  if (reqToken && reqToken.statusCode === 200 && reqToken.token) {
+    dcToken = reqToken.token;
+    sentContent += `token ${reqToken.token}\r`;
   } else {
-    console.log('get token error', resultToken.message);
-    sentContent += `get token Error:` + JSON.stringify(resultToken) + `\r`;
+    console.log('get token error', reqToken.message);
+    sentContent += `get token Error:` + JSON.stringify(reqToken) + `\r`;
     writeResult(resultText, sentContent);
     return false;
   }
@@ -121,21 +119,14 @@ async function sendMoph(req, reply, db) {
     // เวลา 03:00 get ย้อนหลัง 1 สัปดาห์
     let oldDate = moment(dateNow).subtract(7, 'days').format('YYYY-MM-DD');
     while (oldDate < dateNow) {
-      // await getRefer_out(db, oldDate);
-      // await getReferResult(db, oldDate);
       oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
+      // await getService(db, oldDate);
     }
   }
 
-  // await getRefer_out(db, '2020-06-30');
-  // const referOut_ = getRefer_out(db, dateNow);
-  // const referResult_ = getReferResult(db, dateNow);
-  // const referOut = await referOut_;
-  // const referResult = await referResult_;
-  // return { referOut, referResult };
-
-  const sendDataCenter = getService(db, dateNow);
-
+  // await getService(db, '2020-09-18');
+  const sendDataCenter = await getService(db, dateNow);
+  await expireToken();
   return { sendDataCenter };
 }
 
@@ -151,204 +142,33 @@ async function getService(db, date) {
   if (rows && rows.length) {
     sentResult.service.success = rows.length;
     for (const row of rows) {
+      await sendToApi('save-service', row);
+      await person(db, row.pid || row.PID, sentResult)
     }
+    // const saveResult: any = await sendToApi('save-service', rows);
   }
-
+  console.log(sentResult);
   return sentResult;
 }
 
-
-
-
-
-
-async function getPerson(db, pid, sentResult) {
-  const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+async function person(db, pid, sentResult) {
   const rows = await hisModel.getPerson(db, 'hn', pid, hcode);
   sentContent += '  - person = ' + rows.length + '\r';
   if (rows && rows.length) {
-    for (const row of rows) {
-      const person = await {
-        HOSPCODE: row.HOSPCODE || row.hospcode,
-        CID: row.CID || row.cid,
-        PID: row.HN || row.hn || row.PID || row.pid,
-        HID: row.HID || row.hid || '',
-        HN: row.HN || row.hn || row.PID || row.pid,
-        PRENAME: row.PRENAME || row.prename,
-        NAME: row.NAME || row.name,
-        LNAME: row.LNAME || row.lname,
-        SEX: row.SEX || row.sex,
-        BIRTH: row.BIRTH || row.birth,
-        MSTATUS: row.MSTATUS || row.mstatus,
-        OCCUPATION_NEW: row.OCCUPATION_NEW || row.occupation_new,
-        RACE: row.RACE || row.race,
-        NATION: row.NATION || row.nation,
-        RELIGION: row.RELIGION || row.religion,
-        EDUCATION: row.EDUCATION || row.education,
-        ABOGROUP: row.ABOGROUP || row.abogroup,
-        TELEPHONE: row.TELEPHONE || row.telephone,
-        TYPEAREA: row.TYPEAREA || row.typearea,
-        D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-      }
-
-      const saveResult: any = await referSending('/save-person', person);
-      if (saveResult.statusCode === 200) {
-        sentResult.person.success += 1;
-      } else {
-        sentResult.person.fail += 1;
-        console.log('save-person', person.HN, saveResult);
-      }
-      sentContent += '    -- PID ' + person.HN + ' ' + (saveResult.result || saveResult.message) + '\r';
+    rows[0]['FNAME'] = rows[0].NAME || rows[0].name;
+    const saveResult: any = await sendToApi('save-person', rows[0]);
+    if (saveResult.statusCode == 200) {
+      sentResult.person.success += 1;
+    } else {
+      sentResult.person.fail += 1;
+      console.log('save-person', rows[0].HN, saveResult);
     }
+    sentContent += '    -- PID ' + rows[0].HN + ' ' + (saveResult.result || saveResult.message) + '\r';
   }
-  return rows;
+  return rows[0];
 }
 
-async function getAddress(db, pid, sentResult) {
-  const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
-  const rows = await hisModel.getAddress(db, 'hn', pid, hcode);
-  sentContent += '  - address = ' + rows.length + '\r';
-  if (rows && rows.length) {
-    for (const row of rows) {
-      const address = await {
-        HOSPCODE: row.HOSPCODE || row.hospcode,
-        PID: row.PID || row.pid || row.HN || row.hn,
-        ADDRESSTYPE: row.ADDRESSTYPE || row.addresstype,
-        ROOMNO: row.ROOMNO || row.roomno,
-        HOUSENO: row.HOUSENO || row.HOUSENO,
-        CONDO: row.CONDO || row.condo || '',
-        SOIMAIN: row.SOIMAIN || row.soimain,
-        ROAD: row.ROAD || row.road,
-        VILLANAME: row.VILLANAME || row.villaname,
-        VILLAGE: row.VILLAGE || row.village,
-        TAMBON: row.TAMBON || row.tambon,
-        AMPUR: row.AMPUR || row.ampur,
-        CHANGWAT: row.CHANGWAT || row.changwat,
-        TELEPHONE: row.TELEPHONE || row.telephone || '',
-        MOBILE: row.MOBILE || row.mobile || '',
-        D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-      }
-
-      const saveResult: any = await referSending('/save-address', address);
-      if (saveResult.statusCode === 200) {
-        sentResult.address.success += 1;
-      } else {
-        sentResult.address.fail += 1;
-        console.log('save address fail', address.PID, saveResult);
-      }
-      sentContent += '    -- PID ' + address.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
-    }
-  }
-  return rows;
-}
-
-async function getService_(db, visitNo, sentResult) {
-  const rows = await hisModel.getService(db, 'visitNo', visitNo, hcode);
-  sentContent += '  - service = ' + rows.length + '\r';
-  const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
-  if (rows && rows.length) {
-    for (const row of rows) {
-      const data = await {
-        HOSPCODE: row.HOSPCODE || row.hospcode,
-        PID: row.PID || row.pid || row.HN || row.hn,
-        SEQ: row.SEQ || row.seq || visitNo,
-        HN: row.PID || row.pid || row.HN || row.hn,
-        CID: row.CID || row.cid,
-        DATE_SERV: row.DATE_SERV || row.date_serv || row.date,
-        TIME_SERV: row.TIME_SERV || row.time_serv || '',
-        LOCATION: row.LOCATION || row.location || '',
-        INTIME: row.INTIME || row.intime || '',
-        INSTYPE: row.INSTYPE || row.instype || '',
-        INSID: row.INSID || row.insid || '',
-        TYPEIN: row.TYPEIN || row.typein || '',
-        REFERINHOSP: row.REFERINHOSP || row.referinhosp || '',
-        CAUSEIN: row.CAUSEIN || row.causein || '',
-        CHIEFCOMP: row.CHIEFCOMP || row.chiefcomp || '',
-        SERVPLACE: row.SERVPLACE || row.servplace || '',
-        BTEMP: row.BTEMP || row.btemp || '',
-        SBP: row.SBP || row.sbp || '',
-        DBP: row.DBP || row.dbp || '',
-        PR: row.PR || row.pr || '',
-        RR: row.RR || row.rr || '',
-        TYPEOUT: row.TYPEOUT || row.typeout || '',
-        REFEROUTHOSP: row.REFEROUTHOSP || row.referouthosp || '',
-        CAUSEOUT: row.CAUSEOUT || row.causeout || '',
-        COST: row.COST || row.cost || '',
-        PRICE: row.PRICE || row.price || '',
-        PAYPRICE: row.PAYPRICE || row.payprice || '',
-        ACTUALPAY: row.ACTUALPAY || row.actualpay || '',
-        OCCUPATION_NEW: row.OCCUPATION_NEW || row.occupation_new,
-        MAIN: row.MAIN || row.main || '',
-        HSUB: row.HSUB || row.hsub || row.SUB || row.sub || '',
-        SUB: row.SUB || row.sub || '',
-        D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-      }
-
-      const saveResult: any = await referSending('/save-service', data);
-      sentContent += '    -- SEQ ' + data.SEQ + ' ' + (saveResult.result || saveResult.message) + '\r';
-      if (saveResult.statusCode === 200) {
-        sentResult.service.success += 1;
-      } else {
-        sentResult.service.fail += 1;
-        console.log('save-service', data.SEQ, saveResult);
-      }
-    }
-  }
-  return rows;
-}
-
-async function getAdmission(db, visitNo) {
-  const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
-  const rows = await hisModel.getAdmission(db, 'visitNo', visitNo, hcode);
-  sentContent += '  - admission = ' + rows.length + '\r';
-  if (rows && rows.length) {
-    for (const row of rows) {
-      const data = await {
-        HOSPCODE: row.HOSPCODE || row.hospcode || hcode,
-        PID: row.PID || row.pid || row.HN || row.hn,
-        SEQ: row.SEQ || row.seq || visitNo,
-        AN: row.AN || row.an,
-        CID: row.CID || row.cid || '',
-        DATETIME_ADMIT: row.DATETIME_ADMIT || row.datetime_admit,
-        WARDADMIT: row.WARDADMIT || row.wardadmit || '',
-        INSTYPE: row.INSTYPE || row.instype || '',
-        TYPEIN: row.TYPEIN || row.typein || '',
-        REFERINHOSP: row.REFERINHOSP || row.referinhosp || '',
-        CAUSEIN: row.CAUSEIN || row.causein || '',
-        ADMITWEIGHT: row.ADMITWEIGHT || row.admitweight || 0,
-        ADMITHEIGHT: row.ADMITHEIGHT || row.admitheight || 0,
-        DATETIME_DISCH: row.DATETIME_DISCH || row.datetime_disch || '',
-        WARDDISCH: row.WARDDISCH || row.warddish || '',
-        DISCHSTATUS: row.DISCHSTATUS || row.dischstatus || '',
-        DISCHTYPE: row.DISCHTYPE || row.disctype || '',
-        REFEROUTHOSP: row.REFEROUTHOSP || row.referouthosp || '',
-        CAUSEOUT: row.CAUSEOUT || row.causeout || '',
-        COST: row.COST || row.cost || '',
-        PRICE: row.PRICE || row.price || '',
-        PAYPRICE: row.PAYPRICE || row.payprice || '',
-        ACTUALPAY: row.ACTUALPAY || row.actualpay || '',
-        PROVIDER: row.PROVIDER || row.provider || row.dr || '',
-        DRG: row.DRG || row.drg || '',
-        RW: row.RW || row.rw || 0,
-        ADJRW: row.ADJRW || row.adjrw || 0,
-        ERROR: row.ERROR || row.error || '',
-        WARNING: row.WARNING || row.warning || '',
-        ACTLOS: row.ACTLOS || row.actlos || 0,
-        GROUPER_VERSION: row.GROUPER_VERSION || row.grouper_version || '',
-        CLINIC: row.CLINIC || row.clinic || '',
-        MAIN: row.MAIN || row.main || '',
-        SUB: row.HSUB || row.hsub || row.SUB || row.sub || '',
-        D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-      }
-
-      const saveResult: any = await referSending('/save-admission', data);
-      sentContent += '    -- AN ' + data.AN + ' ' + (saveResult.result || saveResult.message) + '\r';
-    }
-  }
-  return rows;
-}
-
-async function referSending(path, dataArray) {
+async function sendToApi(path, dataArray) {
   const dataSending = querystring.stringify({
     hospcode: hcode, data: JSON.stringify(dataArray),
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -356,14 +176,20 @@ async function referSending(path, dataArray) {
   });
 
   const options = {
-    hostname: process.env.NREFER_URL,
-    port: process.env.NREFER_PORT,
-    path: process.env.NREFER_PATH + path,
+    hostname: 'connect.moph.go.th',
+    port: '',
+    path: '/dc-api/data/' + path,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Bearer ' + nReferToken,
+      'Authorization': 'Bearer ' + dcToken,
       'Content-Length': Buffer.byteLength(dataSending)
+    },
+    body: {
+      hospcode: hcode, data: dataArray,
+      processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+      sourceApiName: 'HIS connect version',
+      sourceApiVersion: apiVersion
     }
   };
 
@@ -376,7 +202,7 @@ async function referSending(path, dataArray) {
       });
       res.on('end', () => {
         const data = JSON.parse(ret);
-        // console.log('ret', data);
+        console.log(path, data);
         resolve(data);
       });
     });
@@ -391,18 +217,22 @@ async function referSending(path, dataArray) {
 
 }
 
-async function getToken(apiKey, secretKey) {
+async function getToken() {
+  const apiKey = process.env.NREFER_APIKEY || 'api-key';
+  const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
+
   let url = process.env.NREFER_URL1;
   url += url.substr(-1, 1) === '/' ? '' : '/';
 
   const postData = querystring.stringify({
-    apiKey: apiKey, secretKey: secretKey
+    apiKey: apiKey, secretKey: secretKey,
+    source: 'HIS Connect', version: apiVersion
   });
 
   const options = {
-    hostname: process.env.NREFER_URL,
-    port: process.env.NREFER_PORT,
-    path: process.env.NREFER_PATH + '/login/api-key',
+    hostname: 'connect.moph.go.th',
+    port: '',
+    path: '/dc-api/token',
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -419,7 +249,6 @@ async function getToken(apiKey, secretKey) {
       });
       res.on('end', () => {
         const data = JSON.parse(ret);
-        // console.log('ret', data);
         resolve(data);
       });
     });
@@ -434,23 +263,15 @@ async function getToken(apiKey, secretKey) {
 
 }
 
-async function expireToken(token) {
-  let url = process.env.NREFER_URL1;
-  url += url.substr(-1, 1) === '/' ? '' : '/';
-
-  const postData = querystring.stringify({
-    token: token
-  });
-
+async function expireToken() {
   const options = {
-    hostname: process.env.NREFER_URL,
-    port: process.env.NREFER_PORT,
-    path: process.env.NREFER_PATH + '/login/expire-token',
-    method: 'POST',
+    hostname: 'connect.moph.go.th',
+    port: '',
+    path: '/dc-api/token/expire/' + reqToken.sessionID,
+    method: 'GET',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Bearer ${token}`,
-      'Content-Length': Buffer.byteLength(postData)
+      'Authorization': `Bearer ${reqToken.token}`
     }
   };
 
@@ -471,8 +292,6 @@ async function expireToken(token) {
     req.on('error', (e: any) => {
       reject(e);
     });
-
-    req.write(postData);
     req.end();
   });
 }

@@ -192,8 +192,8 @@ app.register(require('./plugins/db'), {
   connectionName: 'dbCannabis'
 });
 
-app.apiVersion = '3.1.2';
-app.apiSubVersion = '2020-08-21-02';
+app.apiVersion = '3.1.3';
+app.apiSubVersion = '2020-09-21-01';
 
 // node-cron =========================================
 const secondNow = +moment().get('second');
@@ -233,18 +233,25 @@ if (timingSchedule['nrefer'].minute > 0) {
 
 // Auto send CUP Data Center
 timingSchedule['cupDataCenter'].autosend = +process.env.HIS_DATACENTER_ENABLE === 1 || false;
-timingSchedule['cupDataCenter'].minute = process.env.HIS_DATACENTER_SEND_EVERY_MINUTE ? +process.env.HIS_DATACENTER_SEND_EVERY_MINUTE : 0;
+timingSchedule['cupDataCenter'].minute =
+  (process.env.HIS_DATACENTER_SEND_EVERY_MINUTE ? +process.env.HIS_DATACENTER_SEND_EVERY_MINUTE : 0) +
+  (process.env.HIS_DATACENTER_SEND_EVERY_HOUR ? +process.env.HIS_DATACENTER_SEND_EVERY_HOUR : 2) * 60;
 timingSchedule['cupDataCenter'].minute = timingSchedule['cupDataCenter'].minute < 5 ? 5 : timingSchedule['cupDataCenter'].minute;
-if (timingSchedule['cupDataCenter'].minute == 0) {
-  timingSchedule['cupDataCenter'].hour = process.env.HIS_DATACENTER_SEND_EVERY_HOUR ? +process.env.HIS_DATACENTER_SEND_EVERY_HOUR : 2;
-  timingSchedule['cupDataCenter'].hour = timingSchedule['cupDataCenter'].hour > 24 ? 24 : timingSchedule['cupDataCenter'].hour;
-  timingSchedule['cupDataCenter'].minute = +moment().get('minute');
-} else {
-  timingSchedule['cupDataCenter'].hour = 0;
-}
 
 // ตรวจสอบการ start ด้วยเวลาที่กำหนด (ทุกๆ 1 นาที)
+console.log('crontab start: ',timingSch);
+if (timingSchedule['nrefer'].autosend) {
+  console.log('crontab nRefer start every (minute)',timingSchedule['nrefer'].minute);
+}
+if (timingSchedule['isonline'].autosend) {
+  console.log('crontab ISOnline start every (minute)',timingSchedule['isonline'].minute);
+}
+if (timingSchedule['cupDataCenter'].autosend) {
+  console.log('crontab Data Center start every (minute)',timingSchedule['cupDataCenter'].minute);
+}
+
 cron.schedule(timingSch, async (req, res) => {
+  const minuteSinceLastNight = (+moment().get('hour')) * 60 + (+moment().get('minute'));
   const minuteNow = +moment().get('minute') == 0 ? 60 : +moment().get('minute');
   const hourNow = +moment().get('hour');
 
@@ -266,9 +273,8 @@ cron.schedule(timingSch, async (req, res) => {
     doAutoSend(req, res, 'isonline', './routes/isonline/crontab');
   }
 
-  if (timingSchedule['cupDataCenter']['autosend'] &&
-    hourNow % timingSchedule['cupDataCenter'].hour == 0 &&
-    minuteNow == timingSchedule['cupDataCenter'].minute) {
+  if (timingSchedule['cupDataCenter'].autosend &&
+    minuteSinceLastNight % timingSchedule['cupDataCenter'].minute == 0) {
     doAutoSend(req, res, 'cupDataCenter', './routes/pcc/crontab');
   }
 });

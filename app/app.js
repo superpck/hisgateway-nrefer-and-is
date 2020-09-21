@@ -145,8 +145,8 @@ app.register(require('./plugins/db'), {
     connection: cannabisConnectionOption,
     connectionName: 'dbCannabis'
 });
-app.apiVersion = '3.1.2';
-app.apiSubVersion = '2020-08-21-02';
+app.apiVersion = '3.1.3';
+app.apiSubVersion = '2020-09-21-01';
 const secondNow = +moment().get('second');
 const timingSch = `${secondNow} */1 * * * *`;
 let timingSchedule = [];
@@ -177,17 +177,22 @@ else {
     timingSchedule['nrefer'].autosend = false;
 }
 timingSchedule['cupDataCenter'].autosend = +process.env.HIS_DATACENTER_ENABLE === 1 || false;
-timingSchedule['cupDataCenter'].minute = process.env.HIS_DATACENTER_SEND_EVERY_MINUTE ? +process.env.HIS_DATACENTER_SEND_EVERY_MINUTE : 0;
+timingSchedule['cupDataCenter'].minute =
+    (process.env.HIS_DATACENTER_SEND_EVERY_MINUTE ? +process.env.HIS_DATACENTER_SEND_EVERY_MINUTE : 0) +
+        (process.env.HIS_DATACENTER_SEND_EVERY_HOUR ? +process.env.HIS_DATACENTER_SEND_EVERY_HOUR : 2) * 60;
 timingSchedule['cupDataCenter'].minute = timingSchedule['cupDataCenter'].minute < 5 ? 5 : timingSchedule['cupDataCenter'].minute;
-if (timingSchedule['cupDataCenter'].minute == 0) {
-    timingSchedule['cupDataCenter'].hour = process.env.HIS_DATACENTER_SEND_EVERY_HOUR ? +process.env.HIS_DATACENTER_SEND_EVERY_HOUR : 2;
-    timingSchedule['cupDataCenter'].hour = timingSchedule['cupDataCenter'].hour > 24 ? 24 : timingSchedule['cupDataCenter'].hour;
-    timingSchedule['cupDataCenter'].minute = +moment().get('minute');
+console.log('crontab start: ', timingSch);
+if (timingSchedule['nrefer'].autosend) {
+    console.log('crontab nRefer start every (minute)', timingSchedule['nrefer'].minute);
 }
-else {
-    timingSchedule['cupDataCenter'].hour = 0;
+if (timingSchedule['isonline'].autosend) {
+    console.log('crontab ISOnline start every (minute)', timingSchedule['isonline'].minute);
+}
+if (timingSchedule['cupDataCenter'].autosend) {
+    console.log('crontab Data Center start every (minute)', timingSchedule['cupDataCenter'].minute);
 }
 cron.schedule(timingSch, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const minuteSinceLastNight = (+moment().get('hour')) * 60 + (+moment().get('minute'));
     const minuteNow = +moment().get('minute') == 0 ? 60 : +moment().get('minute');
     const hourNow = +moment().get('hour');
     if (timingSchedule['nrefer']['autosend'] &&
@@ -206,9 +211,8 @@ cron.schedule(timingSch, (req, res) => __awaiter(void 0, void 0, void 0, functio
                 minuteNow % timingSchedule['isonline'].minute == 0))) {
         doAutoSend(req, res, 'isonline', './routes/isonline/crontab');
     }
-    if (timingSchedule['cupDataCenter']['autosend'] &&
-        hourNow % timingSchedule['cupDataCenter'].hour == 0 &&
-        minuteNow == timingSchedule['cupDataCenter'].minute) {
+    if (timingSchedule['cupDataCenter'].autosend &&
+        minuteSinceLastNight % timingSchedule['cupDataCenter'].minute == 0) {
         doAutoSend(req, res, 'cupDataCenter', './routes/pcc/crontab');
     }
 }));
