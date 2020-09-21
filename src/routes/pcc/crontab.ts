@@ -113,8 +113,7 @@ async function sendMoph(req, reply, db) {
   if ((hourNow == 1 || hourNow == 8 || hourNow == 12 || hourNow == 18 || hourNow == 22)
     && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
     const date = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
-    // await getRefer_out(db, date);
-    // await getReferResult(db, date);
+    await getService(db, date);
   } else if (hourNow == 3 && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
     // เวลา 03:00 get ย้อนหลัง 1 สัปดาห์
     let oldDate = moment(dateNow).subtract(7, 'days').format('YYYY-MM-DD');
@@ -124,7 +123,7 @@ async function sendMoph(req, reply, db) {
     }
   }
 
-  // await getService(db, '2020-09-18');
+  await getService(db, "2020-09-18");
   const sendDataCenter = await getService(db, dateNow);
   await expireToken();
   return { sendDataCenter };
@@ -133,7 +132,10 @@ async function sendMoph(req, reply, db) {
 async function getService(db, date) {
   let sentResult: any = {
     person: { success: 0, fail: 0 },
-    service: { success: 0, fail: 0 }
+    address: { success: 0, fail: 0 },
+    service: { success: 0, fail: 0 },
+    diagnosisOpd: { success: 0, fail: 0 },
+    drugOpd: { success: 0, fail: 0 },
   }
 
   const rows = await hisModel.getService(db, 'date_serv', date, hcode);
@@ -143,7 +145,10 @@ async function getService(db, date) {
     sentResult.service.success = rows.length;
     for (const row of rows) {
       await sendToApi('save-service', row);
-      await person(db, row.pid || row.PID, sentResult)
+      await person(db, row.pid || row.PID, sentResult);
+      await getAddress(db, row.pid || row.PID, sentResult);
+      await getDiagnosisOpd(db, row.SEQ || row.seq, sentResult);
+      await getDrugOpd(db, row.SEQ || row.seq, sentResult);
     }
     // const saveResult: any = await sendToApi('save-service', rows);
   }
@@ -161,11 +166,73 @@ async function person(db, pid, sentResult) {
       sentResult.person.success += 1;
     } else {
       sentResult.person.fail += 1;
-      console.log('save-person', rows[0].HN, saveResult);
+      console.log('save-person', rows[0].HN, saveResult.message);
     }
     sentContent += '    -- PID ' + rows[0].HN + ' ' + (saveResult.result || saveResult.message) + '\r';
   }
   return rows[0];
+}
+
+async function getAddress(db, pid, sentResult) {
+  if (pid) {
+    const rows = await hisModel.getAddress(db, 'hn', pid, hcode);
+    sentContent += '  - address = ' + (rows ? rows.length : 0) + '\r';
+    if (rows && rows.length) {
+      for (const row of rows) {
+        row.PID = row.PID || row.pid || row.HN || row.hn;
+        const saveResult: any = await sendToApi('save-address', row);
+        if (saveResult.statusCode == 200) {
+          sentResult.address.success += 1;
+        } else {
+          sentResult.address.fail += 1;
+          console.log('save address fail', row.PID, saveResult.message);
+        }
+        sentContent += '    -- PID ' + row.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
+      }
+    }
+    return rows;
+  } else {
+    console.log('Address error: not found HN');
+    return [];
+  }
+}
+
+async function getDiagnosisOpd(db, visitNo, sentResult) {
+  const rows = await hisModel.getDiagnosisOpd(db, visitNo, hcode);
+  if (rows && rows.length) {
+    sentContent += '  - diagnosis_opd = ' + rows.length + '\r';
+    const saveResult: any = await sendToApi('save-diagnosis-opd', rows);
+    sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
+    if (saveResult.statusCode === 200) {
+      sentResult.diagnosisOpd.success += rows.length;
+    } else {
+      sentResult.diagnosisOpd.fail += 1;
+      console.log('save-diagnosis-opd', visitNo, saveResult.message);
+    }
+  } else {
+    sentContent += '  - diagnosis_opd = 0\r';
+  }
+  return rows;
+}
+
+async function getDrugOpd(db, visitNo, sentResult) {
+  let opdDrug = [];
+  const rows = await hisModel.getDrugOpd(db, visitNo, hcode);
+  if (rows && rows.length) {
+    sentContent += '  - drug_opd = ' + rows.length + '\r';
+    opdDrug = rows;
+    const saveResult: any = await sendToApi('save-drug-opd', rows);
+    sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
+    if (saveResult.statusCode == 200) {
+      sentResult.drugOpd.success += rows.length;
+    } else {
+      console.log('drug opd error: vn ', visitNo, saveResult.message);
+      sentResult.drugOpd.fail += 1;
+    }
+  } else {
+    sentContent += '  - drug_opd = 0\r';
+  }
+  return opdDrug;
 }
 
 async function sendToApi(path, dataArray) {
@@ -201,8 +268,8 @@ async function sendToApi(path, dataArray) {
         ret += chunk;
       });
       res.on('end', () => {
+        console.log(ret);
         const data = JSON.parse(ret);
-        console.log(path, data);
         resolve(data);
       });
     });
@@ -226,7 +293,7 @@ async function getToken() {
 
   const postData = querystring.stringify({
     apiKey: apiKey, secretKey: secretKey,
-    source: 'HIS Connect', version: apiVersion
+    sourceApiName: 'HIS Connect', apiVersion: apiVersion
   });
 
   const options = {
