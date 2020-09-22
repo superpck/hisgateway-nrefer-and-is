@@ -146,7 +146,6 @@ function getService(db, date) {
                 yield getDrugOpd(db, row.SEQ || row.seq, sentResult);
             }
         }
-        console.log(sentResult);
         return sentResult;
     });
 }
