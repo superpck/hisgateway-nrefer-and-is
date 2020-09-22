@@ -67,7 +67,7 @@ class HisJhcisModel {
             .limit(maxLimit);
     }
     getAddress(db, columnName, searchNo, hospCode = hcode) {
-        columnName = columnName === 'cid' ? 'idcard' : columnName;
+        columnName = columnName === 'cid' ? 'person.idcard' : columnName;
         columnName = columnName === 'hn' ? 'pid' : columnName;
         return db('person')
             .select(db.raw('"' + hcode + '" as hospcode'))

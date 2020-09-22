@@ -180,7 +180,6 @@ timingSchedule['cupDataCenter'].autosend = +process.env.HIS_DATACENTER_ENABLE ==
 timingSchedule['cupDataCenter'].minute =
     (process.env.HIS_DATACENTER_SEND_EVERY_MINUTE ? +process.env.HIS_DATACENTER_SEND_EVERY_MINUTE : 0) +
         (process.env.HIS_DATACENTER_SEND_EVERY_HOUR ? +process.env.HIS_DATACENTER_SEND_EVERY_HOUR : 2) * 60;
-timingSchedule['cupDataCenter'].minute = timingSchedule['cupDataCenter'].minute < 5 ? 5 : timingSchedule['cupDataCenter'].minute;
 console.log('crontab start: ', timingSch);
 if (timingSchedule['nrefer'].autosend) {
     console.log('crontab nRefer start every (minute)', timingSchedule['nrefer'].minute);

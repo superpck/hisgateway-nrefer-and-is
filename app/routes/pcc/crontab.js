@@ -110,6 +110,7 @@ function sendMoph(req, reply, db) {
         if ((hourNow == 1 || hourNow == 8 || hourNow == 12 || hourNow == 18 || hourNow == 22)
             && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
             const date = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
+            yield getService(db, date);
         }
         else if (hourNow == 3 && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
             let oldDate = moment(dateNow).subtract(7, 'days').format('YYYY-MM-DD');
@@ -117,6 +118,7 @@ function sendMoph(req, reply, db) {
                 oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
             }
         }
+        yield getService(db, "2020-09-18");
         const sendDataCenter = yield getService(db, dateNow);
         yield expireToken();
         return { sendDataCenter };
@@ -126,7 +128,10 @@ function getService(db, date) {
     return __awaiter(this, void 0, void 0, function* () {
         let sentResult = {
             person: { success: 0, fail: 0 },
-            service: { success: 0, fail: 0 }
+            address: { success: 0, fail: 0 },
+            service: { success: 0, fail: 0 },
+            diagnosisOpd: { success: 0, fail: 0 },
+            drugOpd: { success: 0, fail: 0 },
         };
         const rows = yield hisModel.getService(db, 'date_serv', date, hcode);
         sentContent += '  - service = ' + rows.length + '\r';
@@ -136,6 +141,9 @@ function getService(db, date) {
             for (const row of rows) {
                 yield sendToApi('save-service', row);
                 yield person(db, row.pid || row.PID, sentResult);
+                yield getAddress(db, row.pid || row.PID, sentResult);
+                yield getDiagnosisOpd(db, row.SEQ || row.seq, sentResult);
+                yield getDrugOpd(db, row.SEQ || row.seq, sentResult);
             }
         }
         console.log(sentResult);
@@ -154,11 +162,82 @@ function person(db, pid, sentResult) {
             }
             else {
                 sentResult.person.fail += 1;
-                console.log('save-person', rows[0].HN, saveResult);
+                console.log('save-person', rows[0].HN, saveResult.message);
             }
             sentContent += '    -- PID ' + rows[0].HN + ' ' + (saveResult.result || saveResult.message) + '\r';
         }
         return rows[0];
+    });
+}
+function getAddress(db, pid, sentResult) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (pid) {
+            const rows = yield hisModel.getAddress(db, 'hn', pid, hcode);
+            sentContent += '  - address = ' + (rows ? rows.length : 0) + '\r';
+            if (rows && rows.length) {
+                for (const row of rows) {
+                    row.PID = row.PID || row.pid || row.HN || row.hn;
+                    const saveResult = yield sendToApi('save-address', row);
+                    if (saveResult.statusCode == 200) {
+                        sentResult.address.success += 1;
+                    }
+                    else {
+                        sentResult.address.fail += 1;
+                        console.log('save address fail', row.PID, saveResult.message);
+                    }
+                    sentContent += '    -- PID ' + row.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
+                }
+            }
+            return rows;
+        }
+        else {
+            console.log('Address error: not found HN');
+            return [];
+        }
+    });
+}
+function getDiagnosisOpd(db, visitNo, sentResult) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const rows = yield hisModel.getDiagnosisOpd(db, visitNo, hcode);
+        if (rows && rows.length) {
+            sentContent += '  - diagnosis_opd = ' + rows.length + '\r';
+            const saveResult = yield sendToApi('save-diagnosis-opd', rows);
+            sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
+            if (saveResult.statusCode === 200) {
+                sentResult.diagnosisOpd.success += rows.length;
+            }
+            else {
+                sentResult.diagnosisOpd.fail += 1;
+                console.log('save-diagnosis-opd', visitNo, saveResult.message);
+            }
+        }
+        else {
+            sentContent += '  - diagnosis_opd = 0\r';
+        }
+        return rows;
+    });
+}
+function getDrugOpd(db, visitNo, sentResult) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let opdDrug = [];
+        const rows = yield hisModel.getDrugOpd(db, visitNo, hcode);
+        if (rows && rows.length) {
+            sentContent += '  - drug_opd = ' + rows.length + '\r';
+            opdDrug = rows;
+            const saveResult = yield sendToApi('save-drug-opd', rows);
+            sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
+            if (saveResult.statusCode == 200) {
+                sentResult.drugOpd.success += rows.length;
+            }
+            else {
+                console.log('drug opd error: vn ', visitNo, saveResult.message);
+                sentResult.drugOpd.fail += 1;
+            }
+        }
+        else {
+            sentContent += '  - drug_opd = 0\r';
+        }
+        return opdDrug;
     });
 }
 function sendToApi(path, dataArray) {
@@ -193,8 +272,8 @@ function sendToApi(path, dataArray) {
                     ret += chunk;
                 });
                 res.on('end', () => {
+                    console.log(ret);
                     const data = JSON.parse(ret);
-                    console.log(path, data);
                     resolve(data);
                 });
             });
@@ -214,7 +293,7 @@ function getToken() {
         url += url.substr(-1, 1) === '/' ? '' : '/';
         const postData = querystring.stringify({
             apiKey: apiKey, secretKey: secretKey,
-            source: 'HIS Connect', version: apiVersion
+            sourceApiName: 'HIS Connect', apiVersion: apiVersion
         });
         const options = {
             hostname: 'connect.moph.go.th',

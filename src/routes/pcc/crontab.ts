@@ -152,7 +152,7 @@ async function getService(db, date) {
     }
     // const saveResult: any = await sendToApi('save-service', rows);
   }
-  console.log(sentResult);
+  // console.log(sentResult);
   return sentResult;
 }
 
