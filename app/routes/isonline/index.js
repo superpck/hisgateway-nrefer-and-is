@@ -13,7 +13,6 @@ const HttpStatus = require("http-status-codes");
 const iswin_1 = require("../../models/isonline/iswin");
 const isModel = new iswin_1.IswinModel();
 const router = (fastify, {}, next) => {
-    var db = fastify.dbISOnline;
     fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         reply.send({
             statusCode: 200,

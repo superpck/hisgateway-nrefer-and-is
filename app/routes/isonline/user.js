@@ -13,7 +13,6 @@ const HttpStatus = require("http-status-codes");
 const users_1 = require("../../models/isonline/users");
 const userModel = new users_1.IsUserModel;
 const router = (fastify, {}, next) => {
-    var db = fastify.dbISOnline;
     fastify.post('/', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, res);
         let id = req.body.idSeach;
