@@ -10,15 +10,13 @@ import { IsLoginModel } from '../../models/isonline/login';
 const loginModel = new IsLoginModel()
 
 const router = (fastify, { }, next) => {
-  var db: Knex = fastify.dbISOnline;
-
   fastify.post('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     let username = req.body.username;
     let password = req.body.password;
 
     if (username && password) {
       let encPassword = await crypto.createHash('sha256').update(password).digest('hex');
-      loginModel.doLogin(db, username, encPassword)
+      loginModel.doLogin(fastify.dbISOnline, username, encPassword)
         .then(async (results: any) => {
           if (results.length) {
             let today = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
@@ -52,7 +50,7 @@ const router = (fastify, { }, next) => {
               type: 1
             };
 
-            await loginModel.saveToken(db, tokenInfo)
+            await loginModel.saveToken(fastify.dbISOnline, tokenInfo)
               .then((saveToken: any) => {
                 console.log('save token: ', saveToken);
               }).catch(errort => {
@@ -100,7 +98,7 @@ const router = (fastify, { }, next) => {
     let tokenKey = req.params.tokenKey;
     if (tokenKey) {
       try {
-        const result = await loginModel.checkToken(db, tokenKey);
+        const result = await loginModel.checkToken(fastify.dbISOnline, tokenKey);
         if (result.length) {
 
           res.send({
@@ -140,7 +138,7 @@ const router = (fastify, { }, next) => {
 
     let tokenKey = req.params.tokenKey;
     if (tokenKey) {
-      loginModel.checkToken(db, tokenKey)
+      loginModel.checkToken(fastify.dbISOnline, tokenKey)
         .then((results: any) => {
           if (results.length) {
             res.send({

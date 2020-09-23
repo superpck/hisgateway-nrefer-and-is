@@ -15,7 +15,7 @@ const router = (fastify, { }, next) => {
     let id: number = req.body.idSeach;
 
     try {
-      const result: any = await userModel.list(db, id);
+      const result: any = await userModel.list(fastify.dbISOnline, id);
       if (id > 0) {
         console.log("is_user id: " + id);
         res.send({
@@ -42,7 +42,7 @@ const router = (fastify, { }, next) => {
     let id: number = req.body.idSeach;
 
     try {
-      const result: any = await userModel.getByID(db, id);
+      const result: any = await userModel.getByID(fastify.dbISOnline, id);
       console.log("user id: " + id + ', ' + result.length + ' record<s> founded.');
       res.send({
         statusCode: HttpStatus.OK,
@@ -61,7 +61,7 @@ const router = (fastify, { }, next) => {
     let userName: string = req.body.userName;
 
     try {
-      const result = await userModel.getByUserName(db, userName)
+      const result = await userModel.getByUserName(fastify.dbISOnline, userName)
       res.send({
         statusCode: HttpStatus.OK,
         ok: true, rows: result[0]
@@ -83,7 +83,7 @@ const router = (fastify, { }, next) => {
     let orderText = req.body.orderText;
 
     try {
-      const result = await userModel.selectSql(db, tableName, selectText, whereText, groupBy, orderText)
+      const result = await userModel.selectSql(fastify.dbISOnline, tableName, selectText, whereText, groupBy, orderText)
       console.log("\nget: " + tableName + ' = ' + result[0].length + ' record<s> founded.');
       res.send({
         statusCode: HttpStatus.OK,
@@ -103,7 +103,7 @@ const router = (fastify, { }, next) => {
     let data = req.body.data;
 
     try {
-      const result: any = await userModel.saveUser(db, id, data);
+      const result: any = await userModel.saveUser(fastify.dbISOnline, id, data);
       console.log("\save: user id: " + id);
       res.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
     } catch (error) {
@@ -120,7 +120,7 @@ const router = (fastify, { }, next) => {
     let id = req.body.id;
 
     try {
-      const result: any = await userModel.remove(db, id);
+      const result: any = await userModel.remove(fastify.dbISOnline, id);
       console.log("\delete: user id: " + id);
       res.send({
         statusCode: HttpStatus.OK,

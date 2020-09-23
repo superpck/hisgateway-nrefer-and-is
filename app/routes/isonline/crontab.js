@@ -22,7 +22,6 @@ function sendMoph(req, reply, db) {
         const dateNow = moment().locale('th').format('YYYY-MM-DD');
         let token = null;
         let result = yield getIsToken();
-        console.log('IS token', token);
         if (!result || result.statusCode !== 200) {
             const apiKey = process.env.NREFER_APIKEY || 'api-key';
             const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';

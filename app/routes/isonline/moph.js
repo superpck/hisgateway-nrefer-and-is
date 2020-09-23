@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const router = (fastify, {}, next) => {
-    var dbIsOnline = fastify.dbISOnline;
     fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         reply.send({ api: 'MoPH ISOnline' });
     }));

@@ -18,7 +18,7 @@ const router = (fastify, {}, next) => {
         verifyToken(req, res);
         let id = req.body.idSeach;
         try {
-            const result = yield userModel.list(db, id);
+            const result = yield userModel.list(fastify.dbISOnline, id);
             if (id > 0) {
                 console.log("is_user id: " + id);
                 res.send({
@@ -45,7 +45,7 @@ const router = (fastify, {}, next) => {
         verifyToken(req, res);
         let id = req.body.idSeach;
         try {
-            const result = yield userModel.getByID(db, id);
+            const result = yield userModel.getByID(fastify.dbISOnline, id);
             console.log("user id: " + id + ', ' + result.length + ' record<s> founded.');
             res.send({
                 statusCode: HttpStatus.OK,
@@ -63,7 +63,7 @@ const router = (fastify, {}, next) => {
         verifyToken(req, res);
         let userName = req.body.userName;
         try {
-            const result = yield userModel.getByUserName(db, userName);
+            const result = yield userModel.getByUserName(fastify.dbISOnline, userName);
             res.send({
                 statusCode: HttpStatus.OK,
                 ok: true, rows: result[0]
@@ -84,7 +84,7 @@ const router = (fastify, {}, next) => {
         let groupBy = req.body.groupBy;
         let orderText = req.body.orderText;
         try {
-            const result = yield userModel.selectSql(db, tableName, selectText, whereText, groupBy, orderText);
+            const result = yield userModel.selectSql(fastify.dbISOnline, tableName, selectText, whereText, groupBy, orderText);
             console.log("\nget: " + tableName + ' = ' + result[0].length + ' record<s> founded.');
             res.send({
                 statusCode: HttpStatus.OK,
@@ -103,7 +103,7 @@ const router = (fastify, {}, next) => {
         let id = req.body.id;
         let data = req.body.data;
         try {
-            const result = yield userModel.saveUser(db, id, data);
+            const result = yield userModel.saveUser(fastify.dbISOnline, id, data);
             console.log("\save: user id: " + id);
             res.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
         }
@@ -119,7 +119,7 @@ const router = (fastify, {}, next) => {
         verifyToken(req, res);
         let id = req.body.id;
         try {
-            const result = yield userModel.remove(db, id);
+            const result = yield userModel.remove(fastify.dbISOnline, id);
             console.log("\delete: user id: " + id);
             res.send({
                 statusCode: HttpStatus.OK,

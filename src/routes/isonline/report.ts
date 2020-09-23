@@ -1,6 +1,5 @@
 /// <reference path="../../../typings.d.ts" />
 
-import * as Knex from 'knex';
 import * as fastify from 'fastify';
 import * as HttpStatus from 'http-status-codes';
 import * as moment from 'moment';
@@ -9,7 +8,6 @@ import { IsReportModel } from '../../models/isonline/report';
 const reportModel = new IsReportModel;
 
 const router = (fastify, { }, next) => {
-  var db: Knex = fastify.dbISOnline;
 
   fastify.post('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
     verifyToken(req, reply);
@@ -29,7 +27,7 @@ const router = (fastify, { }, next) => {
   
     if (reportID) {
       try {
-        await reportModel.getReport(db, reportID)
+        await reportModel.getReport(fastify.dbISOnline, reportID)
           .then((results: any) => {
             console.log("\nreport id:" + reportID);
             const row = results[0];
@@ -66,7 +64,7 @@ const router = (fastify, { }, next) => {
               console.log(rawSql);
               console.log("\r\n");
   
-              reportModel.getData(db, rawSql)
+              reportModel.getData(fastify.dbISOnline, rawSql)
                 .then((results: any) => {
                   console.log("\nreport id:" + reportID + ' result = ' + results[0].length);
                   reply.send({ ok: true, rows: results[0] });
@@ -103,7 +101,7 @@ const router = (fastify, { }, next) => {
       region: req.body.region,
       prov: req.body.prov,
     };
-    reportModel.getReport1(db, reportCond)
+    reportModel.getReport1(fastify.dbISOnline, reportCond)
       .then((results: any) => {
         console.log("token: " + tokenKey + " report ID: " + reportID + " hcode: " + hospCode + ' result: ' + results[0].length + ' record<s>');
         reply.send({ ok: true, rows: results[0] });
