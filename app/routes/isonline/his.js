@@ -107,10 +107,9 @@ const allowTableNames = [
     'patient', 'view_opd_visit', 'opd_dx', 'opd_op', 'opd_vs', 'ipd_ipd', 'view_pharmacy_opd_drug_item',
 ];
 const router = (fastify, {}, next) => {
-    var db = fastify.dbHIS;
     fastify.get('/alive', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const result = yield hisModel.getTableName(db);
+            const result = yield hisModel.getTableName(fastify.dbHIS);
             if (result && result.length) {
                 res.send({
                     statusCode: HttpStatus.OK,
@@ -143,7 +142,7 @@ const router = (fastify, {}, next) => {
     }));
     fastify.post('/alive', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const result = yield hisModel.getTableName(db);
+            const result = yield hisModel.getTableName(fastify.dbHIS);
             if (result && result.length) {
                 res.send({
                     statusCode: HttpStatus.OK,
@@ -176,7 +175,7 @@ const router = (fastify, {}, next) => {
     }));
     fastify.post('/showTbl', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const result = yield hisModel.getTableName(db);
+            const result = yield hisModel.getTableName(fastify.dbHIS);
             res.send({
                 statusCode: HttpStatus.OK,
                 rows: result
@@ -195,7 +194,7 @@ const router = (fastify, {}, next) => {
         let searchText = req.body.searchText;
         if (columnName && searchText) {
             try {
-                const result = yield hisModel.getPerson(db, columnName, searchText);
+                const result = yield hisModel.getPerson(fastify.dbHIS, columnName, searchText);
                 res.send({
                     statusCode: HttpStatus.OK,
                     reccount: result.length,
@@ -222,7 +221,7 @@ const router = (fastify, {}, next) => {
         let date = req.body.date;
         if (hn || date) {
             try {
-                const result = yield hisModel.getOpdService(db, hn, date);
+                const result = yield hisModel.getOpdService(fastify.dbHIS, hn, date);
                 res.send({
                     statusCode: HttpStatus.OK,
                     reccount: result.length,
@@ -248,7 +247,7 @@ const router = (fastify, {}, next) => {
         let visitNo = req.body.visitNo || req.body.vn;
         if (visitNo) {
             try {
-                const result = yield hisModel.getDiagnosisOpd(db, visitNo);
+                const result = yield hisModel.getDiagnosisOpd(fastify.dbHIS, visitNo);
                 res.send({
                     statusCode: HttpStatus.OK,
                     reccount: result.length,

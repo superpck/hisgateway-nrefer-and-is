@@ -8,7 +8,7 @@ import { IswinModel } from '../../models/isonline/iswin';
 const isModel = new IswinModel();
 
 const router = (fastify, { }, next) => {
-  var db: Knex = fastify.dbISOnline;
+  // var db: Knex = fastify.dbISOnline;
 
   fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
     reply.send({

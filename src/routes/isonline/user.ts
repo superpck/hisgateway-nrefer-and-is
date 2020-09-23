@@ -1,6 +1,5 @@
 /// <reference path="../../../typings.d.ts" />
 
-import * as Knex from 'knex';
 import * as fastify from 'fastify';
 import * as HttpStatus from 'http-status-codes';
 
@@ -8,7 +7,6 @@ import { IsUserModel } from '../../models/isonline/users';
 const userModel = new IsUserModel;
 
 const router = (fastify, { }, next) => {
-  var db: Knex = fastify.dbISOnline;
 
   fastify.post('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     verifyToken(req, res);

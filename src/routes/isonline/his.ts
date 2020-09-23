@@ -1,6 +1,5 @@
 /// <reference path="../../../typings.d.ts" />
 
-import * as Knex from 'knex';
 import * as fastify from 'fastify';
 import * as HttpStatus from 'http-status-codes';
 import { HisModel } from './../../models/isonline/his.model';
