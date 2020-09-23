@@ -146,7 +146,7 @@ app.register(require('./plugins/db'), {
     connectionName: 'dbCannabis'
 });
 app.apiVersion = '3.1.3';
-app.apiSubVersion = '2020-09-21-01';
+app.apiSubVersion = '2020-09-23-01';
 const secondNow = +moment().get('second');
 const timingSch = `${secondNow} */1 * * * *`;
 let timingSchedule = [];
