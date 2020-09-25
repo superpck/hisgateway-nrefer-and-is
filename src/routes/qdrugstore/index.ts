@@ -84,8 +84,6 @@ import { CannabisModel } from '../../models/cannabis/cannabis';
 const cannabisModel = new CannabisModel();
 
 const router = (fastify, { }, next) => {
-  var db: Knex = fastify.dbHIS;
-
   // =============================================================
   fastify.get('/', async (req: fastify.Request, reply: fastify.Reply) => {
     reply.send({
@@ -102,7 +100,7 @@ const router = (fastify, { }, next) => {
     var hashRequestKey = crypto.createHash('md5').update(process.env.REQUEST_KEY).digest('hex');
     const requestKeyVerified = requestKey === hashRequestKey;
     try {
-      const result = await hisModel.getTableName(db);
+      const result = await hisModel.getTableName(fastify.dbHIS);
       if (result && result.length) {
         reply.status(HttpStatus.OK).send({
           statusCode: HttpStatus.OK,
@@ -129,7 +127,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getTableName(db);
+      const result = await hisModel.getTableName(fastify.dbHIS);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, tblCount: result.length });
     } catch (error) {
       console.log('tbl', error.message);
@@ -156,8 +154,8 @@ const router = (fastify, { }, next) => {
         textSearch = visitNo;
       }
 
-      const result = await cannabisModel.searchVisit(db, textSearch);
-      // const result = await hisModel.getService(db, typeSearch, textSearch, hospcode);
+      const result = await cannabisModel.searchVisit(fastify.dbHIS, textSearch);
+      // const result = await hisModel.getService(fastify.dbHIS, typeSearch, textSearch, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -170,7 +168,7 @@ const router = (fastify, { }, next) => {
     const hn = req.body.hn || '';
     if (hn) {
       try {
-        const result: any = await cannabisModel.searchVisit(db, hn);
+        const result: any = await cannabisModel.searchVisit(fastify.dbHIS, hn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -195,7 +193,7 @@ const router = (fastify, { }, next) => {
 
     if (hn) {
       try {
-        const result: any = await cannabisModel.patientInfo(db, hn);
+        const result: any = await cannabisModel.patientInfo(fastify.dbHIS, hn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -221,7 +219,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitLab(db, hn, vn);
+        const result: any = await cannabisModel.getVisitLab(fastify.dbHIS, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -247,7 +245,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitDrug(db, hn, vn);
+        const result: any = await cannabisModel.getVisitDrug(fastify.dbHIS, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -273,7 +271,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitAppointment(db, hn, vn);
+        const result: any = await cannabisModel.getVisitAppointment(fastify.dbHIS, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -299,7 +297,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitDiagText(db, hn, vn);
+        const result: any = await cannabisModel.getVisitDiagText(fastify.dbHIS, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -325,7 +323,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitDiagnosis(db, hn, vn);
+        const result: any = await cannabisModel.getVisitDiagnosis(fastify.dbHIS, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -351,7 +349,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitProcedure(db, hn, vn);
+        const result: any = await cannabisModel.getVisitProcedure(fastify.dbHIS, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -377,7 +375,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitScreening(db, hn, vn);
+        const result: any = await cannabisModel.getVisitScreening(fastify.dbHIS, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -420,7 +418,7 @@ const router = (fastify, { }, next) => {
     const hospcode = req.body.hospcode || process.env.HOSPCODE;
 
     try {
-      const result = await hisModel.getReferOut(db, date, hospcode);
+      const result = await hisModel.getReferOut(fastify.dbHIS, date, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
       console.log('referout', result.length, 'reccords.');
     } catch (error) {
@@ -449,7 +447,7 @@ const router = (fastify, { }, next) => {
         textSearch = cid;
       }
 
-      const result = await hisModel.getPerson(db, typeSearch, textSearch, hospcode);
+      const result = await hisModel.getPerson(fastify.dbHIS, typeSearch, textSearch, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -472,7 +470,7 @@ const router = (fastify, { }, next) => {
       let typeSearch = 'hn';
       let textSearch = hn;
 
-      const result = await hisModel.getAddress(db, typeSearch, textSearch, hospcode);
+      const result = await hisModel.getAddress(fastify.dbHIS, typeSearch, textSearch, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -492,7 +490,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getDrugAllergy(db, hn, hospcode);
+      const result = await hisModel.getDrugAllergy(fastify.dbHIS, hn, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -512,7 +510,7 @@ const router = (fastify, { }, next) => {
       return;
     } else {
       try {
-        const result = await hisModel.getAdmission(db, typeSearch, textSearch, hospcode);
+        const result = await hisModel.getAdmission(fastify.dbHIS, typeSearch, textSearch, hospcode);
         reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
       } catch (error) {
@@ -533,7 +531,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getDiagnosisOpd(db, visitNo, hospcode);
+      const result = await hisModel.getDiagnosisOpd(fastify.dbHIS, visitNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
     } catch (error) {
       console.log('diagnosis_opd', error.message);
@@ -551,7 +549,7 @@ const router = (fastify, { }, next) => {
       return;
     } else {
       try {
-        const result = await hisModel.getDiagnosisIpd(db, 'an', an, hospcode);
+        const result = await hisModel.getDiagnosisIpd(fastify.dbHIS, 'an', an, hospcode);
         reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
       } catch (error) {
@@ -572,7 +570,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getProcedureOpd(db, visitNo, hospcode);
+      const result = await hisModel.getProcedureOpd(fastify.dbHIS, visitNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -593,7 +591,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getProcedureIpd(db, an, hospcode);
+      const result = await hisModel.getProcedureIpd(fastify.dbHIS, an, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -614,7 +612,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getDrugOpd(db, visitNo, hospcode);
+      const result = await hisModel.getDrugOpd(fastify.dbHIS, visitNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -635,7 +633,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getDrugIpd(db, an, hospcode);
+      const result = await hisModel.getDrugIpd(fastify.dbHIS, an, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -656,7 +654,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getChargeOpd(db, visitNo, hospcode);
+      const result = await hisModel.getChargeOpd(fastify.dbHIS, visitNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -677,7 +675,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getChargeIpd(db, an, hospcode);
+      const result = await hisModel.getChargeIpd(fastify.dbHIS, an, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -698,7 +696,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getAccident(db, visitNo, hospcode);
+      const result = await hisModel.getAccident(fastify.dbHIS, visitNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -719,7 +717,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getAppointment(db, visitNo, hospcode);
+      const result = await hisModel.getAppointment(fastify.dbHIS, visitNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -747,7 +745,7 @@ const router = (fastify, { }, next) => {
         typeSearch = 'visitNo';
         textSearch = visitNo;
       }
-      const result = await hisModel.getReferHistory(db, typeSearch, textSearch, hospcode);
+      const result = await hisModel.getReferHistory(fastify.dbHIS, typeSearch, textSearch, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -768,7 +766,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getClinicalRefer(db, referNo, hospcode);
+      const result = await hisModel.getClinicalRefer(fastify.dbHIS, referNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -789,7 +787,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getInvestigationRefer(db, referNo, hospcode);
+      const result = await hisModel.getInvestigationRefer(fastify.dbHIS, referNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -810,7 +808,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getCareRefer(db, referNo, hospcode);
+      const result = await hisModel.getCareRefer(fastify.dbHIS, referNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -832,7 +830,7 @@ const router = (fastify, { }, next) => {
     }
 
     try {
-      const result = await hisModel.getReferResult(db, hospDestination, referNo, hospcode);
+      const result = await hisModel.getReferResult(fastify.dbHIS, hospDestination, referNo, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
@@ -860,7 +858,7 @@ const router = (fastify, { }, next) => {
       textSearch = licenseNo;
     }
     try {
-      const result = await hisModel.getProvider(db, typeSearch, textSearch, hospcode);
+      const result = await hisModel.getProvider(fastify.dbHIS, typeSearch, textSearch, hospcode);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
 
     } catch (error) {
