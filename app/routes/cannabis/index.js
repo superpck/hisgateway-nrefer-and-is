@@ -23,7 +23,6 @@ switch (hisProvider) {
         cannabisModel = new cannabis_1.CannabisModel();
 }
 const router = (fastify, {}, next) => {
-    var db = fastify.dbCannabis;
     fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         reply.send({
             api: 'Cannabis API Serivce',
@@ -34,7 +33,7 @@ const router = (fastify, {}, next) => {
     }));
     fastify.get('/test/db', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const result = yield cannabisModel.testConnection(db);
+            const result = yield cannabisModel.testConnection(fastify.dbCannabis);
             reply.send(result[0]);
         }
         catch (error) {
@@ -47,7 +46,7 @@ const router = (fastify, {}, next) => {
     }));
     fastify.post('/test-connection', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const result = yield cannabisModel.testConnection(db);
+            const result = yield cannabisModel.testConnection(fastify.dbCannabis);
             reply.send({
                 statusCode: HttpStatus.OK,
                 rows: result
@@ -64,7 +63,7 @@ const router = (fastify, {}, next) => {
         const cid = req.body.cid;
         if (cid) {
             try {
-                const rows = yield cannabisModel.searchPatient(db, cid);
+                const rows = yield cannabisModel.searchPatient(fastify.dbCannabis, cid);
                 reply.send(rows);
             }
             catch (error) {
@@ -86,7 +85,7 @@ const router = (fastify, {}, next) => {
         const cid = req.body.cid;
         if (cid) {
             try {
-                const result = yield cannabisModel.searchPatient(db, cid);
+                const result = yield cannabisModel.searchPatient(fastify.dbCannabis, cid);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -113,7 +112,7 @@ const router = (fastify, {}, next) => {
         const endDate = req.body.endDate;
         if (hn) {
             try {
-                const result = yield cannabisModel.searchVisit(db, hn, startDate, endDate);
+                const result = yield cannabisModel.searchVisit(fastify.dbCannabis, hn, startDate, endDate);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -140,7 +139,7 @@ const router = (fastify, {}, next) => {
         const endDate = req.body.endDate;
         if (hn) {
             try {
-                const result = yield cannabisModel.searchVisit(db, hn, startDate, endDate);
+                const result = yield cannabisModel.searchVisit(fastify.dbCannabis, hn, startDate, endDate);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -165,7 +164,7 @@ const router = (fastify, {}, next) => {
         const hn = req.body.hn || '';
         if (hn) {
             try {
-                const rows = yield cannabisModel.patientInfo(db, hn);
+                const rows = yield cannabisModel.patientInfo(fastify.dbCannabis, hn);
                 reply.send(rows);
             }
             catch (error) {
@@ -187,7 +186,7 @@ const router = (fastify, {}, next) => {
         const hn = req.body.hn || '';
         if (hn) {
             try {
-                const result = yield cannabisModel.patientInfo(db, hn);
+                const result = yield cannabisModel.patientInfo(fastify.dbCannabis, hn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -213,7 +212,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const data = yield cannabisModel.getVisitLab(db, hn, vn);
+                const data = yield cannabisModel.getVisitLab(fastify.dbCannabis, hn, vn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     status: HttpStatus.OK,
@@ -244,7 +243,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const result = yield cannabisModel.getVisitLab(db, hn, vn);
+                const result = yield cannabisModel.getVisitLab(fastify.dbCannabis, hn, vn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -270,7 +269,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const data = yield cannabisModel.getVisitDrug(db, hn, vn);
+                const data = yield cannabisModel.getVisitDrug(fastify.dbCannabis, hn, vn);
                 reply.send({
                     status: HttpStatus.OK,
                     statusCode: HttpStatus.OK,
@@ -301,7 +300,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const result = yield cannabisModel.getVisitDrug(db, hn, vn);
+                const result = yield cannabisModel.getVisitDrug(fastify.dbCannabis, hn, vn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -327,7 +326,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const data = yield cannabisModel.getVisitAppointment(db, hn, vn);
+                const data = yield cannabisModel.getVisitAppointment(fastify.dbCannabis, hn, vn);
                 reply.send({
                     status: HttpStatus.OK,
                     data
@@ -354,7 +353,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const result = yield cannabisModel.getVisitAppointment(db, hn, vn);
+                const result = yield cannabisModel.getVisitAppointment(fastify.dbCannabis, hn, vn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -380,7 +379,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const data = yield cannabisModel.getVisitDiagText(db, hn, vn);
+                const data = yield cannabisModel.getVisitDiagText(fastify.dbCannabis, hn, vn);
                 reply.send({
                     status: HttpStatus.OK,
                     statusCode: HttpStatus.OK,
@@ -407,7 +406,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const result = yield cannabisModel.getVisitDiagText(db, hn, vn);
+                const result = yield cannabisModel.getVisitDiagText(fastify.dbCannabis, hn, vn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -433,7 +432,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const data = yield cannabisModel.getVisitDiagnosis(db, hn, vn);
+                const data = yield cannabisModel.getVisitDiagnosis(fastify.dbCannabis, hn, vn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     status: HttpStatus.OK,
@@ -462,7 +461,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const result = yield cannabisModel.getVisitDiagnosis(db, hn, vn);
+                const result = yield cannabisModel.getVisitDiagnosis(fastify.dbCannabis, hn, vn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -488,7 +487,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const data = yield cannabisModel.getVisitProcedure(db, hn, vn);
+                const data = yield cannabisModel.getVisitProcedure(fastify.dbCannabis, hn, vn);
                 reply.send({
                     status: HttpStatus.OK,
                     statusCode: HttpStatus.OK,
@@ -517,7 +516,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const result = yield cannabisModel.getVisitProcedure(db, hn, vn);
+                const result = yield cannabisModel.getVisitProcedure(fastify.dbCannabis, hn, vn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -543,7 +542,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const result = yield cannabisModel.getVisitScreening(db, hn, vn);
+                const result = yield cannabisModel.getVisitScreening(fastify.dbCannabis, hn, vn);
                 reply.send(result);
             }
             catch (error) {
@@ -568,7 +567,7 @@ const router = (fastify, {}, next) => {
         const vn = req.body.vn || '';
         if (hn && vn) {
             try {
-                const result = yield cannabisModel.getVisitScreening(db, hn, vn);
+                const result = yield cannabisModel.getVisitScreening(fastify.dbCannabis, hn, vn);
                 reply.send({
                     statusCode: HttpStatus.OK,
                     rows: result
