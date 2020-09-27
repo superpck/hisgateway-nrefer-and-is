@@ -136,13 +136,13 @@ async function sendMoph(req, reply, db) {
 }
 
 async function getRefer_out(db, date) {
-  console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
   try {
     const referout = await hisModel.getReferOut(db, date, hcode);
     sentContent += `\rsave refer_history ${date} \r`;
     sentContent += `\rsave refer service data ${date} \r`;
     let index = 0;
     let sentResult: any = {
+      date,
       pid: process.pid,
       referout: { success: 0, fail: 0 },
       person: { success: 0, fail: 0 },
@@ -262,7 +262,7 @@ async function sendReferOut(row, sentResult) {
       HOSPCODE: hcode,
       REFERID: referId,
       PID: row.PID || row.pid || row.HN || row.hn,
-      SEQ: (row.SEQ || row.seq || '') + '',
+      SEQ: (row.SEQ || row.seq || row.vn || '') + '',
       AN: row.AN || row.an || '',
       CID: row.CID || row.cid,
       DATETIME_SERV: moment(dServe).format('YYYY-MM-DD HH:mm:ss'),

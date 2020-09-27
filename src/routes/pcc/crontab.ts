@@ -314,9 +314,13 @@ async function getToken() {
       res.on('data', (chunk: string) => {
         ret += chunk;
       });
-      res.on('end', () => {
-        const data = JSON.parse(ret);
-        resolve(data);
+      res.on('end', (error) => {
+        if (ret) {
+          const data = JSON.parse(ret);
+          resolve(data);
+        } else {
+          reject(error);
+        }
       });
     });
 

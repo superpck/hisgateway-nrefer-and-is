@@ -311,9 +311,14 @@ function getToken() {
                 res.on('data', (chunk) => {
                     ret += chunk;
                 });
-                res.on('end', () => {
-                    const data = JSON.parse(ret);
-                    resolve(data);
+                res.on('end', (error) => {
+                    if (ret) {
+                        const data = JSON.parse(ret);
+                        resolve(data);
+                    }
+                    else {
+                        reject(error);
+                    }
                 });
             });
             req.on('error', (e) => {
