@@ -19,8 +19,6 @@ switch (hisProvider) {
 }
 
 const router = (fastify, { }, next) => {
-  // var db: Knex = fastify.dbCannabis;
-
   fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
     reply.send({
       api: 'Cannabis API Serivce',

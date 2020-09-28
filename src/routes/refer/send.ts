@@ -10,8 +10,6 @@ var querystring = require('querystring');
 const request = require('request');
 
 const router = (fastify, { }, next) => {
-  var db: Knex = fastify.dbHIS;
-
   // =============================================================
   fastify.get('/sending-process/:?date', async (req: fastify.Request, reply: fastify.Reply) => {
     

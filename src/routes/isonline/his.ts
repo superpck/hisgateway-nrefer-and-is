@@ -105,8 +105,6 @@ const allowTableNames = [
 ];
 
 const router = (fastify, { }, next) => {
-  // var db: Knex = fastify.dbHIS;
-
   fastify.get('/alive', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     try {
       const result = await hisModel.getTableName(fastify.dbHIS);
