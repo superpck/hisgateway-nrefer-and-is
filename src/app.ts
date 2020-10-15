@@ -192,8 +192,8 @@ app.register(require('./plugins/db'), {
   connectionName: 'dbCannabis'
 });
 
-app.apiVersion = '3.1.4';
-app.apiSubVersion = '2020-09-25-01';
+app.apiVersion = '3.1.5';
+app.apiSubVersion = '2020-10-15-01';
 
 // node-cron =========================================
 const secondNow = +moment().get('second');
