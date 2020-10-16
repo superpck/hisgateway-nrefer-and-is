@@ -17,6 +17,27 @@ const router = (fastify, { }, next) => {
     });
   })
 
+  fastify.get('/alive', async (req: fastify.Request, res: fastify.Reply) => {
+    try {
+      const result = await isModel.getVersion(fastify.dbISOnline);
+      res.send({
+        statusCode: HttpStatus.OK,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
+        connnection: true
+      });
+    } catch (error) {
+      res.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
+        connnection: false,
+        message: error.message
+      });
+    }
+
+  })
+
   fastify.post('/getbyref', { preHandler: [fastify.authenticate] }, async (req: fastify.Request, res: fastify.Reply) => {
     let refSeach: number = req.body.refSeach;
     let hospCode: string = req.body.hospCode;

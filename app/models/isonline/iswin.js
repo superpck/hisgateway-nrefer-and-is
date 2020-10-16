@@ -13,10 +13,8 @@ exports.IswinModel = void 0;
 const dbName = process.env.DB_NAME;
 const defaultHCode = process.env.HOSPCODE;
 class IswinModel {
-    getVersion(knex) {
-        return knex
-            .select('version')
-            .from('version')
+    getVersion(db) {
+        return db('version')
             .where('id', 'IS')
             .limit(1);
     }

@@ -5,10 +5,9 @@ const dbName = process.env.DB_NAME;
 const defaultHCode = process.env.HOSPCODE;
 
 export class IswinModel {
-  getVersion(knex: Knex) {
-    return knex
-      .select('version')
-      .from('version')
+
+  getVersion(db: Knex) {
+    return db('version')
       .where('id', 'IS')
       .limit(1)
   }
