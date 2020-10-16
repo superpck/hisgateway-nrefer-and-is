@@ -192,16 +192,16 @@ app.register(require('./plugins/db'), {
   connectionName: 'dbCannabis'
 });
 
-app.apiVersion = '3.1.5';
+app.apiVersion = '3.1.6';
 app.apiSubVersion = '2020-10-15-01';
 
 // node-cron =========================================
 const secondNow = +moment().get('second');
 const timingSch = `${secondNow} */1 * * * *`;  // every minute
 let timingSchedule: any = [];
-timingSchedule['isonline'] = { version: app.apiVersion };
-timingSchedule['nrefer'] = { version: app.apiVersion };
-timingSchedule['cupDataCenter'] = { version: app.apiVersion };
+timingSchedule['isonline'] = { version: app.apiVersion, apiSubVersion: app.apiSubVersion };
+timingSchedule['nrefer'] = { version: app.apiVersion, apiSubVersion: app.apiSubVersion };
+timingSchedule['cupDataCenter'] = { version: app.apiVersion, apiSubVersion: app.apiSubVersion };
 
 // Check IS-Online Auto Send
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;

@@ -89,6 +89,7 @@ let sentContent = '';
 let nReferToken = '';
 let crontabConfig;
 let apiVersion = '-';
+let subVersion = '-';
 function sendMoph(req, reply, db) {
     return __awaiter(this, void 0, void 0, function* () {
         const dateNow = moment().locale('th').format('YYYY-MM-DD');
@@ -725,7 +726,7 @@ function referSending(path, dataArray) {
         const dataSending = querystring.stringify({
             hospcode: hcode, data: JSON.stringify(dataArray),
             processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-            sourceApiName: 'HIS-connect', apiVersion
+            sourceApiName: 'HIS-connect', apiVersion, subVersion
         });
         const options = {
             hostname: process.env.NREFER_URL,
@@ -766,7 +767,7 @@ function getNReferToken(apiKey, secretKey) {
             apiKey: apiKey, secretKey: secretKey,
             hospcode: hcode,
             processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-            sourceApiName: 'HIS-connect', apiVersion
+            sourceApiName: 'HIS-connect', apiVersion, subVersion
         });
         const options = {
             hostname: process.env.NREFER_URL,
@@ -861,6 +862,7 @@ function writeResult(file, content) {
 const router = (request, reply, dbConn, config = {}) => {
     crontabConfig = config;
     apiVersion = crontabConfig.version ? crontabConfig.version : '-';
+    subVersion = crontabConfig.subVersion ? crontabConfig.subVersion : '-';
     return sendMoph(request, reply, dbConn);
 };
 module.exports = router;

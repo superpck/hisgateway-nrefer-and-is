@@ -145,14 +145,14 @@ app.register(require('./plugins/db'), {
     connection: cannabisConnectionOption,
     connectionName: 'dbCannabis'
 });
-app.apiVersion = '3.1.5';
+app.apiVersion = '3.1.6';
 app.apiSubVersion = '2020-10-15-01';
 const secondNow = +moment().get('second');
 const timingSch = `${secondNow} */1 * * * *`;
 let timingSchedule = [];
-timingSchedule['isonline'] = { version: app.apiVersion };
-timingSchedule['nrefer'] = { version: app.apiVersion };
-timingSchedule['cupDataCenter'] = { version: app.apiVersion };
+timingSchedule['isonline'] = { version: app.apiVersion, apiSubVersion: app.apiSubVersion };
+timingSchedule['nrefer'] = { version: app.apiVersion, apiSubVersion: app.apiSubVersion };
+timingSchedule['cupDataCenter'] = { version: app.apiVersion, apiSubVersion: app.apiSubVersion };
 timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;
 timingSchedule['isonline'].minute = process.env.IS_AUTO_SEND_EVERY_MINUTE ? parseInt(process.env.IS_AUTO_SEND_EVERY_MINUTE) : 0;
 timingSchedule['isonline'].hour = process.env.IS_AUTO_SEND_EVERY_HOUR ? parseInt(process.env.IS_AUTO_SEND_EVERY_HOUR) : 0;

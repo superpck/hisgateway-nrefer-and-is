@@ -31,6 +31,8 @@ const router = (fastify, { }, next) => {
       console.log("ref: " + refSeach + " hcode: " + hospCode + ' result: ' + result[0].length + ' record<s>');
       res.send({
         statusCode: HttpStatus.OK,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
         ok: true, rows: result[0]
       });
     } catch (error) {
@@ -56,6 +58,8 @@ const router = (fastify, { }, next) => {
       console.log("lib code: " + groupCode + ' result: ' + result[0].length + ' record<s>');
       res.send({
         statusCode: HttpStatus.OK,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
         ok: true, rows: result[0]
       });
     } catch (error) {
@@ -81,6 +85,8 @@ const router = (fastify, { }, next) => {
       console.log("lib " + columnsName + ": " + textSearch + ' result: ' + result[0].length + ' record<s>');
       reply.send({
         statusCode: HttpStatus.OK,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
         ok: true, rows: result[0]
       });
     } catch (error) {
@@ -105,6 +111,8 @@ const router = (fastify, { }, next) => {
       console.log("lib office: " + textSearch + ' result: ' + result[0].length + ' record<s>');
       reply.send({
         statusCode: HttpStatus.OK,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
         ok: true, rows: result[0]
       });
     } catch (error) {
@@ -131,6 +139,8 @@ const router = (fastify, { }, next) => {
           statusCode: HttpStatus.OK,
           status: HttpStatus.OK,
           ok: true,
+          version: fastify.apiVersion,
+          subVersion: fastify.apiSubVersion,
           rows: results
         });
       } else {
@@ -170,6 +180,8 @@ const router = (fastify, { }, next) => {
           statusCode: HttpStatus.OK,
           status: HttpStatus.OK,
           ok: true,
+          version: fastify.apiVersion,
+          subVersion: fastify.apiSubVersion,
           rows: results[0]
         });
       } else {
@@ -202,6 +214,8 @@ const router = (fastify, { }, next) => {
       const result = await isModel.getByID(fastify.dbISOnline, id, hospCode);
       reply.send({
         statusCode: HttpStatus.OK,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
         ok: true, rows: result[0]
       });
     } catch (error) {
@@ -228,6 +242,8 @@ const router = (fastify, { }, next) => {
       console.log(typeSearch + ": " + valSearch + " hcode: " + hospCode + ' result: ' + result[0].length + ' record<s>');
       reply.send({
         statusCode: HttpStatus.OK,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
         ok: true, rows: result[0]
       });
     } catch (error) {
@@ -258,6 +274,8 @@ const router = (fastify, { }, next) => {
           statusCode: HttpStatus.OK,
           status: HttpStatus.OK,
           ok: true,
+          version: fastify.apiVersion,
+          subVersion: fastify.apiSubVersion,
           rows: results[0]
         });
       } else {
@@ -312,7 +330,12 @@ const router = (fastify, { }, next) => {
       const result: any = await isModel.saveMapPoint(fastify.dbISOnline, ref, formInput);
       console.log("save map point: " + ref);
       isModel.saveMapPointIs(fastify.dbISOnline, formInput);
-      reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+      reply.send({
+        statusCode: HttpStatus.OK, ok: true,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
+        rows: result[0]
+      });
     } catch (error) {
       reply.send({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -332,7 +355,12 @@ const router = (fastify, { }, next) => {
     try {
       const result: any = await isModel.saveLib(fastify.dbISOnline, saveType, formInput);
       console.log("save lib_code: " + formInput.code);
-      reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+      reply.send({
+        statusCode: HttpStatus.OK, ok: true,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
+        rows: result[0]
+      });
     } catch (error) {
       reply.send({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -352,7 +380,10 @@ const router = (fastify, { }, next) => {
       console.log("report age group 1: " + date1 + ' ' + date2);
       reply.send({
         statusCode: HttpStatus.OK,
-        ok: true, rows: result[0]
+        ok: true,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
+        rows: result[0]
       });
     } catch (error) {
       reply.send({
@@ -418,7 +449,10 @@ const router = (fastify, { }, next) => {
       console.log("delete: user id: " + id);
       reply.send({
         statusCode: HttpStatus.OK,
-        ok: true, id: id, result
+        ok: true,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
+        id: id, result
       });
     } catch (error) {
       reply.send({

@@ -105,7 +105,12 @@ function sendingData(dataArray, token) {
 function sendData(row, tokenKey) {
     return __awaiter(this, void 0, void 0, function* () {
         const request = require('request');
-        const bodyContent = { data: row, token: tokenKey };
+        const bodyContent = {
+            data: row,
+            token: tokenKey,
+            version: crontabConfig.apiVersion,
+            subVersion: crontabConfig.apiSubVersion
+        };
         const options = {
             url: process.env.IS_URL + '/isonline/put-is',
             json: true,
@@ -164,7 +169,6 @@ function getIsToken_() {
                 password: process.env.IS_MOPH_PASSWORD
             }
         };
-        console.log('options', options);
         request.post(options, (err, res, body) => {
             if (err) {
                 return console.log(err);

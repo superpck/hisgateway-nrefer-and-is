@@ -115,6 +115,8 @@ const router = (fastify, {}, next) => {
                     statusCode: HttpStatus.OK,
                     ok: true,
                     his: provider,
+                    version: fastify.apiVersion,
+                    subVersion: fastify.apiSubVersion,
                     connection: true
                 });
             }
@@ -123,6 +125,8 @@ const router = (fastify, {}, next) => {
                     statusCode: HttpStatus.NO_CONTENT,
                     ok: true,
                     his: provider,
+                    version: fastify.apiVersion,
+                    subVersion: fastify.apiSubVersion,
                     connection: false,
                     message: result
                 });
@@ -147,6 +151,8 @@ const router = (fastify, {}, next) => {
                 res.send({
                     statusCode: HttpStatus.OK,
                     ok: true,
+                    version: fastify.apiVersion,
+                    subVersion: fastify.apiSubVersion,
                     his: provider,
                     connection: true
                 });
@@ -197,6 +203,8 @@ const router = (fastify, {}, next) => {
                 const result = yield hisModel.getPerson(fastify.dbHIS, columnName, searchText);
                 res.send({
                     statusCode: HttpStatus.OK,
+                    version: fastify.apiVersion,
+                    subVersion: fastify.apiSubVersion,
                     reccount: result.length,
                     rows: result
                 });
@@ -224,6 +232,8 @@ const router = (fastify, {}, next) => {
                 const result = yield hisModel.getOpdService(fastify.dbHIS, hn, date);
                 res.send({
                     statusCode: HttpStatus.OK,
+                    version: fastify.apiVersion,
+                    subVersion: fastify.apiSubVersion,
                     reccount: result.length,
                     rows: result
                 });
@@ -250,6 +260,8 @@ const router = (fastify, {}, next) => {
                 const result = yield hisModel.getDiagnosisOpd(fastify.dbHIS, visitNo);
                 res.send({
                     statusCode: HttpStatus.OK,
+                    version: fastify.apiVersion,
+                    subVersion: fastify.apiSubVersion,
                     reccount: result.length,
                     rows: result
                 });

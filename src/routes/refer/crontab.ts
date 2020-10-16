@@ -90,6 +90,7 @@ let sentContent = '';
 let nReferToken: any = '';
 let crontabConfig: any;
 let apiVersion: string = '-';
+let subVersion: string = '-';
 
 async function sendMoph(req, reply, db) {
   const dateNow = moment().locale('th').format('YYYY-MM-DD');
@@ -725,7 +726,7 @@ async function referSending(path, dataArray) {
   const dataSending = querystring.stringify({
     hospcode: hcode, data: JSON.stringify(dataArray),
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    sourceApiName: 'HIS-connect', apiVersion
+    sourceApiName: 'HIS-connect', apiVersion, subVersion
   });
 
   const options = {
@@ -772,7 +773,7 @@ async function getNReferToken(apiKey, secretKey) {
     apiKey: apiKey, secretKey: secretKey,
     hospcode: hcode,
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    sourceApiName: 'HIS-connect', apiVersion
+    sourceApiName: 'HIS-connect', apiVersion, subVersion
   });
 
   const options = {
@@ -879,6 +880,7 @@ async function writeResult(file, content) {
 const router = (request: fastify.Request, reply: fastify.Reply, dbConn: any, config = {}) => {
   crontabConfig = config;
   apiVersion = crontabConfig.version ? crontabConfig.version : '-';
+  subVersion = crontabConfig.subVersion ? crontabConfig.subVersion : '-';
   return sendMoph(request, reply, dbConn);
 };
 module.exports = router;
