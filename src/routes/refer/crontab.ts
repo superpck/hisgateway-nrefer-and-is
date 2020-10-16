@@ -290,7 +290,7 @@ async function sendReferOut(row, sentResult) {
       REFERID_PROVINCE: referProvId,
       referout_type: row.referout_type || 1,
       D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-      his: hisProvider,
+      hisProvider: hisProvider,
       typesave: 'autosent'
     }
 
@@ -325,7 +325,7 @@ async function sendReferResult(row, sentResult) {
       DATETIME_IN: moment(row.DATETIME_IN).format('YYYY-MM-DD HH:mm:ss'),
       REASON: row.REASON || null,
       D_UPDATE: row.D_UPDATE || d_update,
-      his: process.env.HIS_PROVIDER,
+      hisProvider: process.env.HIS_PROVIDER,
       typesave: 'autoreply'
     };
 

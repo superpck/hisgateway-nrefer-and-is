@@ -99,7 +99,7 @@ const router = (fastify, {}, next) => {
             if (result && result.length) {
                 reply.status(HttpStatus.OK).send({
                     statusCode: HttpStatus.OK,
-                    his: hisProvider, connection: true,
+                    hisProvider: hisProvider, connection: true,
                     RequestKey: requestKeyVerified,
                 });
             }
