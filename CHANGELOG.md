@@ -1,3 +1,11 @@
+# 3.1.6 - 2020.10.15-01
+
+## Bug:
+  >> none
+
+## Feature
+  - show environtment
+
 # 3.1.3 - 2020.09.23-01
 
 ## Bug:

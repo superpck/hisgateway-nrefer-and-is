@@ -77,6 +77,35 @@ const router = (fastify, {}, next) => {
             reply.status(HttpStatus.UNAUTHORIZED).send({ statusCode: HttpStatus.UNAUTHORIZED, message: HttpStatus.getStatusText(HttpStatus.UNAUTHORIZED) });
         }
     }));
+    fastify.get('/env', { preHandler: [fastify.authenticate] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
+        reply.status(HttpStatus.OK).send({
+            statusCode: HttpStatus.OK,
+            env: {
+                hospcode: process.env.HOSPCODE,
+                apiPort: process.env.PORT,
+                startTool: process.env.START_TOOL,
+                pm2Name: process.env.PM2_NAME,
+                his: {
+                    provider: process.env.HIS_PROVIDER,
+                    datacenter: +process.env.HIS_DATACENTER_ENABLE == 1,
+                    minute: +process.env.HIS_DATACENTER_SEND_EVERY_MINUTE,
+                    hour: +process.env.HIS_DATACENTER_SEND_EVERY_HOUR,
+                },
+                is: {
+                    isDbName: process.env.IS_DB_NAME,
+                    autoSend: +process.env.IS_AUTO_SEND == 1,
+                    minute: +process.env.IS_AUTO_SEND_EVERY_MINUTE,
+                    hour: +process.env.IS_AUTO_SEND_EVERY_HOUR,
+                },
+                nrefer: {
+                    autoSend: +process.env.NREFER_AUTO_SEND == 1,
+                    minute: +process.env.NREFER_AUTO_SEND_EVERY_MINUTE,
+                    hour: +process.env.NREFER_AUTO_SEND_EVERY_HOUR,
+                },
+                notifyChanel: process.env.NOTIFY_CHANNEL,
+            }
+        });
+    }));
     fastify.post('/get-config/:requestKey', { preHandler: [fastify.authenticate] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         const requestKey = req.params.requestKey || '??';
         const status = req.body.status || 0;

@@ -726,7 +726,8 @@ async function referSending(path, dataArray) {
   const dataSending = querystring.stringify({
     hospcode: hcode, data: JSON.stringify(dataArray),
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    sourceApiName: 'HIS-connect', apiVersion, subVersion
+    sourceApiName: 'HIS-connect', apiVersion, subVersion,
+    hisProvider: process.env.HIS_PROVIDER
   });
 
   const options = {
@@ -773,7 +774,8 @@ async function getNReferToken(apiKey, secretKey) {
     apiKey: apiKey, secretKey: secretKey,
     hospcode: hcode,
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    sourceApiName: 'HIS-connect', apiVersion, subVersion
+    sourceApiName: 'HIS-connect', apiVersion, subVersion,
+    hisProvider: process.env.HIS_PROVIDER
   });
 
   const options = {

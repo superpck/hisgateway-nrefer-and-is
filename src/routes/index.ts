@@ -47,7 +47,7 @@ const router = (fastify, { }, next) => {
     if (trust) {
       const now = moment().locale('th').format('YYYYMMDDTHHmmss');
       var appkey = crypto.createHash('sha256').update(now + process.env.REQUEST_KEY).digest('hex');
-      var skey = crypto.createHash('md5').update(now+key).digest('hex');
+      var skey = crypto.createHash('md5').update(now + key).digest('hex');
       const token = fastify.jwt.sign({
         uid: 0,
         api: 'his-connect'
@@ -75,6 +75,36 @@ const router = (fastify, { }, next) => {
     } else {
       reply.status(HttpStatus.UNAUTHORIZED).send({ statusCode: HttpStatus.UNAUTHORIZED, message: HttpStatus.getStatusText(HttpStatus.UNAUTHORIZED) })
     }
+  })
+
+  fastify.get('/env', { preHandler: [fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+    reply.status(HttpStatus.OK).send({
+      statusCode: HttpStatus.OK,
+      env: {
+        hospcode: process.env.HOSPCODE,
+        apiPort: process.env.PORT,
+        startTool: process.env.START_TOOL,
+        pm2Name: process.env.PM2_NAME,
+        his: {
+          provider: process.env.HIS_PROVIDER,
+          datacenter: +process.env.HIS_DATACENTER_ENABLE == 1,
+          minute: +process.env.HIS_DATACENTER_SEND_EVERY_MINUTE,
+          hour: +process.env.HIS_DATACENTER_SEND_EVERY_HOUR,
+        },
+        is: {
+          isDbName: process.env.IS_DB_NAME,
+          autoSend: +process.env.IS_AUTO_SEND == 1,
+          minute: +process.env.IS_AUTO_SEND_EVERY_MINUTE,
+          hour: +process.env.IS_AUTO_SEND_EVERY_HOUR,
+        },
+        nrefer: {
+          autoSend: +process.env.NREFER_AUTO_SEND == 1,
+          minute: +process.env.NREFER_AUTO_SEND_EVERY_MINUTE,
+          hour: +process.env.NREFER_AUTO_SEND_EVERY_HOUR,
+        },
+        notifyChanel: process.env.NOTIFY_CHANNEL,
+      }
+    });
   })
 
   fastify.post('/get-config/:requestKey', { preHandler: [fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
@@ -126,7 +156,7 @@ const router = (fastify, { }, next) => {
             console.log('====> resultRestartPM2', err, moment().locale('th').format('HH:mm:ss.SS'));
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, message: err })
           });
-          
+
       } else {
         reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK })
       }
