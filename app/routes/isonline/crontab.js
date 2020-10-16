@@ -109,7 +109,8 @@ function sendData(row, tokenKey) {
             data: row,
             token: tokenKey,
             version: crontabConfig.apiVersion,
-            subVersion: crontabConfig.apiSubVersion
+            subVersion: crontabConfig.apiSubVersion,
+            hisProvider: process.env.HIS_PROVIDER
         };
         const options = {
             url: process.env.IS_URL + '/isonline/put-is',
