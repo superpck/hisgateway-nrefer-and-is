@@ -24,7 +24,7 @@ const router = (fastify, { }, next) => {
       api: 'Cannabis API Serivce',
       version: fastify.apiVersion,
       subVersion: fastify.apiSubVersion,
-      his: hisProvider
+      hisProvider
     });
   })
 

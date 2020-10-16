@@ -114,7 +114,7 @@ const router = (fastify, {}, next) => {
                 res.send({
                     statusCode: HttpStatus.OK,
                     ok: true,
-                    his: process.env.HIS_PROVIDER,
+                    hisProvider: process.env.HIS_PROVIDER,
                     version: fastify.apiVersion,
                     subVersion: fastify.apiSubVersion,
                     connection: true
@@ -124,7 +124,7 @@ const router = (fastify, {}, next) => {
                 res.send({
                     statusCode: HttpStatus.NO_CONTENT,
                     ok: true,
-                    his: process.env.HIS_PROVIDER,
+                    hisProvider: process.env.HIS_PROVIDER,
                     version: fastify.apiVersion,
                     subVersion: fastify.apiSubVersion,
                     connection: false,
@@ -138,7 +138,7 @@ const router = (fastify, {}, next) => {
                 statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
                 status: 500,
                 ok: false,
-                his: provider,
+                hisProvider: provider,
                 connection: false,
                 message: error.message
             });
@@ -153,7 +153,7 @@ const router = (fastify, {}, next) => {
                     ok: true,
                     version: fastify.apiVersion,
                     subVersion: fastify.apiSubVersion,
-                    his: process.env.HIS_PROVIDER,
+                    hisProvider: process.env.HIS_PROVIDER,
                     connection: true
                 });
             }
@@ -161,7 +161,7 @@ const router = (fastify, {}, next) => {
                 res.send({
                     statusCode: HttpStatus.NO_CONTENT,
                     ok: true,
-                    his: process.env.HIS_PROVIDER,
+                    hisProvider: process.env.HIS_PROVIDER,
                     connection: false,
                     message: result
                 });
@@ -173,7 +173,7 @@ const router = (fastify, {}, next) => {
                 statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
                 status: 500,
                 ok: false,
-                his: provider,
+                hisProvider: provider,
                 connection: false,
                 message: error.message
             });
@@ -205,7 +205,7 @@ const router = (fastify, {}, next) => {
                     statusCode: HttpStatus.OK,
                     version: fastify.apiVersion,
                     subVersion: fastify.apiSubVersion,
-                    his: process.env.HIS_PROVIDER,
+                    hisProvider: process.env.HIS_PROVIDER,
                     reccount: result.length,
                     rows: result
                 });
@@ -235,7 +235,7 @@ const router = (fastify, {}, next) => {
                     statusCode: HttpStatus.OK,
                     version: fastify.apiVersion,
                     subVersion: fastify.apiSubVersion,
-                    his: process.env.HIS_PROVIDER,
+                    hisProvider: process.env.HIS_PROVIDER,
                     reccount: result.length,
                     rows: result
                 });
@@ -264,7 +264,7 @@ const router = (fastify, {}, next) => {
                     statusCode: HttpStatus.OK,
                     version: fastify.apiVersion,
                     subVersion: fastify.apiSubVersion,
-                    his: process.env.HIS_PROVIDER,
+                    hisProvider: process.env.HIS_PROVIDER,
                     reccount: result.length,
                     rows: result
                 });

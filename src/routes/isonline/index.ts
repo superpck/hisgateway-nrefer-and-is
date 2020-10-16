@@ -177,7 +177,7 @@ const router = (fastify, { }, next) => {
           ok: true,
           version: fastify.apiVersion,
           subVersion: fastify.apiSubVersion,
-          his: process.env.HIS_PROVIDER,
+          hisProvider: process.env.HIS_PROVIDER,
           rows: results
         });
       } else {
