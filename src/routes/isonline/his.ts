@@ -1,9 +1,7 @@
 /// <reference path="../../../typings.d.ts" />
 
-import * as Knex from 'knex';
 import * as fastify from 'fastify';
 import * as HttpStatus from 'http-status-codes';
-import * as moment from 'moment';
 import { HisModel } from './../../models/isonline/his.model';
 import { HisEzhospModel } from './../../models/isonline/his_ezhosp.model';
 import { HisHosxpv3Model } from './../../models/isonline/his_hosxpv3.model';
@@ -107,16 +105,16 @@ const allowTableNames = [
 ];
 
 const router = (fastify, { }, next) => {
-  var db: Knex = fastify.dbHIS;
-
   fastify.get('/alive', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     try {
-      const result = await hisModel.getTableName(db);
+      const result = await hisModel.getTableName(fastify.dbHIS);
       if (result && result.length) {
         res.send({
           statusCode: HttpStatus.OK,
           ok: true,
           his: provider,
+          version: fastify.apiVersion,
+          subVersion: fastify.apiSubVersion,
           connection: true
         });
       } else {
@@ -124,6 +122,8 @@ const router = (fastify, { }, next) => {
           statusCode: HttpStatus.NO_CONTENT,
           ok: true,
           his: provider,
+          version: fastify.apiVersion,
+          subVersion: fastify.apiSubVersion,
           connection: false,
           message: result
         });
@@ -143,11 +143,13 @@ const router = (fastify, { }, next) => {
 
   fastify.post('/alive', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, res: fastify.Reply) => {
     try {
-      const result = await hisModel.getTableName(db);
+      const result = await hisModel.getTableName(fastify.dbHIS);
       if (result && result.length) {
         res.send({
           statusCode: HttpStatus.OK,
           ok: true,
+          version: fastify.apiVersion,
+          subVersion: fastify.apiSubVersion,
           his: provider,
           connection: true
         });
@@ -175,7 +177,7 @@ const router = (fastify, { }, next) => {
 
   fastify.post('/showTbl', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, res: fastify.Reply) => {
     try {
-      const result = await hisModel.getTableName(db);
+      const result = await hisModel.getTableName(fastify.dbHIS);
       res.send({
         statusCode: HttpStatus.OK,
         rows: result
@@ -195,9 +197,11 @@ const router = (fastify, { }, next) => {
 
     if (columnName && searchText) {
       try {
-        const result = await hisModel.getPerson(db, columnName, searchText);
+        const result = await hisModel.getPerson(fastify.dbHIS, columnName, searchText);
         res.send({
           statusCode: HttpStatus.OK,
+          version: fastify.apiVersion,
+          subVersion: fastify.apiSubVersion,
           reccount: result.length,
           rows: result
         });
@@ -223,9 +227,11 @@ const router = (fastify, { }, next) => {
 
     if (hn || date) {
       try {
-        const result = await hisModel.getOpdService(db, hn, date);
+        const result = await hisModel.getOpdService(fastify.dbHIS, hn, date);
         res.send({
           statusCode: HttpStatus.OK,
+          version: fastify.apiVersion,
+          subVersion: fastify.apiSubVersion,
           reccount: result.length,
           rows: result
         });
@@ -250,9 +256,11 @@ const router = (fastify, { }, next) => {
 
     if (visitNo) {
       try {
-        const result = await hisModel.getDiagnosisOpd(db, visitNo);
+        const result = await hisModel.getDiagnosisOpd(fastify.dbHIS, visitNo);
         res.send({
           statusCode: HttpStatus.OK,
+          version: fastify.apiVersion,
+          subVersion: fastify.apiSubVersion,
           reccount: result.length,
           rows: result
         });

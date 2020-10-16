@@ -777,7 +777,7 @@ export class HisHosxpv4Model {
                 left join person p on p.patient_hn = ipt.hn
                 left outer join spclty on spclty.spclty=ipt.spclty              
             where ${columnName}='${searchNo}'
-            order by an, diagtype`;
+            order by ipt.an, iptdiag.diagtype`;
         const result = await db.raw(sql);
         return result[0];
     }

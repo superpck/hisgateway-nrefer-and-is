@@ -74,7 +74,6 @@ switch (hisProvider) {
         hisModel = new his_1.HisModel();
 }
 const router = (fastify, {}, next) => {
-    var dbHIS = fastify.dbHIS;
     fastify.post('/check-requestkey', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         let requestKey = req.body.requestKey || '??';
         const isEncode = req.body.md5;
@@ -100,7 +99,7 @@ const router = (fastify, {}, next) => {
         const searchValue = req.body.searchValue;
         if (searchType && searchValue) {
             try {
-                const result = yield pccHisModel.getPerson(dbHIS, searchType, searchValue);
+                const result = yield pccHisModel.getPerson(fastify.dbHIS, searchType, searchValue);
                 reply.status(HttpStatus.OK).send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -127,7 +126,7 @@ const router = (fastify, {}, next) => {
         const lname = req.body.lname;
         if (fname + lname) {
             try {
-                const result = yield pccHisModel.getPersonByName(dbHIS, fname, lname);
+                const result = yield pccHisModel.getPersonByName(fastify.dbHIS, fname, lname);
                 reply.status(HttpStatus.OK).send({
                     statusCode: HttpStatus.OK,
                     rows: result
@@ -154,7 +153,7 @@ const router = (fastify, {}, next) => {
         const pid = req.body.pid;
         if (cid || pid) {
             try {
-                const result = yield pccHisModel.getChronic(dbHIS, pid, cid);
+                const result = yield pccHisModel.getChronic(fastify.dbHIS, pid, cid);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -189,7 +188,7 @@ const router = (fastify, {}, next) => {
         const cid = req.body.cid;
         if (pid || cid) {
             try {
-                const result = yield pccHisModel.getDrugAllergy(dbHIS, pid, cid);
+                const result = yield pccHisModel.getDrugAllergy(fastify.dbHIS, pid, cid);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -226,7 +225,7 @@ const router = (fastify, {}, next) => {
         const date = req.body.date;
         if (hn + cid) {
             try {
-                const rows = yield pccHisModel.getServiceByHn(dbHIS, hn, cid, date, visitNo);
+                const rows = yield pccHisModel.getServiceByHn(fastify.dbHIS, hn, cid, date, visitNo);
                 reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
             }
             catch (error) {
@@ -248,7 +247,7 @@ const router = (fastify, {}, next) => {
         const visitNo = req.body.visitNo;
         if (visitNo) {
             try {
-                const result = yield pccHisModel.getDiagnosis(dbHIS, visitNo);
+                const result = yield pccHisModel.getDiagnosis(fastify.dbHIS, visitNo);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -281,7 +280,7 @@ const router = (fastify, {}, next) => {
         const hn = req.body.hn;
         if (hn) {
             try {
-                const result = yield pccHisModel.getDiagnosisByHn(dbHIS, hn);
+                const result = yield pccHisModel.getDiagnosisByHn(fastify.dbHIS, hn);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -314,7 +313,7 @@ const router = (fastify, {}, next) => {
         const visitNo = req.body.visitNo;
         if (visitNo) {
             try {
-                const result = yield pccHisModel.getDrug(dbHIS, visitNo);
+                const result = yield pccHisModel.getDrug(fastify.dbHIS, visitNo);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -347,7 +346,7 @@ const router = (fastify, {}, next) => {
         const hn = req.body.hn;
         if (hn) {
             try {
-                const result = yield pccHisModel.getDrugByHn(dbHIS, hn);
+                const result = yield pccHisModel.getDrugByHn(fastify.dbHIS, hn);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -380,7 +379,7 @@ const router = (fastify, {}, next) => {
         const visitNo = req.body.visitNo;
         if (visitNo) {
             try {
-                const result = yield pccHisModel.getAnc(dbHIS, visitNo);
+                const result = yield pccHisModel.getAnc(fastify.dbHIS, visitNo);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -413,7 +412,7 @@ const router = (fastify, {}, next) => {
         const hn = req.body.hn;
         if (hn) {
             try {
-                const result = yield pccHisModel.getAncByHn(dbHIS, hn);
+                const result = yield pccHisModel.getAncByHn(fastify.dbHIS, hn);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -446,7 +445,7 @@ const router = (fastify, {}, next) => {
         const visitNo = req.body.visitNo;
         if (visitNo) {
             try {
-                const result = yield pccHisModel.getEpi(dbHIS, visitNo);
+                const result = yield pccHisModel.getEpi(fastify.dbHIS, visitNo);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -479,7 +478,7 @@ const router = (fastify, {}, next) => {
         const hn = req.body.hn;
         if (hn) {
             try {
-                const result = yield pccHisModel.getEpiByHn(dbHIS, hn);
+                const result = yield pccHisModel.getEpiByHn(fastify.dbHIS, hn);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -512,7 +511,7 @@ const router = (fastify, {}, next) => {
         const visitNo = req.body.visitNo;
         if (visitNo) {
             try {
-                const result = yield pccHisModel.getFp(dbHIS, visitNo);
+                const result = yield pccHisModel.getFp(fastify.dbHIS, visitNo);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -545,7 +544,7 @@ const router = (fastify, {}, next) => {
         const hn = req.body.hn;
         if (hn) {
             try {
-                const result = yield pccHisModel.getFpByHn(dbHIS, hn);
+                const result = yield pccHisModel.getFpByHn(fastify.dbHIS, hn);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -578,7 +577,7 @@ const router = (fastify, {}, next) => {
         const visitNo = req.body.visitNo;
         if (visitNo) {
             try {
-                const result = yield pccHisModel.getNutrition(dbHIS, visitNo);
+                const result = yield pccHisModel.getNutrition(fastify.dbHIS, visitNo);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -611,7 +610,7 @@ const router = (fastify, {}, next) => {
         const hn = req.body.hn;
         if (hn) {
             try {
-                const result = yield pccHisModel.getNutritionByHn(dbHIS, hn);
+                const result = yield pccHisModel.getNutritionByHn(fastify.dbHIS, hn);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -645,7 +644,7 @@ const router = (fastify, {}, next) => {
         const searchValue = req.body.searchValue;
         if (searchType && searchValue) {
             try {
-                const result = yield pccHisModel.getLabResult(dbHIS, searchType, searchValue);
+                const result = yield pccHisModel.getLabResult(fastify.dbHIS, searchType, searchValue);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,
@@ -679,7 +678,7 @@ const router = (fastify, {}, next) => {
         const searchValue = req.body.searchValue;
         if (searchType && searchValue) {
             try {
-                const result = yield pccHisModel.libDrug(dbHIS, searchType, searchValue);
+                const result = yield pccHisModel.libDrug(fastify.dbHIS, searchType, searchValue);
                 if (result) {
                     reply.status(HttpStatus.OK).send({
                         statusCode: HttpStatus.OK,

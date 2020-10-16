@@ -15,7 +15,6 @@ var http = require('http');
 var querystring = require('querystring');
 const request = require('request');
 const router = (fastify, {}, next) => {
-    var db = fastify.dbHIS;
     fastify.get('/sending-process/:?date', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         const now = moment().locale('th').format('YYYY-MM-DD');
         const trust = req.headers.host.search('localhost|127.0.0.1') > -1;

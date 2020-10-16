@@ -9,13 +9,13 @@ var iswin = new IswinModel();
 
 let crontabConfig: any;
 let sentContent = '';
-let tokenType='IS';
+let tokenType = 'IS';
 
 async function sendMoph(req, reply, db) {
   const dateNow = moment().locale('th').format('YYYY-MM-DD');
   let token: any = null;
-  let result:any = await getIsToken();
-  console.log('IS token', token);
+  let result: any = await getIsToken();
+
   if (!result || result.statusCode !== 200) {
     const apiKey = process.env.NREFER_APIKEY || 'api-key';
     const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
@@ -27,7 +27,7 @@ async function sendMoph(req, reply, db) {
     if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
       token = resultToken.token;
       sentContent += `token ${resultToken.token}\r`;
-      tokenType='NREFER';
+      tokenType = 'NREFER';
     } else {
       console.log(`IS autosend 'fail' invalid config.`);
       return false;
@@ -104,7 +104,12 @@ async function sendingData(dataArray, token) {
 
 async function sendData(row, tokenKey) {
   const request = require('request');
-  const bodyContent = { data: row, token: tokenKey };
+  const bodyContent = {
+    data: row,
+    token: tokenKey,
+    version: crontabConfig.apiVersion,
+    subVersion: crontabConfig.apiSubVersion
+  };
 
   const options = {
     url: process.env.IS_URL + '/isonline/put-is',
@@ -169,7 +174,6 @@ async function getIsToken_() {
     }
   };
 
-  console.log('options', options);
   request.post(options, (err, res, body) => {
     if (err) {
       return console.log(err);

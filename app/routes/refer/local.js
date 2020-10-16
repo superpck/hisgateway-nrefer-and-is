@@ -15,7 +15,6 @@ const request = require('request');
 var crypto = require('crypto');
 const referModel = new refer_1.ReferModel();
 const router = (fastify, {}, next) => {
-    var dbLocalRefer = fastify.dbRefer;
     fastify.get('/', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         reply.send({
             api: 'nRefer@Hospital'
@@ -23,7 +22,7 @@ const router = (fastify, {}, next) => {
     }));
     fastify.get('/tbl', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const result = yield referModel.getTableName(dbLocalRefer);
+            const result = yield referModel.getTableName(fastify.dbRefer);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, tblCount: result.length });
         }
         catch (error) {

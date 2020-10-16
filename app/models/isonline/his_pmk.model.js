@@ -7,7 +7,8 @@ const maxLimit = 500;
 class HisPmkModel {
     getTableName(db) {
         if (dbClient === 'oracledb') {
-            return db.raw(`select * from ALL_TABLES where OWNER = '${dbName}'`);
+            return db('ALL_TABLES')
+                .where('OWNER', '=', dbName);
         }
         else {
             return db('information_schema.tables')

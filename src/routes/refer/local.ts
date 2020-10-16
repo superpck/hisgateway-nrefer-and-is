@@ -12,8 +12,6 @@ var crypto = require('crypto');
 const referModel = new ReferModel();
 
 const router = (fastify, { }, next) => {
-  var dbLocalRefer: Knex = fastify.dbRefer;
-
   // =============================================================
   fastify.get('/', async (req: fastify.Request, reply: fastify.Reply) => {
     reply.send({
@@ -24,7 +22,7 @@ const router = (fastify, { }, next) => {
   // =============================================================
   fastify.get('/tbl', async (req: fastify.Request, reply: fastify.Reply) => {
     try {
-      const result = await referModel.getTableName(dbLocalRefer);
+      const result = await referModel.getTableName(fastify.dbRefer);
       reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, tblCount: result.length });
     } catch (error) {
       console.log('tbl', error.message);

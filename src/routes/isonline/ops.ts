@@ -1,8 +1,6 @@
 /// <reference path="../../../typings.d.ts" />
 
-import * as Knex from 'knex';
 import * as fastify from 'fastify';
-import * as moment from 'moment';
 import * as HttpStatus from 'http-status-codes';
 
 var http = require('http');
@@ -15,7 +13,6 @@ const opsUrl2 = '203.157.88.8';
 const Path2 = '/kkh/ws/moph/ops.php';
 
 const router = (fastify, { }, next) => {
-  var dbIsOnline: Knex = fastify.dbISOnline;
 
   fastify.post('/general1', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     verifyToken(req, res);

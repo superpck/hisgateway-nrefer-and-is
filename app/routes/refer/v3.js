@@ -83,7 +83,6 @@ switch (hisProvider) {
         hisModel = new his_1.HisModel();
 }
 const router = (fastify, {}, next) => {
-    var db = fastify.dbHIS;
     fastify.get('/', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         reply.send({
             api: 'refer V.3',
@@ -96,7 +95,7 @@ const router = (fastify, {}, next) => {
         var hashRequestKey = crypto.createHash('md5').update(process.env.REQUEST_KEY).digest('hex');
         const requestKeyVerified = requestKey === hashRequestKey;
         try {
-            const result = yield hisModel.getTableName(db);
+            const result = yield hisModel.getTableName(fastify.dbHIS);
             if (result && result.length) {
                 reply.status(HttpStatus.OK).send({
                     statusCode: HttpStatus.OK,
@@ -121,7 +120,7 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield hisModel.getTableName(db);
+            const result = yield hisModel.getTableName(fastify.dbHIS);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, tblCount: result.length });
         }
         catch (error) {
@@ -134,7 +133,7 @@ const router = (fastify, {}, next) => {
         const date = req.body.date || now;
         const hospcode = req.body.hospcode || process.env.HOSPCODE;
         try {
-            const result = yield hisModel.getReferOut(db, date, hospcode);
+            const result = yield hisModel.getReferOut(fastify.dbHIS, date, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
             console.log('referout', result.length, 'reccords.');
         }
@@ -159,7 +158,7 @@ const router = (fastify, {}, next) => {
                 typeSearch = 'cid';
                 textSearch = cid;
             }
-            const result = yield hisModel.getPerson(db, typeSearch, textSearch, hospcode);
+            const result = yield hisModel.getPerson(fastify.dbHIS, typeSearch, textSearch, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -177,7 +176,7 @@ const router = (fastify, {}, next) => {
         try {
             let typeSearch = 'hn';
             let textSearch = hn;
-            const result = yield hisModel.getAddress(db, typeSearch, textSearch, hospcode);
+            const result = yield hisModel.getAddress(fastify.dbHIS, typeSearch, textSearch, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -193,7 +192,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getDrugAllergy(db, hn, hospcode);
+            const result = yield hisModel.getDrugAllergy(fastify.dbHIS, hn, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -216,7 +215,7 @@ const router = (fastify, {}, next) => {
                 typeSearch = 'visitNo';
                 textSearch = visitNo;
             }
-            const result = yield hisModel.getService(db, typeSearch, textSearch, hospcode);
+            const result = yield hisModel.getService(fastify.dbHIS, typeSearch, textSearch, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -234,7 +233,7 @@ const router = (fastify, {}, next) => {
         }
         else {
             try {
-                const result = yield hisModel.getAdmission(db, typeSearch, textSearch, hospcode);
+                const result = yield hisModel.getAdmission(fastify.dbHIS, typeSearch, textSearch, hospcode);
                 reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
             }
             catch (error) {
@@ -251,7 +250,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getDiagnosisOpd(db, visitNo, hospcode);
+            const result = yield hisModel.getDiagnosisOpd(fastify.dbHIS, visitNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -268,7 +267,7 @@ const router = (fastify, {}, next) => {
         }
         else {
             try {
-                const result = yield hisModel.getDiagnosisIpd(db, 'an', an, hospcode);
+                const result = yield hisModel.getDiagnosisIpd(fastify.dbHIS, 'an', an, hospcode);
                 reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
             }
             catch (error) {
@@ -285,7 +284,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getProcedureOpd(db, visitNo, hospcode);
+            const result = yield hisModel.getProcedureOpd(fastify.dbHIS, visitNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -301,7 +300,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getProcedureIpd(db, an, hospcode);
+            const result = yield hisModel.getProcedureIpd(fastify.dbHIS, an, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -317,7 +316,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getDrugOpd(db, visitNo, hospcode);
+            const result = yield hisModel.getDrugOpd(fastify.dbHIS, visitNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -333,7 +332,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getDrugIpd(db, an, hospcode);
+            const result = yield hisModel.getDrugIpd(fastify.dbHIS, an, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -349,7 +348,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getChargeOpd(db, visitNo, hospcode);
+            const result = yield hisModel.getChargeOpd(fastify.dbHIS, visitNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -365,7 +364,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getChargeIpd(db, an, hospcode);
+            const result = yield hisModel.getChargeIpd(fastify.dbHIS, an, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -381,7 +380,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getAccident(db, visitNo, hospcode);
+            const result = yield hisModel.getAccident(fastify.dbHIS, visitNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -397,7 +396,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getAppointment(db, visitNo, hospcode);
+            const result = yield hisModel.getAppointment(fastify.dbHIS, visitNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -420,7 +419,7 @@ const router = (fastify, {}, next) => {
                 typeSearch = 'visitNo';
                 textSearch = visitNo;
             }
-            const result = yield hisModel.getReferHistory(db, typeSearch, textSearch, hospcode);
+            const result = yield hisModel.getReferHistory(fastify.dbHIS, typeSearch, textSearch, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -436,7 +435,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getClinicalRefer(db, referNo, hospcode);
+            const result = yield hisModel.getClinicalRefer(fastify.dbHIS, referNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -452,7 +451,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getInvestigationRefer(db, referNo, hospcode);
+            const result = yield hisModel.getInvestigationRefer(fastify.dbHIS, referNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -468,7 +467,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getCareRefer(db, referNo, hospcode);
+            const result = yield hisModel.getCareRefer(fastify.dbHIS, referNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -485,7 +484,7 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getReferResult(db, hospDestination, referNo, hospcode);
+            const result = yield hisModel.getReferResult(fastify.dbHIS, hospDestination, referNo, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {
@@ -508,7 +507,7 @@ const router = (fastify, {}, next) => {
             textSearch = licenseNo;
         }
         try {
-            const result = yield hisModel.getProvider(db, typeSearch, textSearch, hospcode);
+            const result = yield hisModel.getProvider(fastify.dbHIS, typeSearch, textSearch, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
         }
         catch (error) {

@@ -13,14 +13,48 @@ const HttpStatus = require("http-status-codes");
 const iswin_1 = require("../../models/isonline/iswin");
 const isModel = new iswin_1.IswinModel();
 const router = (fastify, {}, next) => {
-    var db = fastify.dbISOnline;
-    fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
-        reply.send({
-            statusCode: 200,
-            apiCode: 'ISOnline',
-            version: fastify.apiVersion,
-            subVersion: fastify.apiSubVersion
-        });
+    fastify.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const result = yield isModel.getVersion(fastify.dbISOnline);
+            res.send({
+                apiCode: 'ISOnline',
+                statusCode: HttpStatus.OK,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
+                idDb: process.env.IS_DB_NAME,
+                connnection: true
+            });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
+                connnection: false,
+                message: error.message
+            });
+        }
+    }));
+    fastify.get('/alive', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const result = yield isModel.getVersion(fastify.dbISOnline);
+            res.send({
+                statusCode: HttpStatus.OK,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
+                idDb: process.env.IS_DB_NAME,
+                connnection: true
+            });
+        }
+        catch (error) {
+            res.send({
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
+                connnection: false,
+                message: error.message
+            });
+        }
     }));
     fastify.post('/getbyref', { preHandler: [fastify.authenticate] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         let refSeach = req.body.refSeach;
@@ -31,10 +65,12 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield isModel.getByRef(db, refSeach, hospCode);
+            const result = yield isModel.getByRef(fastify.dbISOnline, refSeach, hospCode);
             console.log("ref: " + refSeach + " hcode: " + hospCode + ' result: ' + result[0].length + ' record<s>');
             res.send({
                 statusCode: HttpStatus.OK,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
                 ok: true, rows: result[0]
             });
         }
@@ -54,10 +90,12 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield isModel.getLibs(db, hospCode, groupCode);
+            const result = yield isModel.getLibs(fastify.dbISOnline, hospCode, groupCode);
             console.log("lib code: " + groupCode + ' result: ' + result[0].length + ' record<s>');
             res.send({
                 statusCode: HttpStatus.OK,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
                 ok: true, rows: result[0]
             });
         }
@@ -78,10 +116,12 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield isModel.getLib(db, hospCode, 'lib_code', columnsName, textSearch);
+            const result = yield isModel.getLib(fastify.dbISOnline, hospCode, 'lib_code', columnsName, textSearch);
             console.log("lib " + columnsName + ": " + textSearch + ' result: ' + result[0].length + ' record<s>');
             reply.send({
                 statusCode: HttpStatus.OK,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
                 ok: true, rows: result[0]
             });
         }
@@ -101,10 +141,12 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield isModel.getOffices(db, hospCode, textSearch);
+            const result = yield isModel.getOffices(fastify.dbISOnline, hospCode, textSearch);
             console.log("lib office: " + textSearch + ' result: ' + result[0].length + ' record<s>');
             reply.send({
                 statusCode: HttpStatus.OK,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
                 ok: true, rows: result[0]
             });
         }
@@ -123,13 +165,15 @@ const router = (fastify, {}, next) => {
         let hospCode = req.body.hospCode;
         try {
             typeDate = (typeDate || typeDate != "") ? typeDate : 'adate';
-            const results = yield isModel.getByDate(db, typeDate, dDate1, dDate2, hospCode);
+            const results = yield isModel.getByDate(fastify.dbISOnline, typeDate, dDate1, dDate2, hospCode);
             console.log("getbydate: " + typeDate + ': ' + dDate1 + ' - ' + dDate2 + " hcode: " + hospCode + ' result: ' + results.length + ' record<s>');
             if (results) {
                 res.send({
                     statusCode: HttpStatus.OK,
                     status: HttpStatus.OK,
                     ok: true,
+                    version: fastify.apiVersion,
+                    subVersion: fastify.apiSubVersion,
                     rows: results
                 });
             }
@@ -163,13 +207,15 @@ const router = (fastify, {}, next) => {
         }
         try {
             typeDate = (typeDate || typeDate != "") ? typeDate : 'adate';
-            const results = yield isModel.reportByDate(db, typeDate, date1, date2, hospCode);
+            const results = yield isModel.reportByDate(fastify.dbISOnline, typeDate, date1, date2, hospCode);
             if (results) {
                 console.log("reportByDate: " + typeDate + ': ' + date1 + ' - ' + date2 + " hcode: " + hospCode + ' result: ' + results[0].length + ' record<s>');
                 res.send({
                     statusCode: HttpStatus.OK,
                     status: HttpStatus.OK,
                     ok: true,
+                    version: fastify.apiVersion,
+                    subVersion: fastify.apiSubVersion,
                     rows: results[0]
                 });
             }
@@ -200,9 +246,11 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield isModel.getByID(db, id, hospCode);
+            const result = yield isModel.getByID(fastify.dbISOnline, id, hospCode);
             reply.send({
                 statusCode: HttpStatus.OK,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
                 ok: true, rows: result[0]
             });
         }
@@ -224,10 +272,12 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield isModel.getByName(db, typeSearch, valSearch, hospCode);
+            const result = yield isModel.getByName(fastify.dbISOnline, typeSearch, valSearch, hospCode);
             console.log(typeSearch + ": " + valSearch + " hcode: " + hospCode + ' result: ' + result[0].length + ' record<s>');
             reply.send({
                 statusCode: HttpStatus.OK,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
                 ok: true, rows: result[0]
             });
         }
@@ -251,13 +301,15 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const results = yield isModel.selectSql(db, tableName, selectText, whereText, groupBy, orderText, limit);
+            const results = yield isModel.selectSql(fastify.dbISOnline, tableName, selectText, whereText, groupBy, orderText, limit);
             if (results) {
                 console.log("get: " + tableName + ' = ' + results[0].length + ' record<s> founded.');
                 res.send({
                     statusCode: HttpStatus.OK,
                     status: HttpStatus.OK,
                     ok: true,
+                    version: fastify.apiVersion,
+                    subVersion: fastify.apiSubVersion,
                     rows: results[0]
                 });
             }
@@ -288,7 +340,7 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield isModel.saveIs(db, ref, data);
+            const result = yield isModel.saveIs(fastify.dbISOnline, ref, data);
             console.log("save: iswin ref: " + ref);
             reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
         }
@@ -308,10 +360,15 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield isModel.saveMapPoint(db, ref, formInput);
+            const result = yield isModel.saveMapPoint(fastify.dbISOnline, ref, formInput);
             console.log("save map point: " + ref);
-            isModel.saveMapPointIs(db, formInput);
-            reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+            isModel.saveMapPointIs(fastify.dbISOnline, formInput);
+            reply.send({
+                statusCode: HttpStatus.OK, ok: true,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
+                rows: result[0]
+            });
         }
         catch (error) {
             reply.send({
@@ -329,9 +386,14 @@ const router = (fastify, {}, next) => {
             return false;
         }
         try {
-            const result = yield isModel.saveLib(db, saveType, formInput);
+            const result = yield isModel.saveLib(fastify.dbISOnline, saveType, formInput);
             console.log("save lib_code: " + formInput.code);
-            reply.send({ statusCode: HttpStatus.OK, ok: true, rows: result[0] });
+            reply.send({
+                statusCode: HttpStatus.OK, ok: true,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
+                rows: result[0]
+            });
         }
         catch (error) {
             reply.send({
@@ -346,11 +408,14 @@ const router = (fastify, {}, next) => {
         let date2 = req.body.date2;
         let hospCode = req.body.hospCode;
         try {
-            const result = yield isModel.reportAgeGroup1(db, date1, date2, hospCode);
+            const result = yield isModel.reportAgeGroup1(fastify.dbISOnline, date1, date2, hospCode);
             console.log("report age group 1: " + date1 + ' ' + date2);
             reply.send({
                 statusCode: HttpStatus.OK,
-                ok: true, rows: result[0]
+                ok: true,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
+                rows: result[0]
             });
         }
         catch (error) {
@@ -411,11 +476,14 @@ const router = (fastify, {}, next) => {
         let ref = req.body.ref;
         let hospCode = req.body.hospCode;
         try {
-            const result = yield isModel.remove(db, ref);
+            const result = yield isModel.remove(fastify.dbISOnline, ref);
             console.log("delete: user id: " + id);
             reply.send({
                 statusCode: HttpStatus.OK,
-                ok: true, id: id, result
+                ok: true,
+                version: fastify.apiVersion,
+                subVersion: fastify.apiSubVersion,
+                id: id, result
             });
         }
         catch (error) {

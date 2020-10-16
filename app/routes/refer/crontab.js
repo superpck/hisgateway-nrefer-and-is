@@ -89,6 +89,7 @@ let sentContent = '';
 let nReferToken = '';
 let crontabConfig;
 let apiVersion = '-';
+let subVersion = '-';
 function sendMoph(req, reply, db) {
     return __awaiter(this, void 0, void 0, function* () {
         const dateNow = moment().locale('th').format('YYYY-MM-DD');
@@ -131,13 +132,13 @@ function sendMoph(req, reply, db) {
 }
 function getRefer_out(db, date) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'get data', date);
         try {
             const referout = yield hisModel.getReferOut(db, date, hcode);
             sentContent += `\rsave refer_history ${date} \r`;
             sentContent += `\rsave refer service data ${date} \r`;
             let index = 0;
             let sentResult = {
+                date,
                 pid: process.pid,
                 referout: { success: 0, fail: 0 },
                 person: { success: 0, fail: 0 },
@@ -246,7 +247,7 @@ function sendReferOut(row, sentResult) {
                 HOSPCODE: hcode,
                 REFERID: referId,
                 PID: row.PID || row.pid || row.HN || row.hn,
-                SEQ: (row.SEQ || row.seq || '') + '',
+                SEQ: (row.SEQ || row.seq || row.vn || '') + '',
                 AN: row.AN || row.an || '',
                 CID: row.CID || row.cid,
                 DATETIME_SERV: moment(dServe).format('YYYY-MM-DD HH:mm:ss'),
@@ -725,7 +726,7 @@ function referSending(path, dataArray) {
         const dataSending = querystring.stringify({
             hospcode: hcode, data: JSON.stringify(dataArray),
             processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-            sourceApiName: 'HIS-connect', apiVersion
+            sourceApiName: 'HIS-connect', apiVersion, subVersion
         });
         const options = {
             hostname: process.env.NREFER_URL,
@@ -766,7 +767,7 @@ function getNReferToken(apiKey, secretKey) {
             apiKey: apiKey, secretKey: secretKey,
             hospcode: hcode,
             processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-            sourceApiName: 'HIS-connect', apiVersion
+            sourceApiName: 'HIS-connect', apiVersion, subVersion
         });
         const options = {
             hostname: process.env.NREFER_URL,
@@ -861,6 +862,7 @@ function writeResult(file, content) {
 const router = (request, reply, dbConn, config = {}) => {
     crontabConfig = config;
     apiVersion = crontabConfig.version ? crontabConfig.version : '-';
+    subVersion = crontabConfig.subVersion ? crontabConfig.subVersion : '-';
     return sendMoph(request, reply, dbConn);
 };
 module.exports = router;

@@ -14,7 +14,6 @@ const moment = require("moment");
 const report_1 = require("../../models/isonline/report");
 const reportModel = new report_1.IsReportModel;
 const router = (fastify, {}, next) => {
-    var db = fastify.dbISOnline;
     fastify.post('/', { preHandler: [fastify.serviceMonitoring] }, (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, reply);
         let tokenKey = req.body.tokenKey;
@@ -31,7 +30,7 @@ const router = (fastify, {}, next) => {
         let Where = req.body.Where;
         if (reportID) {
             try {
-                yield reportModel.getReport(db, reportID)
+                yield reportModel.getReport(fastify.dbISOnline, reportID)
                     .then((results) => {
                     console.log("\nreport id:" + reportID);
                     const row = results[0];
@@ -62,7 +61,7 @@ const router = (fastify, {}, next) => {
                         console.log("\r\n SQL: \r\n ");
                         console.log(rawSql);
                         console.log("\r\n");
-                        reportModel.getData(db, rawSql)
+                        reportModel.getData(fastify.dbISOnline, rawSql)
                             .then((results) => {
                             console.log("\nreport id:" + reportID + ' result = ' + results[0].length);
                             reply.send({ ok: true, rows: results[0] });
@@ -100,7 +99,7 @@ const router = (fastify, {}, next) => {
             region: req.body.region,
             prov: req.body.prov,
         };
-        reportModel.getReport1(db, reportCond)
+        reportModel.getReport1(fastify.dbISOnline, reportCond)
             .then((results) => {
             console.log("token: " + tokenKey + " report ID: " + reportID + " hcode: " + hospCode + ' result: ' + results[0].length + ' record<s>');
             reply.send({ ok: true, rows: results[0] });

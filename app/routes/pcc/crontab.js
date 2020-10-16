@@ -86,23 +86,22 @@ const hcode = process.env.HOSPCODE;
 const his = process.env.HIS_PROVIDER;
 const resultText = 'sent_result.txt';
 let sentContent = '';
-let nReferToken = '';
+let dcToken = '';
+let reqToken = {};
 let crontabConfig;
 let apiVersion = '-';
 function sendMoph(req, reply, db) {
     return __awaiter(this, void 0, void 0, function* () {
         const dateNow = moment().locale('th').format('YYYY-MM-DD');
-        const apiKey = process.env.NREFER_APIKEY || 'api-key';
-        const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
         sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
-        const resultToken = yield getNReferToken(apiKey, secretKey);
-        if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
-            nReferToken = resultToken.token;
-            sentContent += `token ${resultToken.token}\r`;
+        reqToken = yield getToken();
+        if (reqToken && reqToken.statusCode === 200 && reqToken.token) {
+            dcToken = reqToken.token;
+            sentContent += `token ${reqToken.token}\r`;
         }
         else {
-            console.log('get token error', resultToken.message);
-            sentContent += `get token Error:` + JSON.stringify(resultToken) + `\r`;
+            console.log('get token error', reqToken.message);
+            sentContent += `get token Error:` + JSON.stringify(reqToken) + `\r`;
             writeResult(resultText, sentContent);
             return false;
         }
@@ -111,6 +110,7 @@ function sendMoph(req, reply, db) {
         if ((hourNow == 1 || hourNow == 8 || hourNow == 12 || hourNow == 18 || hourNow == 22)
             && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
             const date = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
+            yield getService(db, date);
         }
         else if (hourNow == 3 && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
             let oldDate = moment(dateNow).subtract(7, 'days').format('YYYY-MM-DD');
@@ -118,7 +118,9 @@ function sendMoph(req, reply, db) {
                 oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
             }
         }
-        const sendDataCenter = getService(db, dateNow);
+        yield getService(db, "2020-09-18");
+        const sendDataCenter = yield getService(db, dateNow);
+        yield expireToken();
         return { sendDataCenter };
     });
 }
@@ -126,7 +128,10 @@ function getService(db, date) {
     return __awaiter(this, void 0, void 0, function* () {
         let sentResult = {
             person: { success: 0, fail: 0 },
-            service: { success: 0, fail: 0 }
+            address: { success: 0, fail: 0 },
+            service: { success: 0, fail: 0 },
+            diagnosisOpd: { success: 0, fail: 0 },
+            drugOpd: { success: 0, fail: 0 },
         };
         const rows = yield hisModel.getService(db, 'date_serv', date, hcode);
         sentContent += '  - service = ' + rows.length + '\r';
@@ -134,201 +139,107 @@ function getService(db, date) {
         if (rows && rows.length) {
             sentResult.service.success = rows.length;
             for (const row of rows) {
+                yield sendToApi('save-service', row);
+                yield person(db, row.pid || row.PID, sentResult);
+                yield getAddress(db, row.pid || row.PID, sentResult);
+                yield getDiagnosisOpd(db, row.SEQ || row.seq, sentResult);
+                yield getDrugOpd(db, row.SEQ || row.seq, sentResult);
             }
         }
         return sentResult;
     });
 }
-function getPerson(db, pid, sentResult) {
+function person(db, pid, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
         const rows = yield hisModel.getPerson(db, 'hn', pid, hcode);
         sentContent += '  - person = ' + rows.length + '\r';
         if (rows && rows.length) {
-            for (const row of rows) {
-                const person = yield {
-                    HOSPCODE: row.HOSPCODE || row.hospcode,
-                    CID: row.CID || row.cid,
-                    PID: row.HN || row.hn || row.PID || row.pid,
-                    HID: row.HID || row.hid || '',
-                    HN: row.HN || row.hn || row.PID || row.pid,
-                    PRENAME: row.PRENAME || row.prename,
-                    NAME: row.NAME || row.name,
-                    LNAME: row.LNAME || row.lname,
-                    SEX: row.SEX || row.sex,
-                    BIRTH: row.BIRTH || row.birth,
-                    MSTATUS: row.MSTATUS || row.mstatus,
-                    OCCUPATION_NEW: row.OCCUPATION_NEW || row.occupation_new,
-                    RACE: row.RACE || row.race,
-                    NATION: row.NATION || row.nation,
-                    RELIGION: row.RELIGION || row.religion,
-                    EDUCATION: row.EDUCATION || row.education,
-                    ABOGROUP: row.ABOGROUP || row.abogroup,
-                    TELEPHONE: row.TELEPHONE || row.telephone,
-                    TYPEAREA: row.TYPEAREA || row.typearea,
-                    D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-                };
-                const saveResult = yield referSending('/save-person', person);
-                if (saveResult.statusCode === 200) {
-                    sentResult.person.success += 1;
-                }
-                else {
-                    sentResult.person.fail += 1;
-                    console.log('save-person', person.HN, saveResult);
-                }
-                sentContent += '    -- PID ' + person.HN + ' ' + (saveResult.result || saveResult.message) + '\r';
+            rows[0]['FNAME'] = rows[0].NAME || rows[0].name;
+            const saveResult = yield sendToApi('save-person', rows[0]);
+            if (saveResult.statusCode == 200) {
+                sentResult.person.success += 1;
             }
+            else {
+                sentResult.person.fail += 1;
+                console.log('save-person', rows[0].HN, saveResult.message);
+            }
+            sentContent += '    -- PID ' + rows[0].HN + ' ' + (saveResult.result || saveResult.message) + '\r';
         }
-        return rows;
+        return rows[0];
     });
 }
 function getAddress(db, pid, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
-        const rows = yield hisModel.getAddress(db, 'hn', pid, hcode);
-        sentContent += '  - address = ' + rows.length + '\r';
-        if (rows && rows.length) {
-            for (const row of rows) {
-                const address = yield {
-                    HOSPCODE: row.HOSPCODE || row.hospcode,
-                    PID: row.PID || row.pid || row.HN || row.hn,
-                    ADDRESSTYPE: row.ADDRESSTYPE || row.addresstype,
-                    ROOMNO: row.ROOMNO || row.roomno,
-                    HOUSENO: row.HOUSENO || row.HOUSENO,
-                    CONDO: row.CONDO || row.condo || '',
-                    SOIMAIN: row.SOIMAIN || row.soimain,
-                    ROAD: row.ROAD || row.road,
-                    VILLANAME: row.VILLANAME || row.villaname,
-                    VILLAGE: row.VILLAGE || row.village,
-                    TAMBON: row.TAMBON || row.tambon,
-                    AMPUR: row.AMPUR || row.ampur,
-                    CHANGWAT: row.CHANGWAT || row.changwat,
-                    TELEPHONE: row.TELEPHONE || row.telephone || '',
-                    MOBILE: row.MOBILE || row.mobile || '',
-                    D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-                };
-                const saveResult = yield referSending('/save-address', address);
-                if (saveResult.statusCode === 200) {
-                    sentResult.address.success += 1;
+        if (pid) {
+            const rows = yield hisModel.getAddress(db, 'hn', pid, hcode);
+            sentContent += '  - address = ' + (rows ? rows.length : 0) + '\r';
+            if (rows && rows.length) {
+                for (const row of rows) {
+                    row.PID = row.PID || row.pid || row.HN || row.hn;
+                    const saveResult = yield sendToApi('save-address', row);
+                    if (saveResult.statusCode == 200) {
+                        sentResult.address.success += 1;
+                    }
+                    else {
+                        sentResult.address.fail += 1;
+                        console.log('save address fail', row.PID, saveResult.message);
+                    }
+                    sentContent += '    -- PID ' + row.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
                 }
-                else {
-                    sentResult.address.fail += 1;
-                    console.log('save address fail', address.PID, saveResult);
-                }
-                sentContent += '    -- PID ' + address.PID + ' ' + (saveResult.result || saveResult.message) + '\r';
             }
+            return rows;
         }
-        return rows;
+        else {
+            console.log('Address error: not found HN');
+            return [];
+        }
     });
 }
-function getService_(db, visitNo, sentResult) {
+function getDiagnosisOpd(db, visitNo, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        const rows = yield hisModel.getService(db, 'visitNo', visitNo, hcode);
-        sentContent += '  - service = ' + rows.length + '\r';
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const rows = yield hisModel.getDiagnosisOpd(db, visitNo, hcode);
         if (rows && rows.length) {
-            for (const row of rows) {
-                const data = yield {
-                    HOSPCODE: row.HOSPCODE || row.hospcode,
-                    PID: row.PID || row.pid || row.HN || row.hn,
-                    SEQ: row.SEQ || row.seq || visitNo,
-                    HN: row.PID || row.pid || row.HN || row.hn,
-                    CID: row.CID || row.cid,
-                    DATE_SERV: row.DATE_SERV || row.date_serv || row.date,
-                    TIME_SERV: row.TIME_SERV || row.time_serv || '',
-                    LOCATION: row.LOCATION || row.location || '',
-                    INTIME: row.INTIME || row.intime || '',
-                    INSTYPE: row.INSTYPE || row.instype || '',
-                    INSID: row.INSID || row.insid || '',
-                    TYPEIN: row.TYPEIN || row.typein || '',
-                    REFERINHOSP: row.REFERINHOSP || row.referinhosp || '',
-                    CAUSEIN: row.CAUSEIN || row.causein || '',
-                    CHIEFCOMP: row.CHIEFCOMP || row.chiefcomp || '',
-                    SERVPLACE: row.SERVPLACE || row.servplace || '',
-                    BTEMP: row.BTEMP || row.btemp || '',
-                    SBP: row.SBP || row.sbp || '',
-                    DBP: row.DBP || row.dbp || '',
-                    PR: row.PR || row.pr || '',
-                    RR: row.RR || row.rr || '',
-                    TYPEOUT: row.TYPEOUT || row.typeout || '',
-                    REFEROUTHOSP: row.REFEROUTHOSP || row.referouthosp || '',
-                    CAUSEOUT: row.CAUSEOUT || row.causeout || '',
-                    COST: row.COST || row.cost || '',
-                    PRICE: row.PRICE || row.price || '',
-                    PAYPRICE: row.PAYPRICE || row.payprice || '',
-                    ACTUALPAY: row.ACTUALPAY || row.actualpay || '',
-                    OCCUPATION_NEW: row.OCCUPATION_NEW || row.occupation_new,
-                    MAIN: row.MAIN || row.main || '',
-                    HSUB: row.HSUB || row.hsub || row.SUB || row.sub || '',
-                    SUB: row.SUB || row.sub || '',
-                    D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-                };
-                const saveResult = yield referSending('/save-service', data);
-                sentContent += '    -- SEQ ' + data.SEQ + ' ' + (saveResult.result || saveResult.message) + '\r';
-                if (saveResult.statusCode === 200) {
-                    sentResult.service.success += 1;
-                }
-                else {
-                    sentResult.service.fail += 1;
-                    console.log('save-service', data.SEQ, saveResult);
-                }
+            sentContent += '  - diagnosis_opd = ' + rows.length + '\r';
+            const saveResult = yield sendToApi('save-diagnosis-opd', rows);
+            sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
+            if (saveResult.statusCode === 200) {
+                sentResult.diagnosisOpd.success += rows.length;
             }
+            else {
+                sentResult.diagnosisOpd.fail += 1;
+                console.log('save-diagnosis-opd', visitNo, saveResult.message);
+            }
+        }
+        else {
+            sentContent += '  - diagnosis_opd = 0\r';
         }
         return rows;
     });
 }
-function getAdmission(db, visitNo) {
+function getDrugOpd(db, visitNo, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
-        const rows = yield hisModel.getAdmission(db, 'visitNo', visitNo, hcode);
-        sentContent += '  - admission = ' + rows.length + '\r';
+        let opdDrug = [];
+        const rows = yield hisModel.getDrugOpd(db, visitNo, hcode);
         if (rows && rows.length) {
-            for (const row of rows) {
-                const data = yield {
-                    HOSPCODE: row.HOSPCODE || row.hospcode || hcode,
-                    PID: row.PID || row.pid || row.HN || row.hn,
-                    SEQ: row.SEQ || row.seq || visitNo,
-                    AN: row.AN || row.an,
-                    CID: row.CID || row.cid || '',
-                    DATETIME_ADMIT: row.DATETIME_ADMIT || row.datetime_admit,
-                    WARDADMIT: row.WARDADMIT || row.wardadmit || '',
-                    INSTYPE: row.INSTYPE || row.instype || '',
-                    TYPEIN: row.TYPEIN || row.typein || '',
-                    REFERINHOSP: row.REFERINHOSP || row.referinhosp || '',
-                    CAUSEIN: row.CAUSEIN || row.causein || '',
-                    ADMITWEIGHT: row.ADMITWEIGHT || row.admitweight || 0,
-                    ADMITHEIGHT: row.ADMITHEIGHT || row.admitheight || 0,
-                    DATETIME_DISCH: row.DATETIME_DISCH || row.datetime_disch || '',
-                    WARDDISCH: row.WARDDISCH || row.warddish || '',
-                    DISCHSTATUS: row.DISCHSTATUS || row.dischstatus || '',
-                    DISCHTYPE: row.DISCHTYPE || row.disctype || '',
-                    REFEROUTHOSP: row.REFEROUTHOSP || row.referouthosp || '',
-                    CAUSEOUT: row.CAUSEOUT || row.causeout || '',
-                    COST: row.COST || row.cost || '',
-                    PRICE: row.PRICE || row.price || '',
-                    PAYPRICE: row.PAYPRICE || row.payprice || '',
-                    ACTUALPAY: row.ACTUALPAY || row.actualpay || '',
-                    PROVIDER: row.PROVIDER || row.provider || row.dr || '',
-                    DRG: row.DRG || row.drg || '',
-                    RW: row.RW || row.rw || 0,
-                    ADJRW: row.ADJRW || row.adjrw || 0,
-                    ERROR: row.ERROR || row.error || '',
-                    WARNING: row.WARNING || row.warning || '',
-                    ACTLOS: row.ACTLOS || row.actlos || 0,
-                    GROUPER_VERSION: row.GROUPER_VERSION || row.grouper_version || '',
-                    CLINIC: row.CLINIC || row.clinic || '',
-                    MAIN: row.MAIN || row.main || '',
-                    SUB: row.HSUB || row.hsub || row.SUB || row.sub || '',
-                    D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-                };
-                const saveResult = yield referSending('/save-admission', data);
-                sentContent += '    -- AN ' + data.AN + ' ' + (saveResult.result || saveResult.message) + '\r';
+            sentContent += '  - drug_opd = ' + rows.length + '\r';
+            opdDrug = rows;
+            const saveResult = yield sendToApi('save-drug-opd', rows);
+            sentContent += '    -- ' + visitNo + ' ' + JSON.stringify(saveResult) + '\r';
+            if (saveResult.statusCode == 200) {
+                sentResult.drugOpd.success += rows.length;
+            }
+            else {
+                console.log('drug opd error: vn ', visitNo, saveResult.message);
+                sentResult.drugOpd.fail += 1;
             }
         }
-        return rows;
+        else {
+            sentContent += '  - drug_opd = 0\r';
+        }
+        return opdDrug;
     });
 }
-function referSending(path, dataArray) {
+function sendToApi(path, dataArray) {
     return __awaiter(this, void 0, void 0, function* () {
         const dataSending = querystring.stringify({
             hospcode: hcode, data: JSON.stringify(dataArray),
@@ -336,14 +247,20 @@ function referSending(path, dataArray) {
             sourceApiName: 'HIS-connect version ' + apiVersion
         });
         const options = {
-            hostname: process.env.NREFER_URL,
-            port: process.env.NREFER_PORT,
-            path: process.env.NREFER_PATH + path,
+            hostname: 'connect.moph.go.th',
+            port: '',
+            path: '/dc-api/data/' + path,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': 'Bearer ' + nReferToken,
+                'Authorization': 'Bearer ' + dcToken,
                 'Content-Length': Buffer.byteLength(dataSending)
+            },
+            body: {
+                hospcode: hcode, data: dataArray,
+                processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+                sourceApiName: 'HIS connect version',
+                sourceApiVersion: apiVersion
             }
         };
         let ret = '';
@@ -354,6 +271,7 @@ function referSending(path, dataArray) {
                     ret += chunk;
                 });
                 res.on('end', () => {
+                    console.log(ret);
                     const data = JSON.parse(ret);
                     resolve(data);
                 });
@@ -366,17 +284,20 @@ function referSending(path, dataArray) {
         });
     });
 }
-function getNReferToken(apiKey, secretKey) {
+function getToken() {
     return __awaiter(this, void 0, void 0, function* () {
+        const apiKey = process.env.NREFER_APIKEY || 'api-key';
+        const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
         let url = process.env.NREFER_URL1;
         url += url.substr(-1, 1) === '/' ? '' : '/';
         const postData = querystring.stringify({
-            apiKey: apiKey, secretKey: secretKey
+            apiKey: apiKey, secretKey: secretKey,
+            sourceApiName: 'HIS Connect', apiVersion: apiVersion
         });
         const options = {
-            hostname: process.env.NREFER_URL,
-            port: process.env.NREFER_PORT,
-            path: process.env.NREFER_PATH + '/login/api-key',
+            hostname: 'connect.moph.go.th',
+            port: '',
+            path: '/dc-api/token',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -390,9 +311,14 @@ function getNReferToken(apiKey, secretKey) {
                 res.on('data', (chunk) => {
                     ret += chunk;
                 });
-                res.on('end', () => {
-                    const data = JSON.parse(ret);
-                    resolve(data);
+                res.on('end', (error) => {
+                    if (ret) {
+                        const data = JSON.parse(ret);
+                        resolve(data);
+                    }
+                    else {
+                        reject(error);
+                    }
                 });
             });
             req.on('error', (e) => {
@@ -403,22 +329,16 @@ function getNReferToken(apiKey, secretKey) {
         });
     });
 }
-function expireToken(token) {
+function expireToken() {
     return __awaiter(this, void 0, void 0, function* () {
-        let url = process.env.NREFER_URL1;
-        url += url.substr(-1, 1) === '/' ? '' : '/';
-        const postData = querystring.stringify({
-            token: token
-        });
         const options = {
-            hostname: process.env.NREFER_URL,
-            port: process.env.NREFER_PORT,
-            path: process.env.NREFER_PATH + '/login/expire-token',
-            method: 'POST',
+            hostname: 'connect.moph.go.th',
+            port: '',
+            path: '/dc-api/token/expire/' + reqToken.sessionID,
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${token}`,
-                'Content-Length': Buffer.byteLength(postData)
+                'Authorization': `Bearer ${reqToken.token}`
             }
         };
         let ret = '';
@@ -436,7 +356,6 @@ function expireToken(token) {
             req.on('error', (e) => {
                 reject(e);
             });
-            req.write(postData);
             req.end();
         });
     });

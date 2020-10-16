@@ -22,7 +22,6 @@ function sendMoph(req, reply, db) {
         const dateNow = moment().locale('th').format('YYYY-MM-DD');
         let token = null;
         let result = yield getIsToken();
-        console.log('IS token', token);
         if (!result || result.statusCode !== 200) {
             const apiKey = process.env.NREFER_APIKEY || 'api-key';
             const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
@@ -106,7 +105,12 @@ function sendingData(dataArray, token) {
 function sendData(row, tokenKey) {
     return __awaiter(this, void 0, void 0, function* () {
         const request = require('request');
-        const bodyContent = { data: row, token: tokenKey };
+        const bodyContent = {
+            data: row,
+            token: tokenKey,
+            version: crontabConfig.apiVersion,
+            subVersion: crontabConfig.apiSubVersion
+        };
         const options = {
             url: process.env.IS_URL + '/isonline/put-is',
             json: true,
@@ -165,7 +169,6 @@ function getIsToken_() {
                 password: process.env.IS_MOPH_PASSWORD
             }
         };
-        console.log('options', options);
         request.post(options, (err, res, body) => {
             if (err) {
                 return console.log(err);

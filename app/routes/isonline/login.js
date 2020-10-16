@@ -15,13 +15,12 @@ const crypto = require('crypto');
 const login_1 = require("../../models/isonline/login");
 const loginModel = new login_1.IsLoginModel();
 const router = (fastify, {}, next) => {
-    var db = fastify.dbISOnline;
     fastify.post('/', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         let username = req.body.username;
         let password = req.body.password;
         if (username && password) {
             let encPassword = yield crypto.createHash('sha256').update(password).digest('hex');
-            loginModel.doLogin(db, username, encPassword)
+            loginModel.doLogin(fastify.dbISOnline, username, encPassword)
                 .then((results) => __awaiter(void 0, void 0, void 0, function* () {
                 if (results.length) {
                     let today = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
@@ -53,7 +52,7 @@ const router = (fastify, {}, next) => {
                         expire: expire,
                         type: 1
                     };
-                    yield loginModel.saveToken(db, tokenInfo)
+                    yield loginModel.saveToken(fastify.dbISOnline, tokenInfo)
                         .then((saveToken) => {
                         console.log('save token: ', saveToken);
                     }).catch(errort => {
@@ -101,7 +100,7 @@ const router = (fastify, {}, next) => {
         let tokenKey = req.params.tokenKey;
         if (tokenKey) {
             try {
-                const result = yield loginModel.checkToken(db, tokenKey);
+                const result = yield loginModel.checkToken(fastify.dbISOnline, tokenKey);
                 if (result.length) {
                     res.send({
                         statusCode: HttpStatus.OK,
@@ -141,7 +140,7 @@ const router = (fastify, {}, next) => {
         verifyToken(req, res);
         let tokenKey = req.params.tokenKey;
         if (tokenKey) {
-            loginModel.checkToken(db, tokenKey)
+            loginModel.checkToken(fastify.dbISOnline, tokenKey)
                 .then((results) => {
                 if (results.length) {
                     res.send({

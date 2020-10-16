@@ -50,7 +50,7 @@ class HisEzhospModel {
         return db('hospdata.view_patient')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select(db.raw('4 as typearea'))
-            .select('no_card as cid', 'hn as pid', 'title as prename', 'name', 'surname as lname', 'hn', 'birth', 'sex', 'marry_std as mstatus', 'blood as abogroup', 'occ_std as occupation_new', 'race_std as race', 'nation_std as nation', 'religion_std as religion', 'edu_std as education', 'tel as telephone', 'lastupdate as d_update')
+            .select('no_card as cid', 'hn as pid', 'title as prename', 'name', 'name as fname', 'surname as lname', 'hn', 'birth', 'sex', 'marry_std as mstatus', 'blood as abogroup', 'occ_std as occupation_new', 'race_std as race', 'nation_std as nation', 'religion_std as religion', 'edu_std as education', 'tel as telephone', 'lastupdate as d_update')
             .where(columnName, "=", searchText)
             .limit(maxLimit);
     }

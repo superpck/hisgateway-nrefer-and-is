@@ -17,7 +17,6 @@ const Path1 = '/api/get_gishealth.php';
 const opsUrl2 = '203.157.88.8';
 const Path2 = '/kkh/ws/moph/ops.php';
 const router = (fastify, {}, next) => {
-    var dbIsOnline = fastify.dbISOnline;
     fastify.post('/general1', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         verifyToken(req, res);
         let url = req.body.url;

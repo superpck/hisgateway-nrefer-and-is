@@ -19,8 +19,6 @@ switch (hisProvider) {
 }
 
 const router = (fastify, { }, next) => {
-  var db: Knex = fastify.dbCannabis;
-
   fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
     reply.send({
       api: 'Cannabis API Serivce',
@@ -32,7 +30,7 @@ const router = (fastify, { }, next) => {
 
   fastify.get('/test/db', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
     try {
-      const result: any = await cannabisModel.testConnection(db);
+      const result: any = await cannabisModel.testConnection(fastify.dbCannabis);
       reply.send(result[0]);
     } catch (error) {
       reply.send({
@@ -45,7 +43,7 @@ const router = (fastify, { }, next) => {
 
   fastify.post('/test-connection', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
     try {
-      const result: any = await cannabisModel.testConnection(db);
+      const result: any = await cannabisModel.testConnection(fastify.dbCannabis);
       reply.send({
         statusCode: HttpStatus.OK,
         rows: result
@@ -63,7 +61,7 @@ const router = (fastify, { }, next) => {
 
     if (cid) {
       try {
-        const rows: any = await cannabisModel.searchPatient(db, cid);
+        const rows: any = await cannabisModel.searchPatient(fastify.dbCannabis, cid);
         reply.send(rows);
       } catch (error) {
         console.log('patient', error.message);
@@ -85,7 +83,7 @@ const router = (fastify, { }, next) => {
 
     if (cid) {
       try {
-        const result: any = await cannabisModel.searchPatient(db, cid);
+        const result: any = await cannabisModel.searchPatient(fastify.dbCannabis, cid);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -112,7 +110,7 @@ const router = (fastify, { }, next) => {
 
     if (hn) {
       try {
-        const result: any = await cannabisModel.searchVisit(db, hn, startDate, endDate);
+        const result: any = await cannabisModel.searchVisit(fastify.dbCannabis, hn, startDate, endDate);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -139,7 +137,7 @@ const router = (fastify, { }, next) => {
 
     if (hn) {
       try {
-        const result: any = await cannabisModel.searchVisit(db, hn, startDate, endDate);
+        const result: any = await cannabisModel.searchVisit(fastify.dbCannabis, hn, startDate, endDate);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -164,7 +162,7 @@ const router = (fastify, { }, next) => {
 
     if (hn) {
       try {
-        const rows: any = await cannabisModel.patientInfo(db, hn);
+        const rows: any = await cannabisModel.patientInfo(fastify.dbCannabis, hn);
         reply.send(rows);
       } catch (error) {
         console.log('patient-info', error.message);
@@ -186,7 +184,7 @@ const router = (fastify, { }, next) => {
 
     if (hn) {
       try {
-        const result: any = await cannabisModel.patientInfo(db, hn);
+        const result: any = await cannabisModel.patientInfo(fastify.dbCannabis, hn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -212,7 +210,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const data: any = await cannabisModel.getVisitLab(db, hn, vn);
+        const data: any = await cannabisModel.getVisitLab(fastify.dbCannabis, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           status: HttpStatus.OK,
@@ -243,7 +241,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitLab(db, hn, vn);
+        const result: any = await cannabisModel.getVisitLab(fastify.dbCannabis, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -269,7 +267,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const data: any = await cannabisModel.getVisitDrug(db, hn, vn);
+        const data: any = await cannabisModel.getVisitDrug(fastify.dbCannabis, hn, vn);
         reply.send({
           status: HttpStatus.OK,
           statusCode: HttpStatus.OK,
@@ -300,7 +298,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitDrug(db, hn, vn);
+        const result: any = await cannabisModel.getVisitDrug(fastify.dbCannabis, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -326,7 +324,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const data: any = await cannabisModel.getVisitAppointment(db, hn, vn);
+        const data: any = await cannabisModel.getVisitAppointment(fastify.dbCannabis, hn, vn);
         reply.send({
           status: HttpStatus.OK,
           data
@@ -353,7 +351,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitAppointment(db, hn, vn);
+        const result: any = await cannabisModel.getVisitAppointment(fastify.dbCannabis, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -379,7 +377,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const data: any = await cannabisModel.getVisitDiagText(db, hn, vn);
+        const data: any = await cannabisModel.getVisitDiagText(fastify.dbCannabis, hn, vn);
         reply.send({
           status: HttpStatus.OK,
           statusCode: HttpStatus.OK,
@@ -406,7 +404,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitDiagText(db, hn, vn);
+        const result: any = await cannabisModel.getVisitDiagText(fastify.dbCannabis, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -432,7 +430,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const data: any = await cannabisModel.getVisitDiagnosis(db, hn, vn);
+        const data: any = await cannabisModel.getVisitDiagnosis(fastify.dbCannabis, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           status: HttpStatus.OK,
@@ -461,7 +459,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitDiagnosis(db, hn, vn);
+        const result: any = await cannabisModel.getVisitDiagnosis(fastify.dbCannabis, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -487,7 +485,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const data: any = await cannabisModel.getVisitProcedure(db, hn, vn);
+        const data: any = await cannabisModel.getVisitProcedure(fastify.dbCannabis, hn, vn);
         reply.send({
           status: HttpStatus.OK,
           statusCode: HttpStatus.OK,
@@ -516,7 +514,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitProcedure(db, hn, vn);
+        const result: any = await cannabisModel.getVisitProcedure(fastify.dbCannabis, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
@@ -542,7 +540,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitScreening(db, hn, vn);
+        const result: any = await cannabisModel.getVisitScreening(fastify.dbCannabis, hn, vn);
         reply.send(result);
       } catch (error) {
         console.log('screening', error.message);
@@ -567,7 +565,7 @@ const router = (fastify, { }, next) => {
 
     if (hn && vn) {
       try {
-        const result: any = await cannabisModel.getVisitScreening(db, hn, vn);
+        const result: any = await cannabisModel.getVisitScreening(fastify.dbCannabis, hn, vn);
         reply.send({
           statusCode: HttpStatus.OK,
           rows: result
