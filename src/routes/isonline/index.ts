@@ -8,13 +8,27 @@ import { IswinModel } from '../../models/isonline/iswin';
 const isModel = new IswinModel();
 
 const router = (fastify, { }, next) => {
-  fastify.get('/', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, reply: fastify.Reply) => {
-    reply.send({
-      statusCode: 200,
-      apiCode: 'ISOnline',
-      version: fastify.apiVersion,
-      subVersion: fastify.apiSubVersion
-    });
+  fastify.get('/', async (req: fastify.Request, res: fastify.Reply) => {
+    try {
+      const result = await isModel.getVersion(fastify.dbISOnline);
+      res.send({
+        apiCode: 'ISOnline',
+        statusCode: HttpStatus.OK,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
+        idDb: process.env.IS_DB_NAME,
+        connnection: true
+      });
+    } catch (error) {
+      res.send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        version: fastify.apiVersion,
+        subVersion: fastify.apiSubVersion,
+        connnection: false,
+        message: error.message
+      });
+    }
+
   })
 
   fastify.get('/alive', async (req: fastify.Request, res: fastify.Reply) => {
@@ -24,6 +38,7 @@ const router = (fastify, { }, next) => {
         statusCode: HttpStatus.OK,
         version: fastify.apiVersion,
         subVersion: fastify.apiSubVersion,
+        idDb: process.env.IS_DB_NAME,
         connnection: true
       });
     } catch (error) {
