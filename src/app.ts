@@ -124,76 +124,74 @@ app.decorate("serviceMonitoring", async (request, reply) => {
 });
 
 // HIS connection =========================================
-const hisConnectionOption = createConnectionOption({
-  client: process.env.HIS_DB_CLIENT,
-  host: process.env.HIS_DB_HOST,
-  user: process.env.HIS_DB_USER,
-  password: process.env.HIS_DB_PASSWORD,
-  dbName: process.env.HIS_DB_NAME,
-  port: process.env.HIS_DB_PORT,
-  schema: process.env.HIS_DB_SCHEMA,
-  charSet: process.env.HIS_DB_CHARSET,
-  encrypt: process.env.HIS_DB_ENCRYPT || true
-});
-
 app.register(require('./plugins/db'), {
-  connection: hisConnectionOption,
+  config: {
+    client: process.env.HIS_DB_CLIENT,
+    host: process.env.HIS_DB_HOST,
+    user: process.env.HIS_DB_USER,
+    password: process.env.HIS_DB_PASSWORD,
+    dbName: process.env.HIS_DB_NAME,
+    port: +process.env.HIS_DB_PORT,
+    schema: process.env.HIS_DB_SCHEMA,
+    charSet: process.env.HIS_DB_CHARSET,
+    encrypt: process.env.HIS_DB_ENCRYPT || true
+  },
   connectionName: 'dbHIS'
 });
 
 // nRefer connection =========================================
-const nReferConnectionOption = createConnectionOption({
-  client: process.env.REFER_DB_CLIENT || process.env.HIS_DB_CLIENT,
-  host: process.env.REFER_DB_HOST || process.env.HIS_DB_HOST,
-  user: process.env.REFER_DB_USER || process.env.HIS_DB_USER,
-  password: process.env.REFER_DB_PASSWORD || process.env.HIS_DB_PASSWORD,
-  dbName: process.env.REFER_DB_NAME || process.env.HIS_DB_NAME,
-  port: process.env.REFER_DB_PORT || process.env.HIS_DB_PORT,
-  schema: process.env.REFER_DB_SCHEMA || process.env.HIS_DB_SCHEMA,
-  charSet: process.env.REFER_DB_CHARSET || process.env.HIS_DB_CHARSET,
-  encrypt: process.env.REFER_DB_ENCRYPT || process.env.HIS_DB_ENCRYPT || true
-});
 app.register(require('./plugins/db'), {
-  connection: nReferConnectionOption,
+  // connection: nReferConnectionOption,
+  config: {
+    client: process.env.REFER_DB_CLIENT || process.env.HIS_DB_CLIENT,
+    host: process.env.REFER_DB_HOST || process.env.HIS_DB_HOST,
+    port: +process.env.REFER_DB_PORT || +process.env.HIS_DB_PORT,
+    user: process.env.REFER_DB_USER || process.env.HIS_DB_USER,
+    password: process.env.REFER_DB_PASSWORD || process.env.HIS_DB_PASSWORD,
+    dbName: process.env.REFER_DB_NAME || process.env.HIS_DB_NAME,
+    schema: process.env.REFER_DB_SCHEMA || process.env.HIS_DB_SCHEMA,
+    charSet: process.env.REFER_DB_CHARSET || process.env.HIS_DB_CHARSET || '',
+    encrypt: process.env.REFER_DB_ENCRYPT || process.env.HIS_DB_ENCRYPT || true
+  },
   connectionName: 'dbRefer'
 });
 
 // ISOnline connection =========================================
-const isOnlineConnectionOption = createConnectionOption({
-  client: process.env.IS_DB_CLIENT || process.env.HIS_DB_CLIENT,
-  host: process.env.IS_DB_HOST || process.env.HIS_DB_HOST,
-  user: process.env.IS_DB_USER || process.env.HIS_DB_USER,
-  password: process.env.IS_DB_PASSWORD || process.env.HIS_DB_PASSWORD,
-  dbName: process.env.IS_DB_NAME || process.env.HIS_DB_NAME,
-  port: process.env.IS_DB_PORT || process.env.HIS_DB_PORT,
-  schema: process.env.IS_DB_SCHEMA || process.env.HIS_DB_SCHEMA,
-  charSet: process.env.IS_DB_CHARSET || process.env.HIS_DB_CHARSET,
-  encrypt: process.env.IS_DB_ENCRYPT || process.env.HIS_DB_ENCRYPT || true
-});
 app.register(require('./plugins/db'), {
-  connection: isOnlineConnectionOption,
+  config: {
+    client: process.env.IS_DB_CLIENT || process.env.HIS_DB_CLIENT,
+    host: process.env.IS_DB_HOST || process.env.HIS_DB_HOST,
+    port: +process.env.IS_DB_PORT || +process.env.HIS_DB_PORT,
+    user: process.env.IS_DB_USER || process.env.HIS_DB_USER,
+    password: process.env.IS_DB_PASSWORD || process.env.HIS_DB_PASSWORD,
+    dbName: process.env.IS_DB_NAME || process.env.HIS_DB_NAME,
+    schema: process.env.IS_DB_SCHEMA || process.env.HIS_DB_SCHEMA,
+    charSet: process.env.IS_DB_CHARSET || process.env.HIS_DB_CHARSET,
+    encrypt: process.env.IS_DB_ENCRYPT || process.env.HIS_DB_ENCRYPT || true
+  },
+  // connection: isOnlineConnectionOption,
   connectionName: 'dbISOnline'
 });
 
 // dbCannabis connection =========================================
-const cannabisConnectionOption = createConnectionOption({
-  client: process.env.CANNABIS_DB_CLIENT || process.env.HIS_DB_CLIENT,
-  host: process.env.CANNABIS_DB_HOST || process.env.HIS_DB_HOST,
-  user: process.env.CANNABIS_DB_USER || process.env.HIS_DB_USER,
-  password: process.env.CANNABIS_DB_PASSWORD || process.env.HIS_DB_PASSWORD,
-  dbName: process.env.CANNABIS_DB_NAME || process.env.HIS_DB_NAME,
-  port: process.env.CANNABIS_DB_PORT || process.env.HIS_DB_PORT,
-  schema: process.env.CANNABIS_DB_SCHEMA || process.env.HIS_DB_SCHEMA,
-  charSet: process.env.CANNABIS_DB_CHARSET || process.env.HIS_DB_CHARSET,
-  encrypt: process.env.CANNABIS_DB_ENCRYPT || process.env.HIS_DB_ENCRYPT || true
-});
 app.register(require('./plugins/db'), {
-  connection: cannabisConnectionOption,
+  // connection: cannabisConnectionOption,
+  config: {
+    client: process.env.CANNABIS_DB_CLIENT || process.env.HIS_DB_CLIENT,
+    host: process.env.CANNABIS_DB_HOST || process.env.HIS_DB_HOST,
+    port: +process.env.CANNABIS_DB_PORT || +process.env.HIS_DB_PORT,
+    user: process.env.CANNABIS_DB_USER || process.env.HIS_DB_USER,
+    password: process.env.CANNABIS_DB_PASSWORD || process.env.HIS_DB_PASSWORD,
+    dbName: process.env.CANNABIS_DB_NAME || process.env.HIS_DB_NAME,
+    schema: process.env.CANNABIS_DB_SCHEMA || process.env.HIS_DB_SCHEMA,
+    charSet: process.env.CANNABIS_DB_CHARSET || process.env.HIS_DB_CHARSET,
+    encrypt: process.env.CANNABIS_DB_ENCRYPT || process.env.HIS_DB_ENCRYPT || true  
+  },
   connectionName: 'dbCannabis'
 });
 
 app.apiVersion = '3.1.6';
-app.apiSubVersion = '2020-10-15-01';
+app.apiSubVersion = '2020-10-18-01';
 
 // node-cron =========================================
 const secondNow = +moment().get('second');
@@ -239,15 +237,15 @@ timingSchedule['cupDataCenter'].minute =
 // timingSchedule['cupDataCenter'].minute = timingSchedule['cupDataCenter'].minute < 5 ? 5 : timingSchedule['cupDataCenter'].minute;
 
 // ตรวจสอบการ start ด้วยเวลาที่กำหนด (ทุกๆ 1 นาที)
-console.log('crontab start: ',timingSch);
+console.log('crontab start: ', timingSch);
 if (timingSchedule['nrefer'].autosend) {
-  console.log('crontab nRefer start every (minute)',timingSchedule['nrefer'].minute);
+  console.log('crontab nRefer start every (minute)', timingSchedule['nrefer'].minute);
 }
 if (timingSchedule['isonline'].autosend) {
-  console.log('crontab ISOnline start every (minute)',timingSchedule['isonline'].minute);
+  console.log('crontab ISOnline start every (minute)', timingSchedule['isonline'].minute);
 }
 if (timingSchedule['cupDataCenter'].autosend) {
-  console.log('crontab Data Center start every (minute)',timingSchedule['cupDataCenter'].minute);
+  console.log('crontab Data Center start every (minute)', timingSchedule['cupDataCenter'].minute);
 }
 
 cron.schedule(timingSch, async (req, res) => {
@@ -300,104 +298,6 @@ app.listen(port, host, (err) => {
   console.log('>>> ', app.startServerTime, `HIS Connection API (${app.apiVersion}) start on port`, port, 'PID', process.pid);
 });
 
-function createConnectionOption(db: any) {
-  if (['mssql'].includes(db.client)) {
-    return {
-      client: db.client,
-      connection: {
-        server: db.host,
-        user: db.user,
-        password: db.password,
-        database: db.dbName,
-        options: {
-          port: +db.port,
-          schema: db.schema,
-          encrypt: db.encrypt
-        }
-      }
-    };
-  } if (db.client == 'oracledb') {
-    // testOracleConn(db);
-    return {
-      client: db.client,
-      caseSensitive: false,
-      connection: {
-        connectString: `${db.host}/${db.schema}`,
-        user: db.user,
-        password: db.password,
-        port: +db.port,
-        externalAuth: false,
-        fetchAsString: ['DATE'],
-        // poolTimeout: 60,
-        // queueTimeout: 3000
-      }
-    };
-  } if (db.client == 'pg') {
-    return {
-      client: db.client,
-      connection: {
-        host: db.host,
-        port: +db.port,
-        user: db.user,
-        password: db.password,
-        database: db.dbName,
-      },
-      pool: {
-        min: 0,
-        max: 100,
-      }
-    };
-  } else {
-    return {
-      client: db.client,
-      connection: {
-        host: db.host,
-        port: +db.port,
-        user: db.user,
-        password: db.password,
-        database: db.dbName,
-      },
-      pool: {
-        min: 0,
-        max: 7,
-        afterCreate: (conn, done) => {
-          conn.query('SET NAMES ' + db.charSet, (err) => {
-            done(err, conn);
-          });
-        }
-      },
-      debug: false,
-    };
-  }
-
-}
-
-// for test connect only
-async function testOracleConn(db) {
-  const oracledb = require('oracledb');
-  const dbConfig = {
-    connectString: `${db.host}/${db.schema}`,
-    user: db.user,
-    password: db.password,
-    externalAuth: false
-  };
-  let conn;
-  try {
-    conn = await oracledb.getConnection(dbConfig);
-    console.error('conn', conn);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    if (conn) {
-      try {
-        conn.close();
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  }
-}
-
 async function doAutoSend(req, res, serviceName, functionName) {
   let firstProcess: any = { pid: -1 };
   if (process.env.START_TOOL === 'nodemon') {
@@ -422,14 +322,6 @@ async function doAutoSend(req, res, serviceName, functionName) {
     const now = moment().locale('th').format('HH:mm:ss');
     const db = serviceName == 'isonline' ? app.dbISOnline : app.dbHIS;
     console.log(`${now} start cronjob '${serviceName}' on PID ${process.pid}`);
-
-    // if (mqttClient.connected) {
-    //   var options = { retain: true, qos: 1 };
-    //   const topic = `${process.env.HOSPCODE} sending '${serviceName}'`;
-    //   const message = `${process.env.HOSPCODE} start ${serviceName} on PID ${process.pid}, ${now}`;
-    //   mqttClient.publish(topic, message, options);
-    // }
-
     await require(functionName)(req, res, db, timingSchedule[serviceName]);
   }
 }

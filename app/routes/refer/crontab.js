@@ -311,7 +311,7 @@ function sendReferResult(row, sentResult) {
                 DATETIME_IN: moment(row.DATETIME_IN).format('YYYY-MM-DD HH:mm:ss'),
                 REASON: row.REASON || null,
                 D_UPDATE: row.D_UPDATE || d_update,
-                hisProvider: process.env.HIS_PROVIDER,
+                his: process.env.HIS_PROVIDER,
                 typesave: 'autoreply'
             };
             const saveResult = yield referSending('/save-refer-result', data);
