@@ -42,6 +42,7 @@ const router = (fastify, {}, next) => {
                 statusCode: HttpStatus.OK,
                 version: fastify.apiVersion,
                 subVersion: fastify.apiSubVersion,
+                startServerTime: fastify.startServerTime,
                 idDb: process.env.IS_DB_NAME,
                 connnection: true
             });
@@ -51,6 +52,7 @@ const router = (fastify, {}, next) => {
                 statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
                 version: fastify.apiVersion,
                 subVersion: fastify.apiSubVersion,
+                startServerTime: fastify.startServerTime,
                 connnection: false,
                 message: error.message
             });

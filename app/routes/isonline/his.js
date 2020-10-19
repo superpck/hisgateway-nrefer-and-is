@@ -114,6 +114,7 @@ const router = (fastify, {}, next) => {
                 res.send({
                     statusCode: HttpStatus.OK,
                     ok: true,
+                    startServerTime: fastify.startServerTime,
                     hisProvider: process.env.HIS_PROVIDER,
                     version: fastify.apiVersion,
                     subVersion: fastify.apiSubVersion,
@@ -123,7 +124,7 @@ const router = (fastify, {}, next) => {
             else {
                 res.send({
                     statusCode: HttpStatus.NO_CONTENT,
-                    ok: true,
+                    ok: true, startServerTime: fastify.startServerTime,
                     hisProvider: process.env.HIS_PROVIDER,
                     version: fastify.apiVersion,
                     subVersion: fastify.apiSubVersion,

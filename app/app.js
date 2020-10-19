@@ -14,7 +14,6 @@ const HttpStatus = require("http-status-codes");
 const fastify = require("fastify");
 const moment = require("moment");
 const router_1 = require("./router");
-const db_1 = require("./db");
 const nodecron_1 = require("./nodecron");
 const serveStatic = require('serve-static');
 var crypto = require('crypto');
@@ -31,6 +30,7 @@ const app = fastify({
 });
 app.apiVersion = '3.1.6';
 app.apiSubVersion = '2020-10-18-01';
+app.register(router_1.default);
 app.register(require('fastify-formbody'));
 app.register(require('fastify-cors'), {});
 app.register(require('fastify-no-icon'));
@@ -50,8 +50,6 @@ app.register(require('fastify-jwt'), {
     secret: process.env.SECRET_KEY
 });
 app.register(require('fastify-ws'), {});
-app.register(router_1.default);
-app.register(db_1.default);
 app.register(require('./plugins/db'), {
     connection: createConnectionOption({
         client: process.env.HIS_DB_CLIENT,

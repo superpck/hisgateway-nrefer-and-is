@@ -105,13 +105,15 @@ const allowTableNames = [
 ];
 
 const router = (fastify, { }, next) => {
+  
   fastify.get('/alive', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     try {
       const result = await hisModel.getTableName(fastify.dbHIS);
       if (result && result.length) {
         res.send({
           statusCode: HttpStatus.OK,
-          ok: true,
+          ok: true, 
+          startServerTime: fastify.startServerTime,
           hisProvider: process.env.HIS_PROVIDER,
           version: fastify.apiVersion,
           subVersion: fastify.apiSubVersion,
@@ -120,7 +122,7 @@ const router = (fastify, { }, next) => {
       } else {
         res.send({
           statusCode: HttpStatus.NO_CONTENT,
-          ok: true,
+          ok: true, startServerTime: fastify.startServerTime,
           hisProvider: process.env.HIS_PROVIDER,
           version: fastify.apiVersion,
           subVersion: fastify.apiSubVersion,
