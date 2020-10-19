@@ -22,8 +22,6 @@ require('dotenv').config({ path: path.join(__dirname, '../config') });
 const helmet = require("fastify-helmet");
 const fastifySession = require('fastify-session');
 const fastifyCookie = require('fastify-cookie');
-var cron = require('node-cron');
-var shell = require("shelljs");
 const app = fastify({
     logger: {
         level: 'error',
@@ -31,6 +29,8 @@ const app = fastify({
     },
     bodyLimit: 5 * 1048576,
 });
+app.apiVersion = '3.1.6';
+app.apiSubVersion = '2020-10-18-01';
 app.register(require('fastify-formbody'));
 app.register(require('fastify-cors'), {});
 app.register(require('fastify-no-icon'));
@@ -144,8 +144,6 @@ app.decorate("checkRequestKey", (request, reply) => __awaiter(void 0, void 0, vo
 app.decorate("serviceMonitoring", (request, reply) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(moment().locale('th').format('HH:mm:ss'), request.raw.url);
 }));
-app.apiVersion = '3.1.6';
-app.apiSubVersion = '2020-10-18-01';
 app.register(nodecron_1.default);
 const port = +process.env.PORT || 3001;
 const host = '0.0.0.0';
