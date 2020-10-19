@@ -274,7 +274,7 @@ function sendReferOut(row, sentResult) {
                 REFERID_PROVINCE: referProvId,
                 referout_type: row.referout_type || 1,
                 D_UPDATE: row.D_UPDATE || row.d_update || d_update,
-                hisProvider: hisProvider,
+                his: hisProvider,
                 typesave: 'autosent'
             };
             const saveResult = yield referSending('/save-refer-history', data);
