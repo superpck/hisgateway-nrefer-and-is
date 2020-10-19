@@ -217,7 +217,7 @@ const router = (fastify, {}, next) => {
             serviceName: 'HIS Connection API',
             startServer: startServer,
             hospcode: process.env.HOSPCODE,
-            hisProvider: hisProvider,
+            hisProvider,
             dbType: process.env.HIS_DB_CLIENT,
             process: {
                 nodejs: process.version || 'undefined',

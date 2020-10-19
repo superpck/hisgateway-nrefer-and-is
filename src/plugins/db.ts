@@ -1,7 +1,7 @@
 var fastifyPlugin = require('fastify-plugin')
 var knex = require('knex')
 
-function fastifyKnexJS(fastify, opts, next) {
+async function fastifyKnexJS(fastify, opts, next) {
   try {
     let connection: any;
     if (opts.config && opts.config.host && opts.config.client) {
@@ -9,8 +9,8 @@ function fastifyKnexJS(fastify, opts, next) {
     } else {
       connection = opts.connection;
     }
-    const handler = knex(connection)
-    fastify.decorate(opts.connectionName, handler)
+    const handler = await knex(connection)
+    await fastify.decorate(opts.connectionName, handler)
     next()
   } catch (err) {
     next(err)
