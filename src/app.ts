@@ -4,8 +4,8 @@ import path = require('path');
 import * as HttpStatus from 'http-status-codes';
 import * as fastify from 'fastify';
 import * as moment from 'moment';
+
 import router from "./router";
-import dbconnect from './db';
 import cronjob from './nodecron';
 
 const serveStatic = require('serve-static');
@@ -30,6 +30,7 @@ const app: fastify.FastifyInstance<Server, IncomingMessage, ServerResponse> = fa
 
 app.apiVersion = '3.1.6';
 app.apiSubVersion = '2020-10-18-01';
+app.register(router);
 
 app.register(require('fastify-formbody'));
 app.register(require('fastify-cors'), {});
@@ -58,9 +59,6 @@ app.register(require('fastify-jwt'), {
 });
 
 app.register(require('fastify-ws'), {});
-app.register(router);
-app.register(dbconnect);
-
 
 // HIS connection =========================================
 app.register(require('./plugins/db'), {

@@ -27,7 +27,6 @@ function sendMoph(req, reply, db) {
             const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
             sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
             const resultToken = yield getNReferToken(apiKey, secretKey);
-            console.log('Refer token', resultToken);
             if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
                 token = resultToken.token;
                 sentContent += `token ${resultToken.token}\r`;
@@ -45,7 +44,6 @@ function sendMoph(req, reply, db) {
         const dateEnd = moment().format('YYYY-MM-DD HH:mm:ss');
         const isData = yield iswin.getByDate(db, 'lastupdate', dateStart, dateEnd, process.env.HOSPCODE);
         if (isData && isData.length) {
-            console.log('Founded: ', isData.length);
             for (let row of isData) {
                 const ref = row.ref;
                 delete row.ref;
