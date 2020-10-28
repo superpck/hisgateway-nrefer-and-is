@@ -124,13 +124,6 @@ function sendMoph(req, reply, db) {
                 oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
             }
         }
-        let oldDate = '2020-10-21';
-        console.log(oldDate, dateNow);
-        while (oldDate < dateNow) {
-            yield getRefer_out(db, oldDate);
-            yield getReferResult(db, oldDate);
-            oldDate = moment(oldDate).locale('th').add(1, 'days').format('YYYY-MM-DD');
-        }
         const referOut_ = getRefer_out(db, dateNow);
         const referResult_ = getReferResult(db, dateNow);
         const referOut = yield referOut_;

@@ -128,14 +128,6 @@ async function sendMoph(req, reply, db) {
     }
   }
 
-  let oldDate = '2020-10-21';
-  console.log(oldDate, dateNow);
-  while (oldDate < dateNow) {
-    await getRefer_out(db, oldDate);
-    await getReferResult(db, oldDate);
-    oldDate = moment(oldDate).locale('th').add(1, 'days').format('YYYY-MM-DD');
-  }
-
   const referOut_ = getRefer_out(db, dateNow);
   const referResult_ = getReferResult(db, dateNow);
   const referOut = await referOut_;
