@@ -9,14 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const fastifySession = require('fastify-session');
-const fastifyCookie = require('fastify-cookie');
 const moment = require("moment");
 const HttpStatus = require("http-status-codes");
 let shell = require("shelljs");
 var crypto = require('crypto');
 var fs = require('fs');
-var http = require('http');
 const hisProvider = process.env.HIS_PROVIDER;
 const resultText = './sent_result.txt';
 const router = (fastify, {}, next) => {
@@ -37,7 +34,6 @@ const router = (fastify, {}, next) => {
             serviceName: "isonline",
             his_provider: process.env.HIS_PROVIDER,
             hospcode: process.env.HOSPCODE,
-            session: cookieValue
         });
     }));
     fastify.get('/get-token/:key', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {

@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var fastify = require('fastify');
 const moment = require("moment");
 var fs = require('fs');
 var http = require('http');
@@ -118,7 +119,6 @@ function sendMoph(req, reply, db) {
                 oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
             }
         }
-        yield getService(db, "2020-09-18");
         const sendDataCenter = yield getService(db, dateNow);
         yield expireToken();
         return { sendDataCenter };
@@ -146,6 +146,7 @@ function getService(db, date) {
                 yield getDrugOpd(db, row.SEQ || row.seq, sentResult);
             }
         }
+        console.log(moment().format('HH:mm:ss'), ' Data Center sent result ', sentResult);
         return sentResult;
     });
 }
@@ -241,15 +242,16 @@ function getDrugOpd(db, visitNo, sentResult) {
 }
 function sendToApi(path, dataArray) {
     return __awaiter(this, void 0, void 0, function* () {
+        const fixedUrl = fastify.mophService.dataCenter || 'http://connect.moph.go.th/dc-api';
+        const mophUrl = fixedUrl.split('/');
         const dataSending = querystring.stringify({
             hospcode: hcode, data: JSON.stringify(dataArray),
             processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
             sourceApiName: 'HIS-connect version ' + apiVersion
         });
         const options = {
-            hostname: 'connect.moph.go.th',
-            port: '',
-            path: '/dc-api/data/' + path,
+            hostname: mophUrl[2],
+            path: '/' + mophUrl[3] + '/data/' + path,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -270,10 +272,14 @@ function sendToApi(path, dataArray) {
                 res.on('data', (chunk) => {
                     ret += chunk;
                 });
-                res.on('end', () => {
-                    console.log(ret);
-                    const data = JSON.parse(ret);
-                    resolve(data);
+                res.on('end', (error) => {
+                    if (error || !ret) {
+                        reject(error);
+                    }
+                    else {
+                        const data = JSON.parse(ret);
+                        resolve(data);
+                    }
                 });
             });
             req.on('error', (e) => {
@@ -288,16 +294,15 @@ function getToken() {
     return __awaiter(this, void 0, void 0, function* () {
         const apiKey = process.env.NREFER_APIKEY || 'api-key';
         const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
-        let url = process.env.NREFER_URL1;
-        url += url.substr(-1, 1) === '/' ? '' : '/';
+        const fixedUrl = fastify.mophService.dataCenter || 'http://connect.moph.go.th/dc-api';
+        const mophUrl = fixedUrl.split('/');
         const postData = querystring.stringify({
             apiKey: apiKey, secretKey: secretKey,
             sourceApiName: 'HIS Connect', apiVersion: apiVersion
         });
         const options = {
-            hostname: 'connect.moph.go.th',
-            port: '',
-            path: '/dc-api/token',
+            hostname: mophUrl[2],
+            path: '/' + mophUrl[3] + '/token',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -312,12 +317,12 @@ function getToken() {
                     ret += chunk;
                 });
                 res.on('end', (error) => {
-                    if (ret) {
-                        const data = JSON.parse(ret);
-                        resolve(data);
+                    if (error || !ret) {
+                        reject(error);
                     }
                     else {
-                        reject(error);
+                        const data = JSON.parse(ret);
+                        resolve(data);
                     }
                 });
             });
@@ -331,10 +336,11 @@ function getToken() {
 }
 function expireToken() {
     return __awaiter(this, void 0, void 0, function* () {
+        const fixedUrl = fastify.mophService.dataCenter || 'http://connect.moph.go.th/dc-api';
+        const mophUrl = fixedUrl.split('/');
         const options = {
-            hostname: 'connect.moph.go.th',
-            port: '',
-            path: '/dc-api/token/expire/' + reqToken.sessionID,
+            hostname: mophUrl[2],
+            path: '/' + mophUrl[3] + '/data/token/expire/' + reqToken.sessionID,
             method: 'GET',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -348,9 +354,14 @@ function expireToken() {
                 res.on('data', (chunk) => {
                     ret += chunk;
                 });
-                res.on('end', () => {
-                    const data = JSON.parse(ret);
-                    resolve(data);
+                res.on('end', (error) => {
+                    if (error || !ret) {
+                        reject(error);
+                    }
+                    else {
+                        const data = JSON.parse(ret);
+                        resolve(data);
+                    }
                 });
             });
             req.on('error', (e) => {

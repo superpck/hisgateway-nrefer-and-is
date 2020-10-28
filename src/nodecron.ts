@@ -46,9 +46,10 @@ export default async function cronjob(fastify: FastifyInstance) {
     timingSchedule['cupDataCenter'].minute =
         (process.env.HIS_DATACENTER_SEND_EVERY_MINUTE ? +process.env.HIS_DATACENTER_SEND_EVERY_MINUTE : 0) +
         (process.env.HIS_DATACENTER_SEND_EVERY_HOUR ? +process.env.HIS_DATACENTER_SEND_EVERY_HOUR : 2) * 60;
-    // timingSchedule['cupDataCenter'].minute = timingSchedule['cupDataCenter'].minute < 5 ? 5 : timingSchedule['cupDataCenter'].minute;
+    timingSchedule['cupDataCenter'].minute = timingSchedule['cupDataCenter'].minute < 20 ? 20 : timingSchedule['cupDataCenter'].minute;
 
     // ตรวจสอบการ start ด้วยเวลาที่กำหนด (ทุกๆ 1 นาที)
+    console.log("Hospcode", process.env.HOSPCODE);
     console.log('crontab start: ', timingSch);
     if (timingSchedule['nrefer'].autosend) {
         console.log('crontab nRefer start every (minute)', timingSchedule['nrefer'].minute);
@@ -87,34 +88,51 @@ export default async function cronjob(fastify: FastifyInstance) {
             minuteSinceLastNight % timingSchedule['cupDataCenter'].minute == 0) {
             doAutoSend(req, res, 'cupDataCenter', './routes/pcc/crontab');
         }
+
+        if (minuteNow == 0) {
+            getmophUrl();
+        }
+
     });
 
 
     async function doAutoSend(req, res, serviceName, functionName) {
-        let firstProcess: any = { pid: -1 };
+        let firstProcessPid: any = { pid: -1 };
         if (process.env.START_TOOL === 'nodemon') {
-            firstProcess.pid = process.pid;
+            firstProcessPid = process.pid;
         } else {
-            var jlist: any = await shell.exec('pm2 jlist');
-            let pm2Process = jlist && jlist !== '' ? JSON.parse(jlist) : [];
-
-            let processList = [];
-            for (let p of pm2Process) {
-                if (p.name === process.env.PM2_NAME) {
-                    await processList.push(p);
-                }
+            if (!fastify.firstProcessPid) {
+                await getFirstProcessPid();
             }
-
-            if (processList.length) {
-                firstProcess = processList[0];
-            }
+            firstProcessPid = fastify.firstProcessPid ? fastify.firstProcessPid : -1;
         }
 
-        if (firstProcess.pid === process.pid) {
+        if (firstProcessPid === process.pid) {
             const now = moment().locale('th').format('HH:mm:ss');
             const db = serviceName == 'isonline' ? fastify.dbISOnline : fastify.dbHIS;
             console.log(`${now} start cronjob '${serviceName}' on PID ${process.pid}`);
             await require(functionName)(req, res, db, timingSchedule[serviceName]);
         }
     }
+
+    async function getFirstProcessPid() {
+        var jlist: any = await shell.exec('pm2 jlist');
+        let pm2Process = jlist && jlist !== '' ? JSON.parse(jlist) : [];
+
+        let processList = [];
+        for (let p of pm2Process) {
+            if (p.name == process.env.PM2_NAME) {
+                await processList.push(p);
+            }
+        }
+
+        if (processList.length) {
+            fastify.firstProcessPid = processList[0].pid;
+        }
+    }
+
+    async function getmophUrl() {
+        fastify.mophService = await require('./routes/main/crontab')(fastify.mophService, {});
+    }
+
 }

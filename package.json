@@ -1,6 +1,6 @@
 {
   "name": "his-connection-api",
-  "version": "3.1.6",
+  "version": "3.1.7",
   "private": true,
   "scripts": {
     "start": "npx ts-node ./src/app.ts",
@@ -27,6 +27,7 @@
     "html-minify-stream": "^1.0.0",
     "http-status-codes": "^1.4.0",
     "https-proxy-agent": "^5.0.0",
+    "ip": "^1.1.5",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.2",
     "moment": "^2.27.0",

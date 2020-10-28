@@ -50,8 +50,8 @@ function sendMoph(req, reply, db) {
                 delete row.lastupdate;
                 row.his = row.his ? row.his : process.env.HIS_PROVIDER;
                 const sentResult = yield sendData(row, token);
-                console.log(process.env.HOSPCODE, ' ISOnline sentResult ', sentResult);
             }
+            console.log(process.env.HOSPCODE, ' ISOnline: ', isData.length, ' cases');
         }
         else {
             console.log('ISOnline not found any record updated.');

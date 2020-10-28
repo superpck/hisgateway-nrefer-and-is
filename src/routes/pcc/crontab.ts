@@ -1,6 +1,6 @@
 /// <reference path="./../../../typings.d.ts" />
 
-import * as fastify from 'fastify';
+var fastify = require('fastify');
 import * as moment from 'moment';
 var fs = require('fs');
 var http = require('http');
@@ -123,7 +123,6 @@ async function sendMoph(req, reply, db) {
     }
   }
 
-  await getService(db, "2020-09-18");
   const sendDataCenter = await getService(db, dateNow);
   await expireToken();
   return { sendDataCenter };
@@ -152,7 +151,7 @@ async function getService(db, date) {
     }
     // const saveResult: any = await sendToApi('save-service', rows);
   }
-  // console.log(sentResult);
+  console.log(moment().format('HH:mm:ss'), ' Data Center sent result ', sentResult);
   return sentResult;
 }
 
@@ -236,6 +235,9 @@ async function getDrugOpd(db, visitNo, sentResult) {
 }
 
 async function sendToApi(path, dataArray) {
+  const fixedUrl = fastify.mophService.dataCenter || 'http://connect.moph.go.th/dc-api';
+  const mophUrl = fixedUrl.split('/');
+
   const dataSending = querystring.stringify({
     hospcode: hcode, data: JSON.stringify(dataArray),
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -243,9 +245,8 @@ async function sendToApi(path, dataArray) {
   });
 
   const options = {
-    hostname: 'connect.moph.go.th',
-    port: '',
-    path: '/dc-api/data/' + path,
+    hostname: mophUrl[2],
+    path: '/' + mophUrl[3] + '/data/' + path,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -267,10 +268,13 @@ async function sendToApi(path, dataArray) {
       res.on('data', (chunk: string) => {
         ret += chunk;
       });
-      res.on('end', () => {
-        console.log(ret);
-        const data = JSON.parse(ret);
-        resolve(data);
+      res.on('end', (error) => {
+        if (error || !ret) {
+          reject(error);
+        } else {
+          const data = JSON.parse(ret);
+          resolve(data);
+        }
       });
     });
 
@@ -288,8 +292,8 @@ async function getToken() {
   const apiKey = process.env.NREFER_APIKEY || 'api-key';
   const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
 
-  let url = process.env.NREFER_URL1;
-  url += url.substr(-1, 1) === '/' ? '' : '/';
+  const fixedUrl = fastify.mophService.dataCenter || 'http://connect.moph.go.th/dc-api';
+  const mophUrl = fixedUrl.split('/');
 
   const postData = querystring.stringify({
     apiKey: apiKey, secretKey: secretKey,
@@ -297,9 +301,8 @@ async function getToken() {
   });
 
   const options = {
-    hostname: 'connect.moph.go.th',
-    port: '',
-    path: '/dc-api/token',
+    hostname: mophUrl[2],
+    path: '/' + mophUrl[3] + '/token',
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -315,11 +318,11 @@ async function getToken() {
         ret += chunk;
       });
       res.on('end', (error) => {
-        if (ret) {
+        if (error || !ret) {
+          reject(error);
+        } else {
           const data = JSON.parse(ret);
           resolve(data);
-        } else {
-          reject(error);
         }
       });
     });
@@ -335,10 +338,12 @@ async function getToken() {
 }
 
 async function expireToken() {
+  const fixedUrl = fastify.mophService.dataCenter || 'http://connect.moph.go.th/dc-api';
+  const mophUrl = fixedUrl.split('/');
+
   const options = {
-    hostname: 'connect.moph.go.th',
-    port: '',
-    path: '/dc-api/token/expire/' + reqToken.sessionID,
+    hostname: mophUrl[2],
+    path: '/' + mophUrl[3] + '/data/token/expire/' + reqToken.sessionID,
     method: 'GET',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -353,10 +358,13 @@ async function expireToken() {
       res.on('data', (chunk: string) => {
         ret += chunk;
       });
-      res.on('end', () => {
-        const data = JSON.parse(ret);
-        // console.log('ret', data);
-        resolve(data);
+      res.on('end', (error) => {
+        if (error || !ret) {
+          reject(error);
+        } else {
+          const data = JSON.parse(ret);
+          resolve(data);
+        }
       });
     });
 
@@ -384,7 +392,7 @@ async function writeResult(file, content) {
   });
 }
 
-const router = (request: fastify.Request, reply: fastify.Reply, dbConn: any, config = {}) => {
+const router = (request, reply, dbConn: any, config = {}) => {
   crontabConfig = config;
   apiVersion = crontabConfig.version ? crontabConfig.version : '-';
   return sendMoph(request, reply, dbConn);
