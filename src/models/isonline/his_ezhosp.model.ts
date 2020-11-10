@@ -24,6 +24,10 @@ export class HisEzhospModel {
             .where('TABLE_SCHEMA', '=', dbname);
     }
 
+    testConnect(db: Knex) {
+        return db('hospdata.patient').select('hn').limit(1)
+    }
+
     getPerson(knex: Knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'no_card' : columnName;
         return knex

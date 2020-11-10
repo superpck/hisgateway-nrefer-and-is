@@ -11,6 +11,10 @@ export class HisHosxpv4Model {
 
     }
 
+    testConnect(db: Knex) {
+        return db('patient').select('hn').limit(1)
+    }
+
     getPerson(db: Knex, columnName, searchText) {
         return db('patient')
             .select('patient.hn', 'patient.cid', 'patient.pname as prename',

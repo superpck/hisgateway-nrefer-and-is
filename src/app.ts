@@ -30,7 +30,7 @@ const app: fastify.FastifyInstance<Server, IncomingMessage, ServerResponse> = fa
 });
 
 app.apiVersion = '3.1.7';
-app.apiSubVersion = '2020.10.23-01';
+app.apiSubVersion = '2020.11.01-01';
 app.register(router);
 
 app.register(require('fastify-formbody'));
@@ -204,10 +204,10 @@ function createConnectionOption(config: any) {
         user: config.user,
         password: config.password,
         database: config.dbName,
+        encrypt: config.encrypt,
         options: {
           port: +config.port,
-          schema: config.schema,
-          encrypt: config.encrypt
+          schema: config.schema
         }
       }
     };

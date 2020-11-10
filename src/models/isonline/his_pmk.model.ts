@@ -17,6 +17,10 @@ export class HisPmkModel {
         }
     }
 
+    testConnect(db: Knex) {
+        return db('PATIENTS').select('HN as hn').limit(1)
+    }
+
     getPerson(db: Knex, columnName, searchText) {
         columnName = columnName === 'hn' ? 'HN' : columnName;
         columnName = columnName === 'pid' ? 'HN' : columnName;

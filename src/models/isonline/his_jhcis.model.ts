@@ -15,6 +15,10 @@ export class HisJhcisModel {
             .where('TABLE_SCHEMA', '=', dbName);
     }
 
+    testConnect(db: Knex) {
+        return db('person').select('pid as hn').limit(1)
+    }
+
     getPerson(knex: Knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'idcard' : columnName;
         columnName = columnName === 'hn' ? 'pid' : columnName;

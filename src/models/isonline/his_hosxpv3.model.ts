@@ -10,6 +10,10 @@ export class HisHosxpv3Model {
             .where('TABLE_SCHEMA', '=', dbName);
     }
 
+    testConnect(db: Knex) {
+        return db('patient').select('hn').limit(1)
+    }
+
     getPerson(db: Knex, columnName, searchText) {
         return db('patient')
             .leftJoin(`occupation`, 'occupation.occupation', 'patient.occupation')

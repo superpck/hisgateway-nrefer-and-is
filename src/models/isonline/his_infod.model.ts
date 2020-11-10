@@ -10,6 +10,10 @@ export class HisInfodModel {
             .where('TABLE_CATALOG', '=', dbName);
     }
     
+    testConnect(db: Knex) {
+        return db('VW_IS_PERSON').select('hn').limit(1)
+    }
+
     getPerson(knex: Knex, columnName, searchText) {
         return knex
         .select()

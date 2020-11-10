@@ -11,6 +11,10 @@ export class HisHospitalOsModel {
   
     }
     
+    testConnect(db: Knex) {
+        return db('t_patient').select('hn').limit(1)
+    }
+
     getPerson(knex: Knex, columnName, searchText) {
         columnName = columnName == 'hn' ? 'patient.patient_hn':columnName;
         columnName = columnName == 'cid' ? 'patient.patient_pid':columnName;

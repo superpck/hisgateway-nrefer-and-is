@@ -108,7 +108,7 @@ const router = (fastify, { }, next) => {
   
   fastify.get('/alive', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     try {
-      const result = await hisModel.getTableName(fastify.dbHIS);
+      const result = await hisModel.testConnect(fastify.dbHIS);
       if (result && result.length) {
         res.send({
           statusCode: HttpStatus.OK,

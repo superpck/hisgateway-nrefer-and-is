@@ -10,6 +10,10 @@ export class HisHiModel {
             .where('TABLE_SCHEMA','=',dbName);
     }
     
+    testConnect(db: Knex) {
+        return db('hospdata.patient').select('hn').limit(1)
+    }
+
     getPerson(knex: Knex, columnName, searchText) {
         return knex
             .select('hn','no_card as cid','title as prename',

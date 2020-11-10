@@ -1,15 +1,20 @@
 import Knex = require('knex');
 import * as moment from 'moment';
 const dbName = process.env.HIS_DB_NAME;
+const dbClient = process.env.HIS_DB_CLIENT;
 
 export class HisModel {
-    getTableName(knex: Knex) {
-        return knex
-            .select('TABLE_NAME')
-            .from('information_schema.tables')
-            .where('TABLE_SCHEMA','=',dbName);
+    async getTableName(db: Knex, dbname = dbName) {
+        const whereDB = dbClient === 'mssql' ? 'TABLE_CATALOG' : 'TABLE_SCHEMA';
+        const result = await db('information_schema.tables')
+            .where(whereDB, dbname);
+        return result
     }
     
+    async testConnect(db: Knex) {
+        return db('hospdata.patient').select('hn').limit(1)
+    }
+
     getPerson(knex: Knex, columnName, searchText) {
         return knex
             .select('hn','no_card as cid','title as prename',

@@ -9,6 +9,11 @@ export class HisKpstatModel {
             .from('information_schema.tables')
             .where('TABLE_SCHEMA', '=', dbName);
     }
+
+    testConnect(db: Knex) {
+        return db('mrls.pt').select('hn').limit(1)
+    }
+
     getPerson(knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'idpop' : columnName;
         return knex
