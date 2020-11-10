@@ -128,7 +128,7 @@ function sendMoph(req, reply, db) {
         const referResult_ = getReferResult(db, dateNow);
         const referOut = yield referOut_;
         const referResult = yield referResult_;
-        return { referOut, referResult };
+        return { date: dateNow, referOut, referResult };
     });
 }
 function getRefer_out(db, date) {

@@ -9,6 +9,9 @@ class HisMdModel {
             .from('information_schema.tables')
             .where('TABLE_SCHEMA', '=', dbName);
     }
+    testConnect(db) {
+        return db('person').select('hn').limit(1);
+    }
     getPerson(knex, columnName, searchText) {
         return knex
             .select('hn', 'no_card as cid', 'title as prename', 'name as fname', 'middlename as mname', 'surname as lname', 'birth as dob', 'sex', 'address', 'moo', 'road', 'soi', 'add as addcode', 'tel', 'zip', 'occupa as occupation')

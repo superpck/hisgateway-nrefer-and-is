@@ -109,7 +109,7 @@ const allowTableNames = [
 const router = (fastify, {}, next) => {
     fastify.get('/alive', { preHandler: [fastify.serviceMonitoring] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const result = yield hisModel.getTableName(fastify.dbHIS);
+            const result = yield hisModel.testConnect(fastify.dbHIS);
             if (result && result.length) {
                 res.send({
                     statusCode: HttpStatus.OK,

@@ -30,7 +30,7 @@ class HisPmkModel {
     getReferOut(db, date, hospCode = hcode) {
         return __awaiter(this, void 0, void 0, function* () {
             date = moment(date).format('YYYY-MM-DD');
-            let where = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS')`;
+            let where = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS') AND "referout".REFERTYPE=2`;
             const result = yield db('PATIENTS_REFER_HX as referout')
                 .join('OPDS', 'referout.OPD_NO', 'OPDS.OPD_NO')
                 .join('PATIENTS as patient', function () {
@@ -39,10 +39,39 @@ class HisPmkModel {
             })
                 .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
                 .select(db.raw(`concat(concat(to_char(OPDS.PAT_RUN_HN),'/'),to_char(OPDS.PAT_YEAR_HN)) AS "hn"`))
-                .select('referout.OPD_NO as seq', 'referout.OPD_NO as vn', 'referout.REFER_NO as referid', 'referout.HOS_IN_CARD as hosp_destination', 'referout.REFER_IN_DATETIME as refer_date', 'patient.ID_CARD as cid', 'patient.PRENAME as prename', 'patient.NAME as fname', 'patient.SURNAME as lname', 'patient.BIRTHDAY as dob')
+                .select('referout.OPD_NO as seq', 'referout.REFER_NO as referid', 'referout.HOS_IN_CARD as hosp_destination', 'referout.REFER_IN_DATETIME as refer_date', 'patient.ID_CARD as cid', 'patient.PRENAME as prename', 'patient.NAME as fname', 'patient.SURNAME as lname', 'patient.BIRTHDAY as dob')
                 .select(db.raw(`case when SEX='F' then 2 else 1 end as "sex"`))
                 .whereRaw(db.raw(where));
             return result;
+        });
+    }
+    getReferHistory(db, columnName, searchNo, hospCode = hcode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let where = '';
+            if (columnName == 'visitNo' || columnName == 'vn') {
+                where = `"referout".OPD_NO='${searchNo}' AND "referout".REFERTYPE=2`;
+            }
+            else if (columnName == 'referNo' || columnName == 'referId') {
+                where = `"referout".REFER_NO='${searchNo}' AND "referout".REFERTYPE=2`;
+            }
+            else if (columnName == 'date' || columnName == 'referDate') {
+                const date = moment(searchNo).format('YYYY-MM-DD');
+                where = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS') AND "referout".REFERTYPE=2`;
+            }
+            else {
+                where = `"referout".${columnName}='${searchNo}' AND "referout".REFERTYPE=2`;
+            }
+            return db('PATIENTS_REFER_HX as referout')
+                .join('OPDS', 'referout.OPD_NO', 'OPDS.OPD_NO')
+                .join('PATIENTS as patient', function () {
+                this.on('OPDS.PAT_RUN_HN', '=', 'patient.RUN_HN')
+                    .andOn('OPDS.PAT_YEAR_HN', '=', 'patient.YEAR_HN');
+            })
+                .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
+                .select(db.raw(`concat(concat(to_char(OPDS.PAT_RUN_HN),'/'),to_char(OPDS.PAT_YEAR_HN)) AS "hn"`))
+                .select('referout.OPD_NO as seq', 'referout.REFER_NO as referid', 'referout.HOS_IN_CARD as hosp_destination', 'referout.REFER_IN_DATETIME as refer_date', 'patient.ID_CARD as cid', 'patient.PRENAME as prename', 'patient.NAME as fname', 'patient.SURNAME as lname', 'patient.BIRTHDAY as dob')
+                .select(db.raw(`case when SEX='F' then 2 else 1 end as "sex"`))
+                .whereRaw(db.raw(where));
         });
     }
     getReferResult(db, date, hospCode = hcode) {
@@ -52,7 +81,7 @@ class HisPmkModel {
     }
     getReferResult1(db, date, hospCode = hcode) {
         date = moment(date).format('YYYY-MM-DD');
-        let where = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS')`;
+        let where = `REFER_IN_DATETIME BETWEEN TO_DATE('${date} 00:00:00', 'YYYY-MM-DD HH24:MI:SS') AND TO_DATE('${date} 23:59:59', 'YYYY-MM-DD HH24:MI:SS') AND "referout".REFERTYPE=2`;
         return db('PATIENTS_REFER_HX as referout')
             .join('OPDS', 'referout.OPD_NO', 'OPDS.OPD_NO')
             .join('PATIENTS as patient', function () {
@@ -61,7 +90,7 @@ class HisPmkModel {
         })
             .select(db.raw(`'${hospCode}' AS "HOSPCODE"`))
             .select(db.raw(`concat(concat(to_char(OPDS.PAT_RUN_HN),'/'),to_char(OPDS.PAT_YEAR_HN)) AS "hn"`))
-            .select('referout.OPD_NO as seq', 'referout.OPD_NO as vn', 'referout.REFER_NO as referid', 'referout.HOS_IN_CARD as hosp_destination', 'referout.REFER_IN_DATETIME as DATETIME_IN', 'patient.ID_CARD as cid', 'patient.PRENAME as prename', 'patient.NAME as fname', 'patient.SURNAME as lname', 'patient.BIRTHDAY as dob', 'REFER_IN_DATETIME as D_UPDATE')
+            .select('referout.OPD_NO as seq', 'referout.REFER_NO as referid', 'referout.HOS_IN_CARD as hosp_destination', 'referout.REFER_IN_DATETIME as DATETIME_IN', 'patient.ID_CARD as cid', 'patient.PRENAME as prename', 'patient.NAME as fname', 'patient.SURNAME as lname', 'patient.BIRTHDAY as dob', 'REFER_IN_DATETIME as D_UPDATE')
             .select(db.raw(`case when SEX='F' then 2 else 1 end as "sex"`))
             .select(db.raw('1 as REFER_RESULT'))
             .whereRaw(db.raw(where))
@@ -203,10 +232,7 @@ class HisPmkModel {
         return [];
     }
     getAdmission(knex, columnName, searchNo, hospCode) {
-        return knex
-            .select('*')
-            .from('admission')
-            .where(columnName, "=", searchNo);
+        return [];
     }
     getDiagnosisIpd(knex, columnName, searchNo, hospCode) {
         return knex

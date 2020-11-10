@@ -29,7 +29,7 @@ const app = fastify({
     bodyLimit: 5 * 1048576,
 });
 app.apiVersion = '3.1.7';
-app.apiSubVersion = '2020.10.23-01';
+app.apiSubVersion = '2020.11.01-01';
 app.register(router_1.default);
 app.register(require('fastify-formbody'));
 app.register(require('fastify-cors'), {});
@@ -172,10 +172,10 @@ function createConnectionOption(config) {
                 user: config.user,
                 password: config.password,
                 database: config.dbName,
+                encrypt: config.encrypt,
                 options: {
                     port: +config.port,
-                    schema: config.schema,
-                    encrypt: config.encrypt
+                    schema: config.schema
                 }
             }
         };

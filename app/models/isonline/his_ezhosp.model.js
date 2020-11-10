@@ -32,6 +32,9 @@ class HisEzhospModel {
             .from('information_schema.tables')
             .where('TABLE_SCHEMA', '=', dbname);
     }
+    testConnect(db) {
+        return db('hospdata.patient').select('hn').limit(1);
+    }
     getPerson(knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'no_card' : columnName;
         return knex

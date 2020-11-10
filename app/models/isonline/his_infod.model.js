@@ -9,6 +9,9 @@ class HisInfodModel {
             .from('INFORMATION_SCHEMA.COLUMNS')
             .where('TABLE_CATALOG', '=', dbName);
     }
+    testConnect(db) {
+        return db('VW_IS_PERSON').select('hn').limit(1);
+    }
     getPerson(knex, columnName, searchText) {
         return knex
             .select()

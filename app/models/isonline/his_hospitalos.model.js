@@ -9,6 +9,9 @@ class HisHospitalOsModel {
             .from('information_schema.tables')
             .where('table_catalog', '=', dbName);
     }
+    testConnect(db) {
+        return db('t_patient').select('hn').limit(1);
+    }
     getPerson(knex, columnName, searchText) {
         columnName = columnName == 'hn' ? 'patient.patient_hn' : columnName;
         columnName = columnName == 'cid' ? 'patient.patient_pid' : columnName;

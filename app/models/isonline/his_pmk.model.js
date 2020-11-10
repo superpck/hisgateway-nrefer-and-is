@@ -16,6 +16,9 @@ class HisPmkModel {
                 .where('TABLE_SCHEMA', '=', dbName);
         }
     }
+    testConnect(db) {
+        return db('PATIENTS').select('HN as hn').limit(1);
+    }
     getPerson(db, columnName, searchText) {
         columnName = columnName === 'hn' ? 'HN' : columnName;
         columnName = columnName === 'pid' ? 'HN' : columnName;

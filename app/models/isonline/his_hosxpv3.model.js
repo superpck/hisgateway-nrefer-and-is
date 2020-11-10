@@ -9,6 +9,9 @@ class HisHosxpv3Model {
             .from('information_schema.tables')
             .where('TABLE_SCHEMA', '=', dbName);
     }
+    testConnect(db) {
+        return db('patient').select('hn').limit(1);
+    }
     getPerson(db, columnName, searchText) {
         return db('patient')
             .leftJoin(`occupation`, 'occupation.occupation', 'patient.occupation')

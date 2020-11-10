@@ -9,6 +9,9 @@ class HisHosxpv4Model {
             .from('information_schema.tables')
             .where('table_catalog', '=', dbName);
     }
+    testConnect(db) {
+        return db('patient').select('hn').limit(1);
+    }
     getPerson(db, columnName, searchText) {
         return db('patient')
             .select('patient.hn', 'patient.cid', 'patient.pname as prename', 'patient.fname', 'patient.lname', 'patient.occupation as occupa', 'patient.birthday as dob', 'patient.sex', 'patient.moopart as moo', 'patient.road', 'patient.addrpart as address', 'patient.hometel as tel', 'patient.po_code as zip', 'occupation.nhso_code as occupation')
