@@ -229,9 +229,10 @@ const router = (fastify, {}, next) => {
     fastify.post('/opd-service', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         let hn = req.body.hn;
         let date = req.body.date;
-        if (hn || date) {
+        let visitNo = req.body.visitNo || '';
+        if (visitNo + hn) {
             try {
-                const result = yield hisModel.getOpdService(fastify.dbHIS, hn, date);
+                const result = yield hisModel.getOpdService(fastify.dbHIS, hn, date, 'vn', visitNo);
                 res.send({
                     statusCode: HttpStatus.OK,
                     version: fastify.apiVersion,

@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HisModel = void 0;
 const dbName = process.env.HIS_DB_NAME;
 const dbClient = process.env.HIS_DB_CLIENT;
+const maxLimit = 100;
 class HisModel {
     getTableName(db, dbname = dbName) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -32,12 +33,20 @@ class HisModel {
             .from('hospdata.patient')
             .where(columnName, "=", searchText);
     }
-    getOpdService(knex, hn, date) {
-        return knex
-            .select('hn', 'vn as visitno', 'date', 'time', 'bp as bp_systolic', 'bp1 as bp_diastolic', 'puls as pr', 'rr')
-            .from('view_opd_visit')
-            .where('hn', "=", hn)
-            .where('date', "=", date);
+    getOpdService(db, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' ? 'vn' : columnName;
+        let where = {};
+        if (hn)
+            where['hn'] = hn;
+        if (date)
+            where['date'] = date;
+        if (columnName && searchText)
+            where[columnName] = searchText;
+        return db('view_opd_visit')
+            .select('hn', 'vn as visitno', 'date', 'time', 'time_drug as time_end', 'pttype_std2 as pttype', 'insclass as payment', 'dep_standard as clinic', 'dr', 'bp as bp_systolic', 'bp1 as bp_diastolic', 'puls as pr', 'rr', 'fu as appoint', 'status as result', 'refer as referin')
+            .where(where)
+            .orderBy('date', 'desc')
+            .limit(maxLimit);
     }
     getDiagnosisOpd(knex, visitno) {
         return knex

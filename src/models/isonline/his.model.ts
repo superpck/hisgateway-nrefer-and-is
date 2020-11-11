@@ -2,6 +2,7 @@ import Knex = require('knex');
 import * as moment from 'moment';
 const dbName = process.env.HIS_DB_NAME;
 const dbClient = process.env.HIS_DB_CLIENT;
+const maxLimit = 100;
 
 export class HisModel {
     async getTableName(db: Knex, dbname = dbName) {
@@ -10,35 +11,45 @@ export class HisModel {
             .where(whereDB, dbname);
         return result
     }
-    
+
     async testConnect(db: Knex) {
         return db('hospdata.patient').select('hn').limit(1)
     }
 
     getPerson(knex: Knex, columnName, searchText) {
         return knex
-            .select('hn','no_card as cid','title as prename',
-            'name as fname', 'surname as lname',
-            'birth as dob', 'sex', 'address','moo','road',
-            'add as addcode','tel','zip','occupa as occupation')
+            .select('hn', 'no_card as cid', 'title as prename',
+                'name as fname', 'surname as lname',
+                'birth as dob', 'sex', 'address', 'moo', 'road',
+                'add as addcode', 'tel', 'zip', 'occupa as occupation')
             .from('hospdata.patient')
             .where(columnName, "=", searchText);
     }
 
-    getOpdService(knex, hn, date) {
-        return knex
+    getOpdService(db: Knex, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' ? 'vn' : columnName;
+        let where: any = {};
+        if (hn) where['hn'] = hn;
+        if (date) where['date'] = date;
+        if (columnName && searchText) where[columnName] = searchText;
+
+        return db('view_opd_visit')
             .select('hn', 'vn as visitno', 'date', 'time',
+                'time_drug as time_end', 'pttype_std2 as pttype',
+                'insclass as payment',
+                'dep_standard as clinic', 'dr',
                 'bp as bp_systolic', 'bp1 as bp_diastolic',
-                'puls as pr' , 'rr')
-            .from('view_opd_visit')
-            .where('hn', "=", hn)
-            .where('date', "=", date);
+                'puls as pr', 'rr', 'fu as appoint',
+                'status as result', 'refer as referin')
+            .where(where)
+            .orderBy('date', 'desc')
+            .limit(maxLimit);
     }
 
     getDiagnosisOpd(knex, visitno) {
         return knex
             .select('vn as visitno', 'diag as diagcode',
-            'type as diag_type')
+                'type as diag_type')
             .from('opd_dx')
             .where('vn', "=", visitno);
     }

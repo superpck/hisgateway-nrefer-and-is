@@ -1,6 +1,7 @@
 import Knex = require('knex');
 import * as moment from 'moment';
 const dbName = process.env.HIS_DB_NAME;
+const maxLimit = 100;
 
 export class HisHosxpv3Model {
     getTableName(knex: Knex) {
@@ -26,14 +27,29 @@ export class HisHosxpv3Model {
             .where(columnName, "=", searchText);
     }
 
-    getOpdService(knex, hn, date) {
-        return knex
+    getOpdService(db: Knex, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' || columnName == 'vn' ? 'opdscreen.vn' : columnName;
+        let where: any = {};
+        if (hn) where['opdscreen.hn'] = hn;
+        if (date) where['opdscreen.vstdate'] = date;
+        if (columnName && searchText) where[columnName] = searchText;
+
+        return db('opdscreen')
+            .leftJoin(`ovst`, 'ovst.vn', 'opdscreen.vn')
+            .leftJoin(`patient`, 'patient.hn', 'opdscreen.hn')
+            .leftJoin(`er_regist`, 'er_regist.vn', 'ovst.vn')
+            .leftJoin(`er_nursing_detail`, 'er_nursing_detail.vn', 'opdscreen.vn')
+            .leftJoin(`ovstdiag`, 'ovstdiag.vn', 'opdscreen.vn')
+            .leftJoin(`ipt`, 'ipt.vn', 'opdscreen.vn')
+            .leftJoin(`referin`, 'referin.vn', 'opdscreen.vn')
+            // .leftOuterJoin(knex.raw(`select vn,icd10,diagtype from ovstdiag where diagtype = 1 AND hn`, '=', hn) `ovstdiag`,'ovstdiag.vn','er_nursing_detail.vn')
+            // .leftOuterJoin(knex.raw(`select vn,icd10,diagtype from ovstdiag where diagtype = 2 AND hn`, '=', hn) `ovstdiag`,'ovstdiag.vn','er_nursing_detail.vn')
             .select('opdscreen.hn', 'opdscreen.vn as visitno', 'opdscreen.vstdate as date',
                 'opdscreen.vsttime as time',
                 'opdscreen.bps as bp_systolic', 'opdscreen.bpd as bp_diastolic',
                 'opdscreen.pulse as pr', 'opdscreen.rr', 'ovst.vstdate as hdate', 'ovst.vsttime as htime',
                 'er_nursing_detail.gcs_e as eye', 'er_nursing_detail.gcs_v as verbal',
-                'er_nursing_detail.gcs_m as motor', 
+                'er_nursing_detail.gcs_m as motor',
                 'er_nursing_detail.er_accident_type_id as cause',
                 'er_nursing_detail.accident_place_type_id as apoint',
                 'er_nursing_detail.accident_transport_type_id as injt',
@@ -58,18 +74,9 @@ export class HisHosxpv3Model {
             )
             .select(knex.raw('if(ovstdiag.diagtype =1,ovstdiag.icd10,null) as diag1'))
             .select(knex.raw('if(ovstdiag.diagtype =2,ovstdiag.icd10,null) as diag2'))
-            .from('opdscreen')
-            .leftJoin(`ovst`, 'ovst.vn', 'opdscreen.vn')
-            .leftJoin(`patient`, 'patient.hn', 'opdscreen.hn')
-            .leftJoin(`er_regist`, 'er_regist.vn', 'ovst.vn')
-            .leftJoin(`er_nursing_detail`, 'er_nursing_detail.vn', 'opdscreen.vn')
-            .leftJoin(`ovstdiag`, 'ovstdiag.vn', 'opdscreen.vn')
-            .leftJoin(`ipt`, 'ipt.vn', 'opdscreen.vn')
-            .leftJoin(`referin`, 'referin.vn', 'opdscreen.vn')
-            // .leftOuterJoin(knex.raw(`select vn,icd10,diagtype from ovstdiag where diagtype = 1 AND hn`, '=', hn) `ovstdiag`,'ovstdiag.vn','er_nursing_detail.vn')
-            // .leftOuterJoin(knex.raw(`select vn,icd10,diagtype from ovstdiag where diagtype = 2 AND hn`, '=', hn) `ovstdiag`,'ovstdiag.vn','er_nursing_detail.vn')
-            .where('opdscreen.hn', "=", hn)
-            .where('opdscreen.vstdate', "=", date);
+            .where(where)
+            .orderBy('opdscreen.vstdate', 'desc')
+            .limit(maxLimit);
     }
 
     getDiagnosisOpd(db: Knex, visitno) {

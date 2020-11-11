@@ -35,7 +35,8 @@ class HisPmkModel {
             .whereRaw(db.raw(` ${columnName}='${searchText}' `))
             .limit(maxLimit);
     }
-    getOpdService(db, hn, date) {
+    getOpdService(db, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' ? 'OPD_NO' : columnName;
         let where = {};
         let cdate = '';
         if (date) {
@@ -46,6 +47,8 @@ class HisPmkModel {
             where['PAT_RUN_HN'] = _hn[0];
             where['PAT_YEAR_HN'] = _hn[1];
         }
+        if (columnName && searchText)
+            where[columnName] = searchText;
         return db(`OPDS`)
             .select('PAT_RUN_HN as RUN_HN', 'PAT_YEAR_HN as YEAR_HN')
             .select(db.raw(`concat(concat(to_char(PAT_RUN_HN),'/'),to_char(PAT_YEAR_HN)) AS hn`))

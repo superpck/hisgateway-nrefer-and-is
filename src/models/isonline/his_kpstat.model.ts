@@ -21,7 +21,7 @@ export class HisKpstatModel {
             .from('mrls.pt')
             .where(columnName, "=", searchText);
     }
-    getOpdService(knex, hn, date) {
+    getOpdService(knex, hn, date, columnName = '', searchText = '') {
         return knex
             .select('hn', 'vstno as visitno', 'vstdate as date', 'vsttime as time', 'bp1 as bp_systolic', 'bp2 as bp_diastolic', 'puls as pr', 'rate as rr')
             .from('mrls.ovst')

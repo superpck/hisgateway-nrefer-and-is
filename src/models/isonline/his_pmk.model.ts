@@ -34,18 +34,19 @@ export class HisPmkModel {
                 'BIRTHDAY as dob')
             .select(db.raw(`case when SEX='F' then 2 else 1 end as sex`))
             .select('HOME as address', 'VILLAGE as moo'
-                ,'SOIMAIN as soi', 'ROAD as road')
+                , 'SOIMAIN as soi', 'ROAD as road')
             .select('TAMBON as addcode', 'TEL as tel', 'ZIP_CODE as zip')
             .select(db.raw(`'' as occupation`))
             .whereRaw(db.raw(` ${columnName}='${searchText}' `))
             .limit(maxLimit);
     }
 
-    getOpdService(db, hn, date) {
+    getOpdService(db: Knex, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' ? 'OPD_NO' : columnName;
         let where: any = {};
+
         let cdate = '';
         if (date) {
-            // where['OPD_DATE'] = date;
             cdate = `OPD_DATE=TO_DATE('${date}', 'YYYY-MM-DD HH24:MI:SS')`;
         }
         if (hn) {
@@ -53,6 +54,8 @@ export class HisPmkModel {
             where['PAT_RUN_HN'] = _hn[0];
             where['PAT_YEAR_HN'] = _hn[1];
         }
+        if (columnName && searchText) where[columnName] = searchText;
+
         return db(`OPDS`)
             .select('PAT_RUN_HN as RUN_HN', 'PAT_YEAR_HN as YEAR_HN')
             .select(db.raw(`concat(concat(to_char(PAT_RUN_HN),'/'),to_char(PAT_YEAR_HN)) AS hn`))

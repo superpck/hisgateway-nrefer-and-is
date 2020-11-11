@@ -105,14 +105,14 @@ const allowTableNames = [
 ];
 
 const router = (fastify, { }, next) => {
-  
+
   fastify.get('/alive', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     try {
       const result = await hisModel.testConnect(fastify.dbHIS);
       if (result && result.length) {
         res.send({
           statusCode: HttpStatus.OK,
-          ok: true, 
+          ok: true,
           startServerTime: fastify.startServerTime,
           hisProvider: process.env.HIS_PROVIDER,
           version: fastify.apiVersion,
@@ -227,10 +227,11 @@ const router = (fastify, { }, next) => {
   fastify.post('/opd-service', { preHandler: [fastify.serviceMonitoring, fastify.authenticate] }, async (req: fastify.Request, res: fastify.Reply) => {
     let hn: string = req.body.hn;
     let date: string = req.body.date;
+    let visitNo: string = req.body.visitNo || '';
 
-    if (hn || date) {
+    if (visitNo + hn) {
       try {
-        const result = await hisModel.getOpdService(fastify.dbHIS, hn, date);
+        const result = await hisModel.getOpdService(fastify.dbHIS, hn, date, 'vn', visitNo);
         res.send({
           statusCode: HttpStatus.OK,
           version: fastify.apiVersion,

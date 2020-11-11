@@ -1,6 +1,7 @@
 import Knex = require('knex');
 import * as moment from 'moment';
 const dbName = process.env.HIS_DB_NAME;
+const maxLimit = 100;
 
 export class HisHosxpv4Model {
     getTableName(knex: Knex) {
@@ -27,16 +28,24 @@ export class HisHosxpv4Model {
             .where(columnName, "=", searchText);
     }
 
-    getOpdService(knex, hn, date) {
-        return knex
+    getOpdService(db: Knex, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' || columnName == 'vn' ? 'opdscreen.vn' : columnName;
+        let where: any = {};
+        if (hn) where['opdscreen.hn'] = hn;
+        if (date) where['opdscreen.vstdate'] = date;
+        if (columnName && searchText) where[columnName] = searchText;
+        return db('opdscreen')
+            .leftJoin(`ovst`, 'ovst.vn', 'opdscreen.vn')
+            .leftJoin(`patient`, 'patient.hn', 'opdscreen.hn')
+            .leftJoin(`er_regist`, 'er_regist.vn', 'ovst.vn')
+            .leftJoin(`er_nursing_detail`, 'er_nursing_detail.vn', 'opdscreen.vn')
             .select('opdscreen.hn', 'opdscreen.vn as visitno', 'opdscreen.vstdate as date',
                 'opdscreen.vsttime as time',
                 'opdscreen.bps as bp_systolic', 'opdscreen.bpd as bp_diastolic',
                 'opdscreen.pulse as pr', 'opdscreen.rr', 'ovst.vstdate as hdate', 'ovst.vsttime as htime',
                 'er_nursing_detail.gcs_e as eye', 'er_nursing_detail.gcs_v as verbal',
-                'er_nursing_detail.gcs_m as motor', 
+                'er_nursing_detail.gcs_m as motor',
                 'er_nursing_detail.er_accident_type_id as cause',
-                'er_nursing_detail.accident_place_type_id as apoint',
                 'er_nursing_detail.accident_transport_type_id as injt',
                 'er_nursing_detail.accident_person_type_id as injp',
                 'er_nursing_detail.accident_airway_type_id as airway',
@@ -52,16 +61,17 @@ export class HisHosxpv4Model {
                 'er_nursing_detail.accident_type_3 as tinj',
                 'er_nursing_detail.accident_type_4 as ais1',
                 'er_nursing_detail.accident_type_5 as ais2',
-                'er_regist.finish_time as disc_date_er'
+                'er_nursing_detail.accident_place_type_id as apoint',
+                'er_nursing_detail.accident_place as apointname',
+                'er_regist.finish_time as disc_date_er',
+                'er_regist.er_emergency_type as cause_t'
             )
             //.select(knex.raw("CONCAT(`vstdate`,`vsttime`) as hdate"))            
-            .from('opdscreen')
-            .leftJoin(`ovst`, 'ovst.vn', 'opdscreen.vn')
-            .leftJoin(`patient`, 'patient.hn', 'opdscreen.hn')
-            .leftJoin(`er_regist`, 'er_regist.vn', 'ovst.vn')
-            .leftJoin(`er_nursing_detail`, 'er_nursing_detail.vn', 'opdscreen.vn')
-            .where('opdscreen.hn', "=", hn)
-            .where('opdscreen.vstdate', "=", date);
+            // .where('opdscreen.hn', "=", hn)
+            // .where('opdscreen.vstdate', "=", date)
+            .where(where)
+            // .orderBy('opdscreen.vstdate', 'desc')
+            .limit(maxLimit);
 
     }
 
