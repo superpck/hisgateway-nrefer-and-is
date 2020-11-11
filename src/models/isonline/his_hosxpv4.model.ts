@@ -34,17 +34,19 @@ export class HisHosxpv4Model {
                 'opdscreen.bps as bp_systolic', 'opdscreen.bpd as bp_diastolic',
                 'opdscreen.pulse as pr', 'opdscreen.rr', 'ovst.vstdate as hdate', 'ovst.vsttime as htime',
                 'er_nursing_detail.gcs_e as eye', 'er_nursing_detail.gcs_v as verbal',
-                'er_nursing_detail.gcs_m as motor', 'er_accident_type.is_code as cause',
-                'accident_place_type.is_code as apoint',
-                'accident_transport_type.is_code as injt',
-                // 'accident_airway_type.is_code as airway',
-                // 'accident_alcohol_type.is_code as risk1',
-                // 'accident_drug_type.is_code as risk2',
-                // 'accident_belt_type.is_code as risk3',
-                // 'accident_helmet_type.is_code as risk4',
-                // 'accident_bleed_type.is_code as blood',
-                // 'accident_splint_type.is_code as splintc',
-                // 'accident_fluid_type.is_code as iv',
+                'er_nursing_detail.gcs_m as motor', 
+                'er_nursing_detail.er_accident_type_id as cause',
+                'er_nursing_detail.accident_place_type_id as apoint',
+                'er_nursing_detail.accident_transport_type_id as injt',
+                'er_nursing_detail.accident_person_type_id as injp',
+                'er_nursing_detail.accident_airway_type_id as airway',
+                'er_nursing_detail.accident_alcohol_type_id as risk1',
+                'er_nursing_detail.accident_drug_type_id as risk2',
+                'er_nursing_detail.accident_belt_type_id as risk3',
+                'er_nursing_detail.accident_helmet_type_id as risk4',
+                'er_nursing_detail.accident_bleed_type_id as blood',
+                'er_nursing_detail.accident_splint_type_id as splintc',
+                'er_nursing_detail.accident_fluid_type_id as iv',
                 'er_nursing_detail.accident_type_1 as br1',
                 'er_nursing_detail.accident_type_2 as br2',
                 'er_nursing_detail.accident_type_3 as tinj',
@@ -58,17 +60,6 @@ export class HisHosxpv4Model {
             .leftJoin(`patient`, 'patient.hn', 'opdscreen.hn')
             .leftJoin(`er_regist`, 'er_regist.vn', 'ovst.vn')
             .leftJoin(`er_nursing_detail`, 'er_nursing_detail.vn', 'opdscreen.vn')
-            .leftJoin(`accident_airway_type`, 'accident_airway_type.accident_airway_type_id', 'er_nursing_detail.accident_airway_type_id')
-            .leftJoin(`er_accident_type`, 'er_accident_type.er_accident_type_id', '=', 'er_nursing_detail.er_accident_type_id')
-            .leftJoin(`accident_transport_type`, 'accident_transport_type.accident_transport_type_id', 'er_nursing_detail.accident_transport_type_id')
-            .leftJoin(`accident_place_type`, 'accident_place_type.accident_place_type_id', 'er_nursing_detail.accident_place_type_id')
-            .leftJoin(`accident_alcohol_type`, 'accident_alcohol_type.accident_alcohol_type_id', 'er_nursing_detail.accident_alcohol_type_id')
-            .leftJoin(`accident_drug_type`, 'accident_drug_type.accident_drug_type_id', 'er_nursing_detail.accident_drug_type_id')
-            .leftJoin(`accident_belt_type`, 'accident_belt_type.accident_belt_type_id', 'er_nursing_detail.accident_belt_type_id')
-            .leftJoin(`accident_helmet_type`, 'accident_helmet_type.accident_helmet_type_id', 'er_nursing_detail.accident_helmet_type_id')
-            .leftJoin(`accident_bleed_type`, 'accident_bleed_type.accident_bleed_type_id', 'er_nursing_detail.accident_bleed_type_id')
-            .leftJoin(`accident_fluid_type`, 'accident_fluid_type.accident_fluid_type_id', 'er_nursing_detail.accident_fluid_type_id')
-            .leftJoin(`accident_splint_type`, 'accident_splint_type.accident_splint_type_id', 'er_nursing_detail.accident_splint_type_id')
             .where('opdscreen.hn', "=", hn)
             .where('opdscreen.vstdate', "=", date);
 

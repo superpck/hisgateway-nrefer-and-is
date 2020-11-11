@@ -35,12 +35,10 @@ async function sendMoph(req, reply, db) {
     token = result.token;
   }
 
-  // const dateStart = moment().subtract(50, 'days').format('YYYY-MM-DD HH:mm:ss');
   const dateStart = moment().subtract(4, 'hours').format('YYYY-MM-DD HH:mm:ss');
   const dateEnd = moment().format('YYYY-MM-DD HH:mm:ss');
   const isData: any = await iswin.getByDate(db, 'lastupdate', dateStart, dateEnd, process.env.HOSPCODE);
   if (isData && isData.length) {
-    // console.log('Founded: ', isData.length);
     for (let row of isData) {
       const ref = row.ref;
       delete row.ref;
@@ -48,7 +46,6 @@ async function sendMoph(req, reply, db) {
       row.his = row.his ? row.his : process.env.HIS_PROVIDER;
 
       const sentResult: any = await sendData(row, token);
-      // console.log(process.env.HOSPCODE, ' ISOnline sentResult ', sentResult);
     }
     console.log(process.env.HOSPCODE, ' ISOnline: ', isData.length, ' cases');
   } else {
@@ -128,7 +125,6 @@ async function sendData(row, tokenKey) {
     request.post(options, (error, res, body) => {
       if (error) {
         reject(null);
-        // return console.log(error);
       } else {
         resolve(body);
       }
