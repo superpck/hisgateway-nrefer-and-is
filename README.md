@@ -8,6 +8,7 @@
    1.1.1 Windows, Mac download ที่ https://nodejs.org/en/download/
    1.1.2 Linux ทำตามขั้นตอน https://github.com/nodesource/distributions/blob/master/README.md#rpminstall
 1.2 ติดตั้ง package ที่จำเป็น > npm install -g pm2 nodemon typescript ts-node
+    ตรวจสอบการติดตั้งด้วยการใช้คำสั่ง pm2 -v,  nodemon -v
 1.3 ติดตั้ง git โดย download จาก website https://git-scm.com/
 ```
 
