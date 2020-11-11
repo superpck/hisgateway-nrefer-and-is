@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HisMedical2020Model = void 0;
 const dbName = process.env.HIS_DB_NAME;
+const maxLimit = 100;
 class HisMedical2020Model {
     getTableName(knex) {
         return knex
@@ -9,18 +10,28 @@ class HisMedical2020Model {
             .from('information_schema.tables')
             .where('TABLE_CATALOG', '=', dbName);
     }
+    testConnect(db) {
+        return db('VW_IS_PERSON').select('hn').limit(1);
+    }
     getPerson(knex, columnName, searchText) {
         return knex
             .select()
             .from('VW_IS_PERSON')
             .where(columnName, "=", searchText);
     }
-    getOpdService(knex, hn, date) {
-        return knex
-            .select()
-            .from('VW_IS_SERVICE')
-            .where('VW_IS_SERVICE.hn', "=", hn)
-            .where('VW_IS_SERVICE.date', "=", date);
+    getOpdService(db, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' ? 'vn' : columnName;
+        let where = {};
+        if (hn)
+            where['hn'] = hn;
+        if (date)
+            where['date'] = date;
+        if (columnName && searchText)
+            where[columnName] = searchText;
+        return db('VW_IS_SERVICE')
+            .where(where)
+            .orderBy('date', 'desc')
+            .limit(maxLimit);
     }
     getDiagnosisOpd(knex, visitno) {
         return knex

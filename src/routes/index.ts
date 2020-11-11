@@ -1,18 +1,12 @@
 /// <reference path="../../typings.d.ts" />
 
-import * as Knex from 'knex';
 import * as fastify from 'fastify';
-const fastifySession = require('fastify-session')
-const fastifyCookie = require('fastify-cookie')
-
 import * as moment from 'moment'
 import * as HttpStatus from 'http-status-codes';
 let shell = require("shelljs");
 var crypto = require('crypto');
 var fs = require('fs');
-var http = require('http');
 
-import { UserModel } from '../models/user';
 const hisProvider = process.env.HIS_PROVIDER;
 const resultText = './sent_result.txt';
 
@@ -36,7 +30,7 @@ const router = (fastify, { }, next) => {
       serviceName: "isonline",   // for isonline only
       his_provider: process.env.HIS_PROVIDER,
       hospcode: process.env.HOSPCODE,
-      session: cookieValue
+      // session: cookieValue
     });
   })
 

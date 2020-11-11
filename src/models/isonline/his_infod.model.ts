@@ -1,6 +1,7 @@
 import Knex = require('knex');
 import * as moment from 'moment';
 const dbName = process.env.HIS_DB_NAME;
+const maxLimit = 100;
 
 export class HisInfodModel {
     getTableName(knex: Knex) {
@@ -10,6 +11,10 @@ export class HisInfodModel {
             .where('TABLE_CATALOG', '=', dbName);
     }
     
+    testConnect(db: Knex) {
+        return db('VW_IS_PERSON').select('hn').limit(1)
+    }
+
     getPerson(knex: Knex, columnName, searchText) {
         return knex
         .select()
@@ -17,12 +22,17 @@ export class HisInfodModel {
         .where(columnName, "=", searchText);
     }
     
-    getOpdService(knex, hn, date) {
-        return knex
-            .select()
-            .from('getOpdService_isonline')
-            .where('opdscreen.hn', "=", hn)
-            .where('opdscreen.vstdate', "=", date);   
+    getOpdService(db: Knex, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' || columnName == 'vn' ? 'visitno' : columnName;
+        let where: any = {};
+        if (hn) where['hn'] = hn;
+        if (date) where['vstdate'] = date;
+        if (columnName && searchText) where[columnName] = searchText;
+
+        return db('getOpdService_isonline')
+            .where(where)
+            .orderBy('vstdate', 'desc')
+            .limit(maxLimit);
     }
 
     getDiagnosisOpd(knex, visitno) {

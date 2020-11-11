@@ -24,6 +24,10 @@ export class HisEzhospModel {
             .where('TABLE_SCHEMA', '=', dbname);
     }
 
+    testConnect(db: Knex) {
+        return db('hospdata.patient').select('hn').limit(1)
+    }
+
     getPerson(knex: Knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'no_card' : columnName;
         return knex
@@ -35,8 +39,14 @@ export class HisEzhospModel {
             .where(columnName, "=", searchText);
     }
 
-    getOpdService(knex, hn, date) {
-        return knex
+    getOpdService(db: Knex, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' ? 'vn' : columnName;
+        let where: any = {};
+        if (hn) where['hn'] = hn;
+        if (date) where['date'] = date;
+        if (columnName && searchText) where[columnName] = searchText;
+
+        return db('view_opd_visit')
             .select('hn', 'vn as visitno', 'date', 'time',
                 'time_drug as time_end', 'pttype_std2 as pttype',
                 'insclass as payment',
@@ -44,9 +54,9 @@ export class HisEzhospModel {
                 'bp as bp_systolic', 'bp1 as bp_diastolic',
                 'puls as pr', 'rr', 'fu as appoint',
                 'status as result', 'refer as referin')
-            .from('view_opd_visit')
-            .where('hn', "=", hn)
-            .where('date', "=", date);
+            .where(where)
+            .orderBy('date', 'desc')
+            .limit(maxLimit);
     }
 
     getOpdServiceByVN(knex, vn) {

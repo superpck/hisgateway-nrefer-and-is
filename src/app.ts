@@ -15,6 +15,7 @@ require('dotenv').config({ path: path.join(__dirname, '../config') });
 import { Server, IncomingMessage, ServerResponse } from 'http';
 
 import helmet = require('fastify-helmet');
+
 const fastifySession = require('fastify-session');
 const fastifyCookie = require('fastify-cookie');
 // var cron = require('node-cron');
@@ -28,8 +29,8 @@ const app: fastify.FastifyInstance<Server, IncomingMessage, ServerResponse> = fa
   bodyLimit: 5 * 1048576,
 });
 
-app.apiVersion = '3.1.6';
-app.apiSubVersion = '2020-10-18-01';
+app.apiVersion = '3.1.7';
+app.apiSubVersion = '2020.11.01-01';
 app.register(router);
 
 app.register(require('fastify-formbody'));
@@ -59,6 +60,11 @@ app.register(require('fastify-jwt'), {
 });
 
 app.register(require('fastify-ws'), {});
+
+// set MOPH Url =========================================
+if (!app.mophService) {
+  getmophUrl();
+}
 
 // HIS connection =========================================
 app.register(require('./plugins/db'), {
@@ -198,10 +204,10 @@ function createConnectionOption(config: any) {
         user: config.user,
         password: config.password,
         database: config.dbName,
+        encrypt: config.encrypt,
         options: {
           port: +config.port,
-          schema: config.schema,
-          encrypt: config.encrypt
+          schema: config.schema
         }
       }
     };
@@ -256,4 +262,8 @@ function createConnectionOption(config: any) {
     };
   }
 
+}
+
+async function getmophUrl() {
+  app.mophService = await require('./routes/main/crontab')(app.mophService, {});
 }

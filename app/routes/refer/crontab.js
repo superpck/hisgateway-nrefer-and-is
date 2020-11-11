@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var fastify = require('fastify');
 const moment = require("moment");
 var fs = require('fs');
 var http = require('http');
@@ -102,7 +103,7 @@ function sendMoph(req, reply, db) {
             sentContent += `token ${resultToken.token}\r`;
         }
         else {
-            console.log('get token error', resultToken.message);
+            console.log('refer get token error', resultToken.message);
             sentContent += `get token Error:` + JSON.stringify(resultToken) + `\r`;
             writeResult(resultText, sentContent);
             return false;
@@ -127,7 +128,7 @@ function sendMoph(req, reply, db) {
         const referResult_ = getReferResult(db, dateNow);
         const referOut = yield referOut_;
         const referResult = yield referResult_;
-        return { referOut, referResult };
+        return { date: dateNow, referOut, referResult };
     });
 }
 function getRefer_out(db, date) {
@@ -172,7 +173,7 @@ function getRefer_out(db, date) {
                     console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'finished...');
                 }
             }
-            console.log(process.env.HOSPCODE, ' nrefer sent result ', sentResult);
+            console.log(process.env.HOSPCODE, ' nrefer sent ', sentResult);
             return referout;
         }
         catch (error) {
@@ -222,7 +223,7 @@ function getReferResult(db, date) {
                     console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'finished...');
                 }
             }
-            console.log(process.env.HOSPCODE, ' nrefer sent refer result ', sentResultResult);
+            console.log(process.env.HOSPCODE, ' nrefer result', sentResultResult);
             return referResult;
         }
         catch (error) {
@@ -723,6 +724,11 @@ function getProcedureIpd(db, an) {
 }
 function referSending(path, dataArray) {
     return __awaiter(this, void 0, void 0, function* () {
+        const fixedUrl = fastify.mophService.nRefer || process.env.NREFER_URL1 || 'http://connect.moph.go.th/nrefer-api';
+        const mophUrl = fixedUrl.split('/');
+        let urlPath = '/' + mophUrl[3] + '/';
+        urlPath += mophUrl[4] ? (mophUrl[4] + '/') : '';
+        urlPath += mophUrl[5] ? (mophUrl[5] + '/') : '';
         const dataSending = querystring.stringify({
             hospcode: hcode, data: JSON.stringify(dataArray),
             processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -730,9 +736,8 @@ function referSending(path, dataArray) {
             hisProvider: process.env.HIS_PROVIDER
         });
         const options = {
-            hostname: process.env.NREFER_URL,
-            port: process.env.NREFER_PORT,
-            path: process.env.NREFER_PATH + path,
+            hostname: mophUrl[2],
+            path: urlPath + path,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -762,8 +767,11 @@ function referSending(path, dataArray) {
 }
 function getNReferToken(apiKey, secretKey) {
     return __awaiter(this, void 0, void 0, function* () {
-        let url = process.env.NREFER_URL1;
-        url += url.substr(-1, 1) === '/' ? '' : '/';
+        const fixedUrl = fastify.mophService.nRefer || process.env.NREFER_URL1 || 'http://connect.moph.go.th/nrefer-api/nrefer';
+        const mophUrl = fixedUrl.split('/');
+        let urlPath = '/' + mophUrl[3] + '/';
+        urlPath += mophUrl[4] ? (mophUrl[4] + '/') : '';
+        urlPath += mophUrl[5] ? (mophUrl[5] + '/') : '';
         const postData = querystring.stringify({
             apiKey: apiKey, secretKey: secretKey,
             hospcode: hcode,
@@ -772,9 +780,8 @@ function getNReferToken(apiKey, secretKey) {
             hisProvider: process.env.HIS_PROVIDER
         });
         const options = {
-            hostname: process.env.NREFER_URL,
-            port: process.env.NREFER_PORT,
-            path: process.env.NREFER_PATH + '/login/api-key',
+            hostname: mophUrl[2],
+            path: urlPath + 'login/api-key',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -788,9 +795,14 @@ function getNReferToken(apiKey, secretKey) {
                 res.on('data', (chunk) => {
                     ret += chunk;
                 });
-                res.on('end', () => {
-                    const data = JSON.parse(ret);
-                    resolve(data);
+                res.on('end', (error) => {
+                    if (error || !ret) {
+                        reject(error);
+                    }
+                    else {
+                        const data = JSON.parse(ret);
+                        resolve(data);
+                    }
                 });
             });
             req.on('error', (e) => {
@@ -803,15 +815,17 @@ function getNReferToken(apiKey, secretKey) {
 }
 function expireToken(token) {
     return __awaiter(this, void 0, void 0, function* () {
-        let url = process.env.NREFER_URL1;
-        url += url.substr(-1, 1) === '/' ? '' : '/';
+        const fixedUrl = fastify.mophService.nRefer || process.env.NREFER_URL1 || 'http://connect.moph.go.th/nrefer-api';
+        const mophUrl = fixedUrl.split('/');
+        let urlPath = '/' + mophUrl[3] + '/';
+        urlPath += mophUrl[4] ? (mophUrl[4] + '/') : '';
+        urlPath += mophUrl[5] ? (mophUrl[5] + '/') : '';
         const postData = querystring.stringify({
             token: token
         });
         const options = {
-            hostname: process.env.NREFER_URL,
-            port: process.env.NREFER_PORT,
-            path: process.env.NREFER_PATH + '/login/expire-token',
+            hostname: mophUrl[2],
+            path: urlPath + 'login/login/expire-token',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -826,9 +840,14 @@ function expireToken(token) {
                 res.on('data', (chunk) => {
                     ret += chunk;
                 });
-                res.on('end', () => {
-                    const data = JSON.parse(ret);
-                    resolve(data);
+                res.on('end', (error) => {
+                    if (error || !ret) {
+                        reject(error);
+                    }
+                    else {
+                        const data = JSON.parse(ret);
+                        resolve(data);
+                    }
                 });
             });
             req.on('error', (e) => {

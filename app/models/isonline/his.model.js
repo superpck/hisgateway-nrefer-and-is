@@ -1,13 +1,31 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HisModel = void 0;
 const dbName = process.env.HIS_DB_NAME;
+const dbClient = process.env.HIS_DB_CLIENT;
+const maxLimit = 100;
 class HisModel {
-    getTableName(knex) {
-        return knex
-            .select('TABLE_NAME')
-            .from('information_schema.tables')
-            .where('TABLE_SCHEMA', '=', dbName);
+    getTableName(db, dbname = dbName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const whereDB = dbClient === 'mssql' ? 'TABLE_CATALOG' : 'TABLE_SCHEMA';
+            const result = yield db('information_schema.tables')
+                .where(whereDB, dbname);
+            return result;
+        });
+    }
+    testConnect(db) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return db('hospdata.patient').select('hn').limit(1);
+        });
     }
     getPerson(knex, columnName, searchText) {
         return knex
@@ -15,12 +33,20 @@ class HisModel {
             .from('hospdata.patient')
             .where(columnName, "=", searchText);
     }
-    getOpdService(knex, hn, date) {
-        return knex
-            .select('hn', 'vn as visitno', 'date', 'time', 'bp as bp_systolic', 'bp1 as bp_diastolic', 'puls as pr', 'rr')
-            .from('view_opd_visit')
-            .where('hn', "=", hn)
-            .where('date', "=", date);
+    getOpdService(db, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' ? 'vn' : columnName;
+        let where = {};
+        if (hn)
+            where['hn'] = hn;
+        if (date)
+            where['date'] = date;
+        if (columnName && searchText)
+            where[columnName] = searchText;
+        return db('view_opd_visit')
+            .select('hn', 'vn as visitno', 'date', 'time', 'time_drug as time_end', 'pttype_std2 as pttype', 'insclass as payment', 'dep_standard as clinic', 'dr', 'bp as bp_systolic', 'bp1 as bp_diastolic', 'puls as pr', 'rr', 'fu as appoint', 'status as result', 'refer as referin')
+            .where(where)
+            .orderBy('date', 'desc')
+            .limit(maxLimit);
     }
     getDiagnosisOpd(knex, visitno) {
         return knex

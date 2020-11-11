@@ -21,7 +21,9 @@ declare module 'fastify' {
     dbISOnline: knex;
     startServerTime: string;
     setupSession: any;
+    firstProcessPid: number;
     ws: any;
+    mophService: any;
     apiVersion: string;
     apiSubVersion: string;
   }

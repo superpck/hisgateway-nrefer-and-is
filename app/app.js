@@ -28,8 +28,8 @@ const app = fastify({
     },
     bodyLimit: 5 * 1048576,
 });
-app.apiVersion = '3.1.6';
-app.apiSubVersion = '2020-10-18-01';
+app.apiVersion = '3.1.7';
+app.apiSubVersion = '2020.11.01-01';
 app.register(router_1.default);
 app.register(require('fastify-formbody'));
 app.register(require('fastify-cors'), {});
@@ -50,6 +50,9 @@ app.register(require('fastify-jwt'), {
     secret: process.env.SECRET_KEY
 });
 app.register(require('fastify-ws'), {});
+if (!app.mophService) {
+    getmophUrl();
+}
 app.register(require('./plugins/db'), {
     connection: createConnectionOption({
         client: process.env.HIS_DB_CLIENT,
@@ -169,10 +172,10 @@ function createConnectionOption(config) {
                 user: config.user,
                 password: config.password,
                 database: config.dbName,
+                encrypt: config.encrypt,
                 options: {
                     port: +config.port,
-                    schema: config.schema,
-                    encrypt: config.encrypt
+                    schema: config.schema
                 }
             }
         };
@@ -229,4 +232,9 @@ function createConnectionOption(config) {
             debug: false,
         };
     }
+}
+function getmophUrl() {
+    return __awaiter(this, void 0, void 0, function* () {
+        app.mophService = yield require('./routes/main/crontab')(app.mophService, {});
+    });
 }

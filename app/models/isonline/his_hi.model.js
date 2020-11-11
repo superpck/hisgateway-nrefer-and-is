@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HisHiModel = void 0;
 const dbName = process.env.HIS_DB_NAME;
+const maxLimit = 250;
 class HisHiModel {
     getTableName(knex) {
         return knex
@@ -9,18 +10,29 @@ class HisHiModel {
             .from('information_schema.tables')
             .where('TABLE_SCHEMA', '=', dbName);
     }
+    testConnect(db) {
+        return db('hospdata.patient').select('hn').limit(1);
+    }
     getPerson(knex, columnName, searchText) {
         return knex
             .select('hn', 'no_card as cid', 'title as prename', 'name as fname', 'surname as lname', 'birth as dob', 'sex', 'address', 'moo', 'road', 'add as addcode', 'tel', 'zip', 'occupa as occupation')
             .from('hospdata.patient')
             .where(columnName, "=", searchText);
     }
-    getOpdService(knex, hn, date) {
-        return knex
+    getOpdService(db, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' ? 'vn' : columnName;
+        let where = {};
+        if (hn)
+            where['hn'] = hn;
+        if (date)
+            where['date'] = date;
+        if (columnName && searchText)
+            where[columnName] = searchText;
+        return db('view_opd_visit')
             .select('hn', 'vn as visitno', 'date', 'time', 'bp as bp_systolic', 'bp1 as bp_diastolic', 'puls as pr', 'rr')
-            .from('view_opd_visit')
-            .where('hn', "=", hn)
-            .where('date', "=", date);
+            .where(where)
+            .orderBy('date', 'desc')
+            .limit(maxLimit);
     }
     getDiagnosisOpd(knex, visitno) {
         return knex

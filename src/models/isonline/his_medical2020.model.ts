@@ -1,6 +1,7 @@
 import Knex = require('knex');
 import * as moment from 'moment';
 const dbName = process.env.HIS_DB_NAME;
+const maxLimit = 100;
 
 export class HisMedical2020Model {
     getTableName(knex: Knex) {
@@ -9,26 +10,34 @@ export class HisMedical2020Model {
             .from('information_schema.tables')
             .where('TABLE_CATALOG', '=', dbName);
     }
-    
+
+    testConnect(db: Knex) {
+        return db('VW_IS_PERSON').select('hn').limit(1)
+    }
+
     getPerson(knex: Knex, columnName, searchText) {
         return knex
             .select()
-            .from('VW_IS_PERSON')       
+            .from('VW_IS_PERSON')
             .where(columnName, "=", searchText);
     }
 
-    getOpdService(knex, hn, date) {
-        return knex
-            .select()
-            .from('VW_IS_SERVICE')
-            .where('VW_IS_SERVICE.hn', "=", hn)
-            .where('VW_IS_SERVICE.date', "=", date);
+    getOpdService(db: Knex, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' ? 'vn' : columnName;
+        let where: any = {};
+        if (hn) where['hn'] = hn;
+        if (date) where['date'] = date;
+        if (columnName && searchText) where[columnName] = searchText;
+        return db('VW_IS_SERVICE')
+            .where(where)
+            .orderBy('date', 'desc')
+            .limit(maxLimit);
     }
 
     getDiagnosisOpd(knex, visitno) {
         return knex
             .select('vn as visitno', 'diag as diagcode',
-            'type as diag_type')
+                'type as diag_type')
             .from('opd_dx')
             .where('vn', "=", visitno);
     }

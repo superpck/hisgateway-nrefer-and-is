@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HisJhcisModel = void 0;
 const dbName = process.env.HIS_DB_NAME;
+const maxLimit = 100;
 class HisJhcisModel {
     check() {
         return true;
@@ -12,6 +13,9 @@ class HisJhcisModel {
             .from('information_schema.tables')
             .where('TABLE_SCHEMA', '=', dbName);
     }
+    testConnect(db) {
+        return db('person').select('pid as hn').limit(1);
+    }
     getPerson(knex, columnName, searchText) {
         columnName = columnName === 'cid' ? 'idcard' : columnName;
         columnName = columnName === 'hn' ? 'pid' : columnName;
@@ -21,15 +25,23 @@ class HisJhcisModel {
             .select(knex.raw('concat(provcodemoi, distcodemoi, subdistcodemoi) as addcode'))
             .where(columnName, "=", searchText);
     }
-    getOpdService(knex, hn, date) {
-        return knex
+    getOpdService(db, hn, date, columnName = '', searchText = '') {
+        columnName = columnName == 'visitNo' || columnName == 'vn' ? 'visitno' : columnName;
+        let where = {};
+        if (hn)
+            where['pid'] = hn;
+        if (date)
+            where['visitdate'] = date;
+        if (columnName && searchText)
+            where[columnName] = searchText;
+        return db('visit')
             .select('pid as hn', 'visitno', 'visitdate as date', 'timestart as time')
             .select(knex.raw("case when LOCATE('/', pressure) then SUBSTR(pressure,1,LOCATE('/', pressure)-1) else '' end as bp_systolic"))
             .select(knex.raw("case when LOCATE('/', pressure) then SUBSTR(pressure,LOCATE('/', pressure)+1) else '' end as bp_diastolic"))
             .select('pulse as pr', 'respri as rr', 'weight', 'height', 'waist', 'temperature as tem')
-            .from('visit')
-            .where('pid', "=", hn)
-            .where('visitdate', "=", date);
+            .where(where)
+            .orderBy('visitdate', 'desc')
+            .limit(maxLimit);
     }
     getDiagnosisOpd(knex, visitno) {
         return knex
