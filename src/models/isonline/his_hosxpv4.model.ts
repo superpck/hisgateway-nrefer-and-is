@@ -39,6 +39,7 @@ export class HisHosxpv4Model {
             .leftJoin(`patient`, 'patient.hn', 'opdscreen.hn')
             .leftJoin(`er_regist`, 'er_regist.vn', 'ovst.vn')
             .leftJoin(`er_nursing_detail`, 'er_nursing_detail.vn', 'opdscreen.vn')
+            .leftJoin(`accident_transport_type`, 'er_nursing_detail.accident_transport_type_id', 'accident_transport_type.accident_transport_type_id')
             .select('opdscreen.hn', 'opdscreen.vn as visitno', 'opdscreen.vstdate as date',
                 'opdscreen.vsttime as time',
                 'opdscreen.bps as bp_systolic', 'opdscreen.bpd as bp_diastolic',
@@ -46,7 +47,7 @@ export class HisHosxpv4Model {
                 'er_nursing_detail.gcs_e as eye', 'er_nursing_detail.gcs_v as verbal',
                 'er_nursing_detail.gcs_m as motor',
                 'er_nursing_detail.er_accident_type_id as cause',
-                'er_nursing_detail.accident_transport_type_id as injt',
+                'accident_transport_type.export_code as injt',
                 'er_nursing_detail.accident_person_type_id as injp',
                 'er_nursing_detail.accident_airway_type_id as airway',
                 'er_nursing_detail.accident_alcohol_type_id as risk1',

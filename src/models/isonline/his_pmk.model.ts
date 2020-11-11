@@ -42,7 +42,7 @@ export class HisPmkModel {
     }
 
     getOpdService(db: Knex, hn, date, columnName = '', searchText = '') {
-        columnName = columnName == 'visitNo' ? 'OPD_NO' : columnName;
+        columnName = columnName == 'visitNo' || columnName == 'vn' ? 'OPD_NO' : columnName;
         let where: any = {};
 
         let cdate = '';
