@@ -36,7 +36,7 @@ class HisPmkModel {
             .limit(maxLimit);
     }
     getOpdService(db, hn, date, columnName = '', searchText = '') {
-        columnName = columnName == 'visitNo' ? 'OPD_NO' : columnName;
+        columnName = columnName == 'visitNo' || columnName == 'vn' ? 'OPD_NO' : columnName;
         let where = {};
         let cdate = '';
         if (date) {
