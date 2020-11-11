@@ -67,8 +67,6 @@ export class HisHosxpv4Model {
                 'er_regist.er_emergency_type as cause_t'
             )
             //.select(knex.raw("CONCAT(`vstdate`,`vsttime`) as hdate"))            
-            // .where('opdscreen.hn', "=", hn)
-            // .where('opdscreen.vstdate', "=", date)
             .where(where)
             // .orderBy('opdscreen.vstdate', 'desc')
             .limit(maxLimit);

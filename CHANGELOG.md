@@ -1,11 +1,12 @@
-# 3.1.7 - 2020.11.01-01
+# 3.1.7 - 2020.11.12-01
 
 ## Bug:
   >> none
 
 ## Feature
-  - add test ISDB
-  - แก้ไข bug PMK เพิ่มเงื่อนไข REFERTYPE=2
+  - nRefer: แก้ไข bug PMK เพิ่มเงื่อนไข REFERTYPE=2
+  - ISOnline: add test ISDB
+  - ISOnline: แก้ไขการ select ฐาน HOSxP โดยไม่แปลง Code
 
 # 3.1.6 - 2020.10.15-01
 
