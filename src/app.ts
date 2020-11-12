@@ -30,7 +30,7 @@ const app: fastify.FastifyInstance<Server, IncomingMessage, ServerResponse> = fa
 });
 
 app.apiVersion = '3.1.7';
-app.apiSubVersion = '2020.11.01-01';
+app.apiSubVersion = '2020.11.12-01';
 app.register(router);
 
 app.register(require('fastify-formbody'));

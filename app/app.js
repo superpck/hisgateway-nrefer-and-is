@@ -29,7 +29,7 @@ const app = fastify({
     bodyLimit: 5 * 1048576,
 });
 app.apiVersion = '3.1.7';
-app.apiSubVersion = '2020.11.01-01';
+app.apiSubVersion = '2020.11.12-01';
 app.register(router_1.default);
 app.register(require('fastify-formbody'));
 app.register(require('fastify-cors'), {});
