@@ -67,7 +67,7 @@ export class HisHosxpv4Model {
                 'er_regist.finish_time as disc_date_er',
                 'er_regist.er_emergency_type as cause_t'
             )
-            //.select(knex.raw("CONCAT(`vstdate`,`vsttime`) as hdate"))            
+            //.select(db.raw("CONCAT(`vstdate`,`vsttime`) as hdate"))            
             .where(where)
             // .orderBy('opdscreen.vstdate', 'desc')
             .limit(maxLimit);
@@ -153,7 +153,7 @@ export class HisHosxpv4Model {
             .leftJoin(`opdscreen`, function () { this.on('opdscreen.hn', '=', 'ovst.hn') })
             //.leftJoin('patient' on 'patient'.'hn' = 'ovst'.'hn')
             .where('er_regist.vn', "=", visitno);
-        //         knex.select('*').from('users').leftJoin('accounts', function() {
+        //         db.select('*').from('users').leftJoin('accounts', function() {
         //   this.on('accounts.id', '=', 'users.account_id').orOn('accounts.owner_id', '=', 'users.id')
         // })
     }

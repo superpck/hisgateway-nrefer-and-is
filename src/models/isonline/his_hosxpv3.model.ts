@@ -42,8 +42,8 @@ export class HisHosxpv3Model {
             .leftJoin(`ovstdiag`, 'ovstdiag.vn', 'opdscreen.vn')
             .leftJoin(`ipt`, 'ipt.vn', 'opdscreen.vn')
             .leftJoin(`referin`, 'referin.vn', 'opdscreen.vn')
-            // .leftOuterJoin(knex.raw(`select vn,icd10,diagtype from ovstdiag where diagtype = 1 AND hn`, '=', hn) `ovstdiag`,'ovstdiag.vn','er_nursing_detail.vn')
-            // .leftOuterJoin(knex.raw(`select vn,icd10,diagtype from ovstdiag where diagtype = 2 AND hn`, '=', hn) `ovstdiag`,'ovstdiag.vn','er_nursing_detail.vn')
+            // .leftOuterJoin(db.raw(`select vn,icd10,diagtype from ovstdiag where diagtype = 1 AND hn`, '=', hn) `ovstdiag`,'ovstdiag.vn','er_nursing_detail.vn')
+            // .leftOuterJoin(db.raw(`select vn,icd10,diagtype from ovstdiag where diagtype = 2 AND hn`, '=', hn) `ovstdiag`,'ovstdiag.vn','er_nursing_detail.vn')
             .select('opdscreen.hn', 'opdscreen.vn as visitno', 'opdscreen.vstdate as date',
                 'opdscreen.vsttime as time',
                 'opdscreen.bps as bp_systolic', 'opdscreen.bpd as bp_diastolic',
@@ -72,8 +72,8 @@ export class HisHosxpv3Model {
                 'ipt.ward as wardcode',
                 'referin.refer_hospcode as htohosp'
             )
-            .select(knex.raw('if(ovstdiag.diagtype =1,ovstdiag.icd10,null) as diag1'))
-            .select(knex.raw('if(ovstdiag.diagtype =2,ovstdiag.icd10,null) as diag2'))
+            .select(db.raw('if(ovstdiag.diagtype =1,ovstdiag.icd10,null) as diag1'))
+            .select(db.raw('if(ovstdiag.diagtype =2,ovstdiag.icd10,null) as diag2'))
             .where(where)
             // .orderBy('opdscreen.vstdate', 'desc')
             .limit(maxLimit);
