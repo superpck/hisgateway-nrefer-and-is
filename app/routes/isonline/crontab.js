@@ -19,28 +19,21 @@ let sentContent = '';
 let tokenType = 'IS';
 function sendMoph(req, reply, db) {
     return __awaiter(this, void 0, void 0, function* () {
-        const dateNow = moment().locale('th').format('YYYY-MM-DD');
         let token = null;
         let result = yield getIsToken();
-        if (!result || result.statusCode !== 200) {
-            const apiKey = process.env.NREFER_APIKEY || 'api-key';
-            const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
-            sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
-            const resultToken = yield getNReferToken(apiKey, secretKey);
-            if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
-                token = resultToken.token;
-                sentContent += `token ${resultToken.token}\r`;
-                tokenType = 'NREFER';
-            }
-            else {
-                console.log(`IS autosend 'fail' invalid config.`);
-                return false;
-            }
+        if (!result || result.statusCode != 200) {
+            console.log(`IS autosend 'fail'. ${result.message}`);
         }
         else {
             token = result.token;
         }
-        const dateStart = moment().subtract(4, 'hours').format('YYYY-MM-DD HH:mm:ss');
+        let dateStart;
+        if (moment().get('hour') == 4) {
+            dateStart = moment().subtract(29, 'hours').format('YYYY-MM-DD HH:mm:ss');
+        }
+        else {
+            dateStart = moment().subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
+        }
         const dateEnd = moment().format('YYYY-MM-DD HH:mm:ss');
         const isData = yield iswin.getByDate(db, 'lastupdate', dateStart, dateEnd, process.env.HOSPCODE);
         if (isData && isData.length) {
