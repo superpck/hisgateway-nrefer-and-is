@@ -129,14 +129,16 @@ async function sendMoph(req, reply, db) {
   }
 
   // backward some hospital
-  // if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-11-10 07:13:00') {
-  //   let oldDate = '2020-04-01';
-  //   while (oldDate < dateNow) {
-  //     const referOut_ = await getRefer_out(db, oldDate);
-  //     const referResult_ = await getReferResult(db, oldDate);
-  //     oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
-  //   }
-  // }
+  /*
+  if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-11-25 09:45:00') {
+    let oldDate = '2020-11-09';
+    while (oldDate < dateNow) {
+      const referOut_ = await getRefer_out(db, oldDate);
+      const referResult_ = await getReferResult(db, oldDate);
+      oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
+    }
+  }
+  */
 
   const referOut_ = getRefer_out(db, dateNow);
   const referResult_ = getReferResult(db, dateNow);
