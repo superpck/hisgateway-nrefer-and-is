@@ -37,9 +37,10 @@ class HisEzhospModel {
     getReferOut(db, date, hospCode = hcode) {
         return db('hospdata.refer_out as refer')
             .leftJoin('hospdata.patient as pt', 'refer.hn', 'pt.hn')
+            .leftJoin('hospdata.opd_vs as vs', 'refer.vn', 'vs.vn')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select(db.raw('concat(refer_date, " " , refer_time) as refer_date'))
-            .select('refer_no as referid', 'refer.refer_hcode as hosp_destination', 'refer.hn', 'pt.no_card as cid', 'refer.vn as seq', 'refer.an', 'pt.title as prename', 'pt.name as fname', 'pt.surname as lname', 'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx')
+            .select('refer_no as referid', 'refer.refer_hcode as hosp_destination', 'refer.hn', 'pt.no_card as cid', 'refer.vn as seq', 'refer.an', 'pt.title as prename', 'pt.name as fname', 'pt.surname as lname', 'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx', 'vs.cc as CHIEFCOMP', 'vs.nurse_ph as PH', 'vs.pi as PI', 'vs.pe AS PE')
             .where('refer.refer_date', date)
             .where('refer.hcode', hospCode)
             .orderBy('refer.refer_date')
@@ -254,7 +255,9 @@ class HisEzhospModel {
                 , concat(ipd.admite,' ',ipd.time) as datetime_admit
                 , concat(refer.refer_date,' ',refer.refer_time) as datetime_refer
                 , visit.clinic as clinic_refer, refer.refer_hcode as hosp_destination
-                , vs.nurse_pi as chiefcomp, vs.nurse_ph as physicalexam, visit.dx1 as diaglast
+                , vs.cc as CHIEFCOMP
+                , vs.pi as PRESENTILLNESS, vs.pe AS PHYSICALEXAM
+                , vs.nurse_ph as PASTHISTORY, visit.dx1 as DIAGLAST
                 , case when visit.dep=1 then 3 else 1 end as ptype
                 , '5' as emergency, '99' as ptypedis, '1' as causeout
                 , concat('ว',visit.dr) as provider
