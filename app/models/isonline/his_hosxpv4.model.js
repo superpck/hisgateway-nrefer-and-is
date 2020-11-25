@@ -22,6 +22,7 @@ class HisHosxpv4Model {
     }
     getOpdService(db, hn, date, columnName = '', searchText = '') {
         columnName = columnName == 'visitNo' || columnName == 'vn' ? 'opdscreen.vn' : columnName;
+        columnName = columnName == 'hn' ? 'opdscreen.hn' : columnName;
         let where = {};
         if (hn)
             where['opdscreen.hn'] = hn;

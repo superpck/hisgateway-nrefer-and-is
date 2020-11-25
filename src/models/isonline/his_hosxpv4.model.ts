@@ -30,6 +30,7 @@ export class HisHosxpv4Model {
 
     getOpdService(db: Knex, hn, date, columnName = '', searchText = '') {
         columnName = columnName == 'visitNo' || columnName == 'vn' ? 'opdscreen.vn' : columnName;
+        columnName = columnName == 'hn' ? 'opdscreen.hn' : columnName;
         let where: any = {};
         if (hn) where['opdscreen.hn'] = hn;
         if (date) where['opdscreen.vstdate'] = date;
@@ -67,9 +68,7 @@ export class HisHosxpv4Model {
                 'er_regist.finish_time as disc_date_er',
                 'er_regist.er_emergency_type as cause_t'
             )
-            //.select(db.raw("CONCAT(`vstdate`,`vsttime`) as hdate"))            
             .where(where)
-            // .orderBy('opdscreen.vstdate', 'desc')
             .limit(maxLimit);
 
     }
