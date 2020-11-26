@@ -12,30 +12,22 @@ let sentContent = '';
 let tokenType = 'IS';
 
 async function sendMoph(req, reply, db) {
-  const dateNow = moment().locale('th').format('YYYY-MM-DD');
   let token: any = null;
   let result: any = await getIsToken();
 
-  if (!result || result.statusCode !== 200) {
-    const apiKey = process.env.NREFER_APIKEY || 'api-key';
-    const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
-
-    sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
-
-    const resultToken: any = await getNReferToken(apiKey, secretKey);
-    if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
-      token = resultToken.token;
-      sentContent += `token ${resultToken.token}\r`;
-      tokenType = 'NREFER';
-    } else {
-      console.log(`IS autosend 'fail' invalid config.`);
-      return false;
-    }
+  if (!result || result.statusCode != 200) {
+    console.log(`IS autosend 'fail'. ${result.message}`);
   } else {
     token = result.token;
   }
 
-  const dateStart = moment().subtract(4, 'hours').format('YYYY-MM-DD HH:mm:ss');
+  let dateStart;
+  if (moment().get('hour') == 4) {
+    dateStart = moment().subtract(29, 'hours').format('YYYY-MM-DD HH:mm:ss');
+  } else {
+    dateStart = moment().subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
+  }
+
   const dateEnd = moment().format('YYYY-MM-DD HH:mm:ss');
   const isData: any = await iswin.getByDate(db, 'lastupdate', dateStart, dateEnd, process.env.HOSPCODE);
   if (isData && isData.length) {
@@ -211,7 +203,6 @@ async function getIsToken() {
       });
       res.on('end', () => {
         const data = JSON.parse(ret);
-        // console.log('ret', data);
         resolve(data);
       });
     });
