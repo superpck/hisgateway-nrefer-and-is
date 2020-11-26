@@ -23,53 +23,44 @@
 2.7 copy file config.default แล้วตั้งชื่อ file ใหม่เป็น config
 2.8 แก้ไขค่าต่างๆ ใน file config ให้ถูกต้อง
 ```
-
-## 3.Test API
+## 3.Running ใช้งานจริง
 ```
-3.1 ทดสอบการทำงานด้วยคำสั่ง nodemon
-3.2 เปิด http://localhost:<port ที่กำหนดตาม config> ใน browser เพื่อแสดงผล
-3.3 ทดสอบการเชื่อต่อฐานข้อมูล HIS http://localhost:<port>/his/alive
-3.4 ทดสอบการเชื่อต่อฐานข้อมูล IS http://localhost:<port>/isonline/alive
-3.5 กรณี Linux สามารถ config ค่าด้วย url http://localhost:<port>/setup-api
-```
-
-## 4.Running ใช้งานจริง
-```
-# ควร run จาก javascript ที่ compile แล้ว
-4.1 compile source ด้วยคำสั่ง tsc
-4.2 กรณี windows ให้ติดตั้ง auto start ด้วยคำสั่ง
-  4.2.1 npm install pm2-windows-startup -g
-  4.2.2 pm2-startup install
-4.3 กรณี Linux ให้ใช้คำสั้ง pm2 startup
-4.4 start การใช้งาน API ด้วยคำสั่ง pm2 start app/app.js -i 2 --name "his-connect"
+3.1 กรณี windows ให้ติดตั้ง auto start ด้วยคำสั่ง
+  3.1.1 npm install pm2-windows-startup -g
+  3.1.2 pm2-startup install
+3.2 กรณี Linux ให้ใช้คำสั้ง pm2 startup
+3.3 start การใช้งาน API ด้วยคำสั่ง pm2 start app/app.js -i 2 --name "his-connect"
 ## ชื่อ --name จะต้องตรงกับค่า PM2_NAME ใน config file
-4.5 ใช้คำสั่ง pm2 save เพื่อบันทึกค่าที่ใช้งานในปัจจุบัน
+3.4 ใช้คำสั่ง pm2 save เพื่อบันทึกค่าที่ใช้งานในปัจจุบัน
+3.5 เปิด http://localhost:<port ที่กำหนดตาม config> ใน browser เพื่อแสดงผล
+3.6 ทดสอบการเชื่อมต่อฐานข้อมูล HIS http://localhost:<port>/his/alive
+3.7 ทดสอบการเชื่อมต่อฐานข้อมูล IS http://localhost:<port>/isonline/alive
 ```
 
-# 5.การ Update Source code
+# 4.การ Update Source code
 ```
-5.1 เข้าไปที่ folder ที่เก็บ API เช่น > cd \api\his_connect
-5.2 update source code จาก github > git pull
-5.3 ติดตั้ง package (เผื่อมีการติดตั้งเพิ่มเติม) > npm install
-5.4 กรณีพบ vulnerabilities ให้ทำการ fix ด้วยคำสั่ง > npm audit fix --force
-5.5 ทำการ compile source code ด้วยคำสั่ง > tsc
-5.6 Restart API ที่เคย run ไว้แล้วด้วยคำสั่ง > pm2 restart his-connect
-```
-
-# 6.push to git กรณีเป็นทีมพัฒนา (Develop@MOPH)
-```
-6.1 > git add .
-6.2 > git commit -m "คำอธิบายสิ่งที่แก้ไข"
-6.3 > git push origin <branch name>
-6.4 กรณี push ไม่ได้ ให้ทำการ git pull ก่อน
+4.1 เข้าไปที่ folder ที่เก็บ API เช่น > cd \api\his_connect
+4.2 update source code จาก github > git pull
+4.3 ติดตั้ง package (เผื่อมีการติดตั้งเพิ่มเติม) > npm install
+4.4 กรณีพบ vulnerabilities ให้ทำการ fix ด้วยคำสั่ง > npm audit fix --force
+4.5 ทำการ compile source code ด้วยคำสั่ง > tsc
+4.6 Restart API ที่เคย run ไว้แล้วด้วยคำสั่ง > pm2 restart his-connect
 ```
 
-# 7.ข้อควรระวัง
+# 5.push to git กรณีเป็นทีมพัฒนา (Develop@MOPH)
 ```
-7.1 user/password ที่เข้าถึงฐานข้อมูล ควรให้สิทธิ์ select อย่างเดียว
-7.2 ไม่ควรติดตั้ง API บนเครื่องที่มีผู้ใช้งานเข้าถึงได้ง่าย เพื่อป้องกันอ่าน file config
-7.3 เพื่อความปลอดภัยในการเข้าถึงฐานข้อมูลส่วนกลาง ควรมีการเปลี่ยนรหัสผ่านสำหรับการส่งข้อมูล IS Online และ API Secret Key ทุก 3-6 เดือน
-7.4 ควรยกเลิกการใช้งาน username ที่มีการย้ายงาน หรือ ย้ายสถานที่ทำงาน หรือ ลาออก
+5.1 > git add .
+5.2 > git commit -m "คำอธิบายสิ่งที่แก้ไข"
+5.3 > git push origin <branch name>
+5.4 กรณี push ไม่ได้ ให้ทำการ git pull ก่อน
+``
+
+# 6.ข้อควรระวัง
+```
+6.1 user/password ที่เข้าถึงฐานข้อมูล ควรให้สิทธิ์ select อย่างเดียว
+6.2 ไม่ควรติดตั้ง API บนเครื่องที่มีผู้ใช้งานเข้าถึงได้ง่าย เพื่อป้องกันอ่าน file config
+6.3 เพื่อความปลอดภัยในการเข้าถึงฐานข้อมูลส่วนกลาง ควรมีการเปลี่ยนรหัสผ่านสำหรับการส่งข้อมูล IS Online และ API Secret Key ทุก 3-6 เดือน
+6.4 ควรยกเลิกการใช้งาน username ที่มีการย้ายงาน หรือ ย้ายสถานที่ทำงาน หรือ ลาออก
 ```
 
 # credit
