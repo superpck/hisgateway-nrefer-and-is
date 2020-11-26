@@ -130,7 +130,7 @@ async function sendMoph(req, reply, db) {
 
   // on demand request backward send for some hospital only.
   /*
-  if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-11-26 01:33:00') {
+  if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-11-26 01:30:00') {
     let oldDate = moment().startOf('month').format('YYYY-MM-DD HH:mm:ss');
     while (oldDate < dateNow) {
       const referOut_ = await getRefer_out(db, oldDate);
