@@ -3,7 +3,7 @@
 var fastify = require('fastify');
 var http = require('http');
 var querystring = require('querystring');
-var ip = require("ip");
+// var ip = require("ip");
 
 async function getServiceUrl(config) {
 
@@ -11,7 +11,8 @@ async function getServiceUrl(config) {
   const mophUrl = url.split('/');
 
   const dataSending = querystring.stringify({
-    hospcode: process.env.HOSPCODE, ip: ip.address()
+    hospcode: process.env.HOSPCODE, ip: "" 
+    //ip.address()
   });
 
   const options = {
