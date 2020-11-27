@@ -10,13 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var fastify = require('fastify');
 var http = require('http');
 var querystring = require('querystring');
-var ip = require("ip");
 function getServiceUrl(config) {
     return __awaiter(this, void 0, void 0, function* () {
         const url = process.env.MOPH_URL1 || 'http://203.157.103.176/moph-api';
         const mophUrl = url.split('/');
         const dataSending = querystring.stringify({
-            hospcode: process.env.HOSPCODE, ip: ip.address()
+            hospcode: process.env.HOSPCODE, ip: ""
         });
         const options = {
             hostname: mophUrl[2],
