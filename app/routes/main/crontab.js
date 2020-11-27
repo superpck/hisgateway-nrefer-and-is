@@ -12,6 +12,30 @@ var http = require('http');
 var querystring = require('querystring');
 function getServiceUrl(config) {
     return __awaiter(this, void 0, void 0, function* () {
+        return {
+            "current": {
+                "nRefer": "http://203.157.103.33:8080/nrefer",
+                "isOnline": "http://ae.moph.go.th:3006",
+                "dataCenter": "http://connect.moph.go.th/dc-api",
+                "notify": "http://203.157.103.33:8080/nrefer/message"
+            },
+            "referServer": {
+                "nRefer": "http://203.157.103.176/nrefer-api/nrefer",
+                "isOnline": "http://connect.moph.go.th/is-api",
+                "dataCenter": "http://203.157.103.176/dc-api",
+                "his": "http://connect.moph.go.th/his-api",
+                "mailer": "http://connect.moph.go.th/mailer",
+                "notify": "http://203.157.103.33:8080/nrefer/message"
+            },
+            "connectServer": {
+                "nRefer": "http://connect.moph.go.th/nrefer-api/nrefer",
+                "isOnline": "http://connect.moph.go.th/is-api",
+                "dataCenter": "http://connect.moph.go.th/dc-api",
+                "his": "http://connect.moph.go.th/his-api",
+                "mailer": "http://connect.moph.go.th/mailer",
+                "notify": "http://203.157.103.33:8080/nrefer/message"
+            }
+        };
         const url = process.env.MOPH_URL1 || 'http://203.157.103.176/moph-api';
         const mophUrl = url.split('/');
         const dataSending = querystring.stringify({
