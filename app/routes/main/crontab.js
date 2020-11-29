@@ -21,7 +21,7 @@ function getServiceUrl(config) {
             },
             "referServer": {
                 "nRefer": "http://203.157.103.176/nrefer-api/nrefer",
-                "isOnline": "http://connect.moph.go.th/is-api",
+                "isOnline": "http://connect.moph.go.th:3003",
                 "dataCenter": "http://203.157.103.176/dc-api",
                 "his": "http://connect.moph.go.th/his-api",
                 "mailer": "http://connect.moph.go.th/mailer",
@@ -29,7 +29,7 @@ function getServiceUrl(config) {
             },
             "connectServer": {
                 "nRefer": "http://connect.moph.go.th/nrefer-api/nrefer",
-                "isOnline": "http://connect.moph.go.th/is-api",
+                "isOnline": "http://connect.moph.go.th:3003",
                 "dataCenter": "http://connect.moph.go.th/dc-api",
                 "his": "http://connect.moph.go.th/his-api",
                 "mailer": "http://connect.moph.go.th/mailer",
