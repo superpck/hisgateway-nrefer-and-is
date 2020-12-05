@@ -119,9 +119,15 @@ function sendMoph(req, reply, db) {
         else if (hourNow == 3 && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
             let oldDate = moment(dateNow).subtract(7, 'days').format('YYYY-MM-DD');
             while (oldDate < dateNow) {
-                yield getRefer_out(db, oldDate);
-                yield getReferResult(db, oldDate);
                 oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
+            }
+        }
+        if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-12-01 11:18:00') {
+            let oldDate = moment().startOf('month').format('YYYY-MM-DD HH:mm:ss');
+            oldDate = '2017-09-30';
+            while (oldDate > '2015-09-30') {
+                const referOut_ = yield getRefer_out(db, oldDate);
+                oldDate = moment(oldDate).subtract(1, 'days').format('YYYY-MM-DD');
             }
         }
         const referOut_ = getRefer_out(db, dateNow);
@@ -724,11 +730,13 @@ function getProcedureIpd(db, an) {
 }
 function referSending(path, dataArray) {
     return __awaiter(this, void 0, void 0, function* () {
-        const fixedUrl = fastify.mophService.nRefer || process.env.NREFER_URL1 || 'http://connect.moph.go.th/nrefer-api';
+        const fixedUrl = process.env.NREFER_URL1 || 'http://connect.moph.go.th/nrefer-api';
         const mophUrl = fixedUrl.split('/');
-        let urlPath = '/' + mophUrl[3] + '/';
-        urlPath += mophUrl[4] ? (mophUrl[4] + '/') : '';
-        urlPath += mophUrl[5] ? (mophUrl[5] + '/') : '';
+        let urlPath = '/' + mophUrl[3];
+        urlPath += mophUrl[4] ? ('/' + mophUrl[4]) : '';
+        urlPath += mophUrl[5] ? ('/' + mophUrl[5]) : '';
+        const hostDetail = mophUrl[2].split(':');
+        hostDetail[1] = hostDetail[1] ? hostDetail[1] : 80;
         const dataSending = querystring.stringify({
             hospcode: hcode, data: JSON.stringify(dataArray),
             processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -736,8 +744,9 @@ function referSending(path, dataArray) {
             hisProvider: process.env.HIS_PROVIDER
         });
         const options = {
-            hostname: mophUrl[2],
-            path: urlPath + path,
+            hostname: process.env.NREFER_URL,
+            port: process.env.NREFER_PORT,
+            path: process.env.NREFER_PATH + path,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
