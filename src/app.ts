@@ -29,8 +29,8 @@ const app: fastify.FastifyInstance<Server, IncomingMessage, ServerResponse> = fa
   bodyLimit: 5 * 1048576,
 });
 
-app.apiVersion = '3.1.7';
-app.apiSubVersion = '2020.11.12-01';
+app.apiVersion = '3.1.8';
+app.apiSubVersion = '2020.12.05-01';
 app.register(router);
 
 app.register(require('fastify-formbody'));

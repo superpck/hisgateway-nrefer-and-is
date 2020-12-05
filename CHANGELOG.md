@@ -1,8 +1,8 @@
+# 3.1.8 - 2020.12.05-01
+## Feature
+  - เพิ่มการลบข้อมูล IS
+
 # 3.1.7 - 2020.11.12-01
-
-## Bug:
-  >> none
-
 ## Feature
   - nRefer: แก้ไข bug PMK เพิ่มเงื่อนไข REFERTYPE=2
   - ISOnline: add test ISDB

@@ -122,23 +122,22 @@ async function sendMoph(req, reply, db) {
     // เวลา 03:00 get ย้อนหลัง 1 สัปดาห์
     let oldDate = moment(dateNow).subtract(7, 'days').format('YYYY-MM-DD');
     while (oldDate < dateNow) {
-      await getRefer_out(db, oldDate);
-      await getReferResult(db, oldDate);
+      // await getRefer_out(db, oldDate);
+      // await getReferResult(db, oldDate);
       oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
     }
   }
 
   // on demand request backward send for some hospital only.
-  /*
-  if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-11-26 01:30:00') {
+  if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-12-01 11:18:00') {
     let oldDate = moment().startOf('month').format('YYYY-MM-DD HH:mm:ss');
-    while (oldDate < dateNow) {
+    oldDate = '2017-09-30';
+    while (oldDate > '2015-09-30') {
       const referOut_ = await getRefer_out(db, oldDate);
-      const referResult_ = await getReferResult(db, oldDate);
-      oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
+      // const referResult_ = await getReferResult(db, oldDate);
+      oldDate = moment(oldDate).subtract(1, 'days').format('YYYY-MM-DD');
     }
   }
-  */
 
   const referOut_ = getRefer_out(db, dateNow);
   const referResult_ = getReferResult(db, dateNow);
@@ -734,11 +733,14 @@ async function getProcedureIpd(db, an) {
 }
 
 async function referSending(path, dataArray) {
-  const fixedUrl = fastify.mophService.nRefer || process.env.NREFER_URL1 || 'http://connect.moph.go.th/nrefer-api';
+  // const fixedUrl = fastify.mophService.nRefer || process.env.NREFER_URL1 || 'http://connect.moph.go.th/nrefer-api';
+  const fixedUrl = process.env.NREFER_URL1 || 'http://connect.moph.go.th/nrefer-api';
   const mophUrl = fixedUrl.split('/');
-  let urlPath = '/' + mophUrl[3] + '/';
-  urlPath += mophUrl[4] ? (mophUrl[4] + '/') : '';
-  urlPath += mophUrl[5] ? (mophUrl[5] + '/') : '';
+  let urlPath = '/' + mophUrl[3];
+  urlPath += mophUrl[4] ? ('/' + mophUrl[4]) : '';
+  urlPath += mophUrl[5] ? ('/' + mophUrl[5]) : '';
+  const hostDetail: any = mophUrl[2].split(':');
+  hostDetail[1] = hostDetail[1] ? hostDetail[1] : 80;
 
   const dataSending = querystring.stringify({
     hospcode: hcode, data: JSON.stringify(dataArray),
@@ -747,12 +749,16 @@ async function referSending(path, dataArray) {
     hisProvider: process.env.HIS_PROVIDER
   });
 
+  // console.log( { hostname: hostDetail[0],
+  //   port: hostDetail[1],
+  //   path: urlPath + path});
   const options = {
-    // hostname: process.env.NREFER_URL,
-    // port: process.env.NREFER_PORT,
-    // path: process.env.NREFER_PATH + path,
-    hostname: mophUrl[2],
-    path: urlPath + path,
+    hostname: process.env.NREFER_URL,
+    port: process.env.NREFER_PORT,
+    path: process.env.NREFER_PATH + path,
+    // hostname: hostDetail[0],
+    // port: hostDetail[1],
+    // path: urlPath + path,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',

@@ -478,25 +478,18 @@ const router = (fastify, { }, next) => {
     });
   })
 
-  fastify.post('/remove?????', { preHandler: [fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
+  fastify.post('/remove', { preHandler: [fastify.authenticate] }, async (req: fastify.Request, reply: fastify.Reply) => {
     let id = req.body.id;
     let ref = req.body.ref;
     let hospCode = req.body.hospCode;
 
     try {
       const result = await isModel.remove(fastify.dbISOnline, ref);
-      console.log("delete: user id: " + id);
-      reply.send({
-        statusCode: HttpStatus.OK,
-        ok: true,
-        version: fastify.apiVersion,
-        subVersion: fastify.apiSubVersion,
-        id: id, result
-      });
+      reply.send({ statusCode: HttpStatus.OK, result });
     } catch (error) {
       reply.send({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        ok: false, error: error, message: error.message
+        message: error.message
       });
     }
   })
