@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IswinModel = void 0;
+const moment = require("moment");
 const dbName = process.env.DB_NAME;
 const defaultHCode = process.env.HOSPCODE;
 class IswinModel {
@@ -219,10 +220,42 @@ class IswinModel {
         return knex('id')
             .where('id', isId);
     }
-    remove(knex, ref) {
-        return knex('is')
-            .where('ref', ref)
-            .del();
+    remove(db, ref) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const exists = yield db.schema.hasTable('is_deleted');
+            if (!exists) {
+                yield this.createISDeleted(db);
+            }
+            const isData = yield db('is').where('ref', ref);
+            if (isData && isData.length) {
+                yield db('is_deleted').insert({
+                    is_id: isData[0].id,
+                    hcode: isData[0].hosp,
+                    date: moment().locale('th').format('YYYY-MM-DD HH:mm:ss')
+                });
+            }
+            return db('is')
+                .where('ref', ref)
+                .del();
+        });
+    }
+    createISDeleted(db) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const sql = `CREATE TABLE is_deleted (
+      ref int(11) unsigned NOT NULL AUTO_INCREMENT,
+      hcode varchar(5) DEFAULT NULL,
+      is_id bigint(15) unsigned NOT NULL,
+      date datetime DEFAULT CURRENT_TIMESTAMP,
+      moph_deleted datetime DEFAULT NULL,
+      inp_id varchar(15) DEFAULT NULL,
+      lastupdate timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (ref),
+      UNIQUE KEY is_id (hcode,is_id) USING BTREE,
+      KEY date (date),
+      KEY moph_deleted (moph_deleted)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;
+            return db.raw(sql);
+        });
     }
 }
 exports.IswinModel = IswinModel;

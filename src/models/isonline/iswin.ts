@@ -233,10 +233,50 @@ export class IswinModel {
       .where('id', isId);
   }
 
-  remove(knex: Knex, ref: number) {
-    return knex('is')
+  async remove(db: Knex, ref: number) {
+    const exists = await db.schema.hasTable('is_deleted');
+    if (!exists) {
+      await this.createISDeleted(db);
+    }
+
+    const isData = await db('is').where('ref', ref);
+    if (isData && isData.length) {
+      await db('is_deleted').insert({
+        is_id: isData[0].id,
+        hcode: isData[0].hosp,
+        date: moment().locale('th').format('YYYY-MM-DD HH:mm:ss')
+      });
+    }
+
+    return db('is')
       .where('ref', ref)
       .del();
   }
 
+  async createISDeleted(db: Knex) {
+    // return db.schema.createTable('is_deleted', function (table) {
+    //   table.increments('ref').unsigned();
+    //   table.string('hcode', 5).notNullable();
+    //   table.bigInteger('is_id').unsigned().notNullable();
+    //   table.dateTime('date').defaultTo(db.fn.now()).notNullable();
+    //   table.dateTime('deleted');
+    //   table.timestamp('lastupdate').defaultTo(db.fn.now());
+    // });
+
+    const sql = `CREATE TABLE is_deleted (
+      ref int(11) unsigned NOT NULL AUTO_INCREMENT,
+      hcode varchar(5) DEFAULT NULL,
+      is_id bigint(15) unsigned NOT NULL,
+      date datetime DEFAULT CURRENT_TIMESTAMP,
+      moph_deleted datetime DEFAULT NULL,
+      inp_id varchar(15) DEFAULT NULL,
+      lastupdate timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (ref),
+      UNIQUE KEY is_id (hcode,is_id) USING BTREE,
+      KEY date (date),
+      KEY moph_deleted (moph_deleted)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;`;
+
+    return db.raw(sql);
+  }
 }
