@@ -743,6 +743,7 @@ async function referSending(path, dataArray) {
   hostDetail[1] = hostDetail[1] ? hostDetail[1] : 80;
 
   const dataSending = querystring.stringify({
+    ip: fastify.ipAddr || '127.0.0.1',
     hospcode: hcode, data: JSON.stringify(dataArray),
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
     sourceApiName: 'HIS-connect', apiVersion, subVersion,
@@ -799,6 +800,7 @@ async function getNReferToken(apiKey, secretKey) {
   urlPath += mophUrl[5] ? (mophUrl[5] + '/') : '';
 
   const postData = querystring.stringify({
+    ip: fastify.ipAddr || '127.0.0.1',
     apiKey: apiKey, secretKey: secretKey,
     hospcode: hcode,
     processPid: process.pid, dateTime: moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -857,6 +859,7 @@ async function expireToken(token) {
   // url += url.substr(-1, 1) === '/' ? '' : '/';
 
   const postData = querystring.stringify({
+    ip: fastify.ipAddr || '127.0.0.1',
     token: token
   });
 

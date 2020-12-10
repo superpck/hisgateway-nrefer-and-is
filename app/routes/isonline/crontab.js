@@ -9,14 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var fastify = require('fastify');
 const moment = require("moment");
 const iswin_1 = require("../../models/isonline/iswin");
 var http = require('http');
 var querystring = require('querystring');
 var iswin = new iswin_1.IswinModel();
 let crontabConfig;
-let sentContent = '';
-let tokenType = 'IS';
+let ip = fastify.ipAddr || '127.0.0.1';
 function sendMoph(req, reply, db) {
     return __awaiter(this, void 0, void 0, function* () {
         let token = null;
@@ -55,7 +55,7 @@ function sendMoph(req, reply, db) {
 function sendingData(dataArray, token) {
     return __awaiter(this, void 0, void 0, function* () {
         const dataSending = querystring.stringify({
-            data: JSON.stringify(dataArray), tokenKey: token
+            ip, data: JSON.stringify(dataArray), tokenKey: token
         });
         const url = process.env.IS_URL.split(':');
         const options = {
@@ -97,7 +97,7 @@ function sendData(row, tokenKey) {
     return __awaiter(this, void 0, void 0, function* () {
         const request = require('request');
         const bodyContent = {
-            data: row,
+            ip, data: row,
             token: tokenKey,
             version: crontabConfig.apiVersion,
             subVersion: crontabConfig.apiSubVersion,
@@ -132,6 +132,7 @@ function getToken() {
             url: process.env.IS_URL + '/isonline/token',
             json: true,
             body: {
+                ip,
                 username: process.env.IS_MOPH_USER,
                 password: process.env.IS_MOPH_PASSWORD
             }
@@ -157,6 +158,7 @@ function getIsToken_() {
         const options = {
             url: process.env.IS_URL + '/isonline/token',
             form: {
+                ip,
                 username: process.env.IS_MOPH_USER,
                 password: process.env.IS_MOPH_PASSWORD
             }
@@ -179,7 +181,7 @@ function getIsToken() {
     return __awaiter(this, void 0, void 0, function* () {
         const isUrl = process.env.IS_URL.split(':');
         const postData = querystring.stringify({
-            username: process.env.IS_MOPH_USER,
+            ip, username: process.env.IS_MOPH_USER,
             password: process.env.IS_MOPH_PASSWORD
         });
         const options = {
@@ -217,7 +219,7 @@ function getNReferToken(apiKey, secretKey) {
         let url = process.env.NREFER_URL1;
         url += url.substr(-1, 1) === '/' ? '' : '/';
         const postData = querystring.stringify({
-            apiKey: apiKey, secretKey: secretKey
+            ip, apiKey: apiKey, secretKey: secretKey
         });
         const options = {
             hostname: process.env.NREFER_URL,

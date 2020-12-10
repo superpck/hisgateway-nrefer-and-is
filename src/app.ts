@@ -30,7 +30,7 @@ const app: fastify.FastifyInstance<Server, IncomingMessage, ServerResponse> = fa
 });
 
 app.apiVersion = '3.1.8';
-app.apiSubVersion = '2020.12.05-01';
+app.apiSubVersion = '2020.12.10-01';
 app.register(router);
 
 app.register(require('fastify-formbody'));
@@ -60,11 +60,13 @@ app.register(require('fastify-jwt'), {
 });
 
 app.register(require('fastify-ws'), {});
+app.ipAddr = require('./routes/main/local-server')(app.ipAddr, {});
 
 // set MOPH Url =========================================
-if (!app.mophService) {
-  getmophUrl();
-}
+app.mophService = require('./routes/main/crontab')(app.mophService, {});
+// if (!app.mophService) {
+//   getmophUrl();
+// }
 
 // HIS connection =========================================
 app.register(require('./plugins/db'), {
@@ -264,6 +266,6 @@ function createConnectionOption(config: any) {
 
 }
 
-async function getmophUrl() {
-  app.mophService = await require('./routes/main/crontab')(app.mophService, {});
-}
+// async function getmophUrl() {
+//   app.mophService = await require('./routes/main/crontab')(app.mophService, {});
+// }
