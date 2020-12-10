@@ -1,6 +1,6 @@
 /// <reference path="./../../../typings.d.ts" />
 
-import * as fastify from 'fastify';
+var fastify = require('fastify');
 import * as moment from 'moment';
 import { IswinModel } from '../../models/isonline/iswin';
 var http = require('http');
@@ -8,8 +8,7 @@ var querystring = require('querystring');
 var iswin = new IswinModel();
 
 let crontabConfig: any;
-let sentContent = '';
-let tokenType = 'IS';
+let ip = fastify.ipAddr || '127.0.0.1';
 
 async function sendMoph(req, reply, db) {
   let token: any = null;
@@ -48,7 +47,7 @@ async function sendMoph(req, reply, db) {
 
 async function sendingData(dataArray, token) {
   const dataSending = querystring.stringify({
-    data: JSON.stringify(dataArray), tokenKey: token
+    ip, data: JSON.stringify(dataArray), tokenKey: token
   });
 
   const url = process.env.IS_URL.split(':');
@@ -94,7 +93,7 @@ async function sendingData(dataArray, token) {
 async function sendData(row, tokenKey) {
   const request = require('request');
   const bodyContent = {
-    data: row,
+    ip, data: row,
     token: tokenKey,
     version: crontabConfig.apiVersion,
     subVersion: crontabConfig.apiSubVersion,
@@ -131,6 +130,7 @@ async function getToken() {
     url: process.env.IS_URL + '/isonline/token',
     json: true,
     body: {
+      ip,
       username: process.env.IS_MOPH_USER,
       password: process.env.IS_MOPH_PASSWORD
     }
@@ -158,6 +158,7 @@ async function getIsToken_() {
   const options = {
     url: process.env.IS_URL + '/isonline/token',
     form: {
+      ip,
       username: process.env.IS_MOPH_USER,
       password: process.env.IS_MOPH_PASSWORD
     }
@@ -179,7 +180,7 @@ async function getIsToken_() {
 async function getIsToken() {
   const isUrl = process.env.IS_URL.split(':');
   const postData = querystring.stringify({
-    username: process.env.IS_MOPH_USER,
+    ip, username: process.env.IS_MOPH_USER,
     password: process.env.IS_MOPH_PASSWORD
   });
 
@@ -222,7 +223,7 @@ async function getNReferToken(apiKey, secretKey) {
   url += url.substr(-1, 1) === '/' ? '' : '/';
 
   const postData = querystring.stringify({
-    apiKey: apiKey, secretKey: secretKey
+    ip, apiKey: apiKey, secretKey: secretKey
   });
 
   const options = {
@@ -260,8 +261,7 @@ async function getNReferToken(apiKey, secretKey) {
 
 }
 
-
-const router = (request: fastify.Request, reply: fastify.Reply, dbConn: any, config = {}) => {
+const router = (request, reply, dbConn: any, config = {}) => {
   crontabConfig = config;
   return sendMoph(request, reply, dbConn);
 };

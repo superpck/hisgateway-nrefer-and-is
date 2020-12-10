@@ -14,26 +14,11 @@ const iswin_1 = require("../../models/isonline/iswin");
 const isModel = new iswin_1.IswinModel();
 const router = (fastify, {}, next) => {
     fastify.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            const result = yield isModel.getVersion(fastify.dbISOnline);
-            res.send({
-                apiCode: 'ISOnline',
-                statusCode: HttpStatus.OK,
-                version: fastify.apiVersion,
-                subVersion: fastify.apiSubVersion,
-                idDb: process.env.IS_DB_NAME,
-                connnection: true
-            });
-        }
-        catch (error) {
-            res.send({
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                version: fastify.apiVersion,
-                subVersion: fastify.apiSubVersion,
-                connnection: false,
-                message: error.message
-            });
-        }
+        res.send({
+            apiCode: 'ISOnline',
+            version: fastify.apiVersion,
+            subVersion: fastify.apiSubVersion
+        });
     }));
     fastify.get('/alive', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {

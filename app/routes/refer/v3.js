@@ -85,6 +85,7 @@ switch (hisProvider) {
 const router = (fastify, {}, next) => {
     fastify.get('/', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {
         reply.send({
+            apiCode: 'nRefer',
             api: 'refer V.3',
             version: fastify.apiVersion,
             subVersion: fastify.apiSubVersion

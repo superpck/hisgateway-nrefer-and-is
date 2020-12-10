@@ -23,24 +23,18 @@ function cronjob(fastify) {
         timingSchedule['isonline'].autosend = +process.env.IS_AUTO_SEND === 1 || false;
         timingSchedule['isonline'].minute = process.env.IS_AUTO_SEND_EVERY_MINUTE ? parseInt(process.env.IS_AUTO_SEND_EVERY_MINUTE) : 0;
         timingSchedule['isonline'].hour = process.env.IS_AUTO_SEND_EVERY_HOUR ? parseInt(process.env.IS_AUTO_SEND_EVERY_HOUR) : 0;
-        timingSchedule['isonline'].minute = timingSchedule['isonline'].minute < 10 ? 10 : timingSchedule['isonline'].minute;
-        timingSchedule['isonline'].minute = timingSchedule['isonline'].minute >= 60 ? (timingSchedule['isonline'].minute % 60) : timingSchedule['isonline'].minute;
         timingSchedule['isonline'].hour = timingSchedule['isonline'].hour > 23 ? (timingSchedule['isonline'].hour % 23) : timingSchedule['isonline'].hour;
-        if (timingSchedule['isonline'].hour == 0 && timingSchedule['isonline'].minute == 0) {
+        timingSchedule['isonline'].minute = timingSchedule['isonline'].minute + timingSchedule['isonline'].hour * 60;
+        timingSchedule['isonline'].minute = timingSchedule['isonline'].minute < 20 ? 20 : timingSchedule['isonline'].minute;
+        if (timingSchedule['isonline'].minute <= 0) {
             timingSchedule['isonline'].autosend = false;
         }
         timingSchedule['nrefer'].autosend = +process.env.NREFER_AUTO_SEND === 1 || false;
         timingSchedule['nrefer'].minute = process.env.NREFER_AUTO_SEND_EVERY_MINUTE ? parseInt(process.env.NREFER_AUTO_SEND_EVERY_MINUTE) : 0;
         timingSchedule['nrefer'].hour = process.env.NREFER_AUTO_SEND_EVERY_HOUR ? parseInt(process.env.NREFER_AUTO_SEND_EVERY_HOUR) : 0;
-        if (timingSchedule['nrefer'].minute > 0) {
-            timingSchedule['nrefer'].minute = timingSchedule['nrefer'].minute < 10 ? 10 : timingSchedule['nrefer'].minute;
-            timingSchedule['nrefer'].minute = timingSchedule['nrefer'].minute > 60 ? (timingSchedule['nrefer'].minute % 60) : timingSchedule['nrefer'].minute;
-            timingSchedule['nrefer'].hour = 0;
-        }
-        else if (+timingSchedule['nrefer'].hour > 0) {
-            timingSchedule['nrefer'].hour = timingSchedule['nrefer'].hour > 23 ? (timingSchedule['nrefer'].hour % 23) : timingSchedule['nrefer'].hour;
-        }
-        else {
+        timingSchedule['nrefer'].minute = timingSchedule['nrefer'].minute + timingSchedule['nrefer'].hour * 60;
+        timingSchedule['nrefer'].minute = timingSchedule['nrefer'].minute < 10 ? 10 : timingSchedule['nrefer'].minute;
+        if (timingSchedule['nrefer'].minute <= 0) {
             timingSchedule['nrefer'].autosend = false;
         }
         timingSchedule['cupDataCenter'].autosend = +process.env.HIS_DATACENTER_ENABLE === 1 || false;
@@ -51,32 +45,24 @@ function cronjob(fastify) {
         console.log("Hospcode", process.env.HOSPCODE);
         console.log('crontab start: ', timingSch);
         if (timingSchedule['nrefer'].autosend) {
-            console.log('crontab nRefer start every (minute)', timingSchedule['nrefer'].minute);
+            console.log('crontab nRefer start every (minute)', timingSchedule['nrefer'].minute, ' from midnight.');
         }
         if (timingSchedule['isonline'].autosend) {
-            console.log('crontab ISOnline start every (minute)', timingSchedule['isonline'].minute);
+            console.log('crontab ISOnline start every (minute)', timingSchedule['isonline'].minute, ' from midnight.');
         }
         if (timingSchedule['cupDataCenter'].autosend) {
-            console.log('crontab Data Center start every (minute)', timingSchedule['cupDataCenter'].minute);
+            console.log('crontab Data Center start every (minute)', timingSchedule['cupDataCenter'].minute, ' from midnight.');
         }
         cron.schedule(timingSch, (req, res) => __awaiter(this, void 0, void 0, function* () {
             const minuteSinceLastNight = (+moment().get('hour')) * 60 + (+moment().get('minute'));
             const minuteNow = +moment().get('minute') == 0 ? 60 : +moment().get('minute');
             const hourNow = +moment().get('hour');
             if (timingSchedule['nrefer']['autosend'] &&
-                ((timingSchedule['nrefer'].hour > 0 &&
-                    hourNow % timingSchedule['nrefer'].hour == 0 &&
-                    minuteNow == timingSchedule['nrefer'].minute) ||
-                    (timingSchedule['nrefer'].minute > 0 &&
-                        minuteNow % timingSchedule['nrefer'].minute == 0))) {
+                minuteSinceLastNight % timingSchedule['nrefer'].minute == 0) {
                 doAutoSend(req, res, 'nrefer', './routes/refer/crontab');
             }
             if (timingSchedule['isonline']['autosend'] &&
-                ((timingSchedule['isonline'].hour > 0 &&
-                    hourNow % timingSchedule['isonline'].hour == 0 &&
-                    minuteNow == timingSchedule['isonline'].minute) ||
-                    (timingSchedule['isonline'].minute > 0 &&
-                        minuteNow % timingSchedule['isonline'].minute == 0))) {
+                minuteSinceLastNight % timingSchedule['isonline'].minute == 0) {
                 doAutoSend(req, res, 'isonline', './routes/isonline/crontab');
             }
             if (timingSchedule['cupDataCenter'].autosend &&
