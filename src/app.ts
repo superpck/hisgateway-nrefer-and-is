@@ -235,6 +235,7 @@ function createConnectionOption(config: any) {
         user: config.user,
         password: config.password,
         database: config.dbName,
+        timezone: "Asia/Bangkok"
       },
       pool: {
         min: 0,
