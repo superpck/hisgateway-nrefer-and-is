@@ -109,6 +109,7 @@ const router = (fastify, { }, next) => {
   fastify.get('/alive', { preHandler: [fastify.serviceMonitoring] }, async (req: fastify.Request, res: fastify.Reply) => {
     try {
       const result = await hisModel.testConnect(fastify.dbHIS);
+      fastify.dbHIS.destroy;
       if (result && result.length) {
         res.send({
           statusCode: HttpStatus.OK,
@@ -200,6 +201,7 @@ const router = (fastify, { }, next) => {
     if (columnName && searchText) {
       try {
         const result = await hisModel.getPerson(fastify.dbHIS, columnName, searchText);
+        fastify.dbHIS.destroy;
         res.send({
           statusCode: HttpStatus.OK,
           version: fastify.apiVersion,
@@ -232,6 +234,7 @@ const router = (fastify, { }, next) => {
     if (visitNo + hn) {
       try {
         const result = await hisModel.getOpdService(fastify.dbHIS, hn, date, 'vn', visitNo);
+        fastify.dbHIS.destroy;
         res.send({
           statusCode: HttpStatus.OK,
           version: fastify.apiVersion,
@@ -262,6 +265,7 @@ const router = (fastify, { }, next) => {
     if (visitNo) {
       try {
         const result = await hisModel.getDiagnosisOpd(fastify.dbHIS, visitNo);
+        fastify.dbHIS.destroy;
         res.send({
           statusCode: HttpStatus.OK,
           version: fastify.apiVersion,

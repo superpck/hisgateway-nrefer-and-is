@@ -101,9 +101,9 @@ async function sendMoph(req, reply, db) {
   sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
 
   const resultToken: any = await getNReferToken(apiKey, secretKey);
-  if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
+  if (resultToken && resultToken.statusCode == 200 && resultToken.token) {
     nReferToken = resultToken.token;
-    sentContent += `token ${resultToken.token}\r`;
+    sentContent += `token ${nReferToken}\r`;
   } else {
     console.log('refer get token error', resultToken.message);
     sentContent += `get token Error:` + JSON.stringify(resultToken) + `\r`;
@@ -129,13 +129,13 @@ async function sendMoph(req, reply, db) {
   }
 
   // on demand request backward send for some hospital only.
-  if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-12-01 11:18:00') {
+  if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-12-19 16:01:00') {
     let oldDate = moment().startOf('month').format('YYYY-MM-DD HH:mm:ss');
-    oldDate = '2017-09-30';
-    while (oldDate > '2015-09-30') {
+    oldDate = '2020-12-10';
+    while (oldDate < dateNow) {
       const referOut_ = await getRefer_out(db, oldDate);
-      // const referResult_ = await getReferResult(db, oldDate);
-      oldDate = moment(oldDate).subtract(1, 'days').format('YYYY-MM-DD');
+      const referResult_ = await getReferResult(db, oldDate);
+      oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
     }
   }
 
@@ -750,16 +750,13 @@ async function referSending(path, dataArray) {
     hisProvider: process.env.HIS_PROVIDER
   });
 
-  // console.log( { hostname: hostDetail[0],
-  //   port: hostDetail[1],
-  //   path: urlPath + path});
   const options = {
-    hostname: process.env.NREFER_URL,
-    port: process.env.NREFER_PORT,
-    path: process.env.NREFER_PATH + path,
-    // hostname: hostDetail[0],
-    // port: hostDetail[1],
-    // path: urlPath + path,
+    // hostname: process.env.NREFER_URL,
+    // port: process.env.NREFER_PORT,
+    // path: process.env.NREFER_PATH + path,
+    hostname: hostDetail[0],
+    port: hostDetail[1],
+    path: urlPath + path,
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -776,6 +773,7 @@ async function referSending(path, dataArray) {
         ret += chunk;
       });
       res.on('end', () => {
+        // console.log(ret);
         const data = JSON.parse(ret);
         // console.log('ret', data);
         resolve(data);
@@ -832,6 +830,7 @@ async function getNReferToken(apiKey, secretKey) {
         if (error || !ret) {
           reject(error);
         } else {
+          // console.log(ret);
           const data = JSON.parse(ret);
           // console.log('ret', data);
           resolve(data);

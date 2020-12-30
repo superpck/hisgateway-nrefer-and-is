@@ -34,6 +34,7 @@ const router = (fastify, {}, next) => {
             serviceName: "isonline",
             his_provider: process.env.HIS_PROVIDER,
             hospcode: process.env.HOSPCODE,
+            timer: (+moment().get('hour')) * 60 + (+moment().get('minute'))
         });
     }));
     fastify.get('/get-token/:key', (req, reply) => __awaiter(void 0, void 0, void 0, function* () {

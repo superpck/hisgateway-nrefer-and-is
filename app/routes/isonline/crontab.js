@@ -73,7 +73,6 @@ function sendingData(dataArray, token) {
             }
         };
         let ret = '';
-        console.log(options.hostname, options.port);
         return new Promise((resolve, reject) => {
             const req = http.request(options, (res) => {
                 res.setEncoding('utf8');
