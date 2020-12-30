@@ -28,8 +28,8 @@ const app = fastify({
     },
     bodyLimit: 5 * 1048576,
 });
-app.apiVersion = '3.1.8';
-app.apiSubVersion = '2020.12.10-01';
+app.apiVersion = '3.1.9';
+app.apiSubVersion = '2020.12.30-01';
 app.register(router_1.default);
 app.register(require('fastify-formbody'));
 app.register(require('fastify-cors'), {});
@@ -218,6 +218,7 @@ function createConnectionOption(config) {
                 user: config.user,
                 password: config.password,
                 database: config.dbName,
+                timezone: "Asia/Bangkok"
             },
             pool: {
                 min: 0,

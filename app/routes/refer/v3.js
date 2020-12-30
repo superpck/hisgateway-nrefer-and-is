@@ -136,7 +136,6 @@ const router = (fastify, {}, next) => {
         try {
             const result = yield hisModel.getReferOut(fastify.dbHIS, date, hospcode);
             reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
-            console.log('referout', result.length, 'reccords.');
         }
         catch (error) {
             console.log('referout', error.message);
@@ -285,8 +284,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getProcedureOpd(fastify.dbHIS, visitNo, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getProcedureOpd(fastify.dbHIS, visitNo, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('procudure_opd', error.message);
@@ -301,8 +300,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getProcedureIpd(fastify.dbHIS, an, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getProcedureIpd(fastify.dbHIS, an, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('procudure_opd', error.message);
@@ -317,8 +316,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getDrugOpd(fastify.dbHIS, visitNo, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getDrugOpd(fastify.dbHIS, visitNo, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('drug_opd', error.message);
@@ -333,8 +332,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getDrugIpd(fastify.dbHIS, an, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getDrugIpd(fastify.dbHIS, an, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('drug_ipd', error.message);
@@ -349,8 +348,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getChargeOpd(fastify.dbHIS, visitNo, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getChargeOpd(fastify.dbHIS, visitNo, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('charge_opd', error.message);
@@ -365,8 +364,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getChargeIpd(fastify.dbHIS, an, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getChargeIpd(fastify.dbHIS, an, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('charge_ipd', error.message);
@@ -381,8 +380,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getAccident(fastify.dbHIS, visitNo, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getAccident(fastify.dbHIS, visitNo, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('accident', error.message);
@@ -397,8 +396,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getAppointment(fastify.dbHIS, visitNo, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getAppointment(fastify.dbHIS, visitNo, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('appointment', error.message);
@@ -420,8 +419,8 @@ const router = (fastify, {}, next) => {
                 typeSearch = 'visitNo';
                 textSearch = visitNo;
             }
-            const result = yield hisModel.getReferHistory(fastify.dbHIS, typeSearch, textSearch, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getReferHistory(fastify.dbHIS, typeSearch, textSearch, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('refer_history', error.message);
@@ -436,8 +435,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getClinicalRefer(fastify.dbHIS, referNo, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getClinicalRefer(fastify.dbHIS, referNo, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('clinical_refer', error.message);
@@ -452,8 +451,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getInvestigationRefer(fastify.dbHIS, referNo, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getInvestigationRefer(fastify.dbHIS, referNo, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('investigation_refer', error.message);
@@ -468,8 +467,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getCareRefer(fastify.dbHIS, referNo, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getCareRefer(fastify.dbHIS, referNo, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('care_refer', error.message);
@@ -485,8 +484,8 @@ const router = (fastify, {}, next) => {
             return;
         }
         try {
-            const result = yield hisModel.getReferResult(fastify.dbHIS, hospDestination, referNo, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getReferResult(fastify.dbHIS, hospDestination, referNo, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('refer_result', error.message);
@@ -508,8 +507,8 @@ const router = (fastify, {}, next) => {
             textSearch = licenseNo;
         }
         try {
-            const result = yield hisModel.getProvider(fastify.dbHIS, typeSearch, textSearch, hospcode);
-            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows: result });
+            const rows = yield hisModel.getProvider(fastify.dbHIS, typeSearch, textSearch, hospcode);
+            reply.status(HttpStatus.OK).send({ statusCode: HttpStatus.OK, rows });
         }
         catch (error) {
             console.log('provider', error.message);

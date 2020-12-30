@@ -29,8 +29,8 @@ const app: fastify.FastifyInstance<Server, IncomingMessage, ServerResponse> = fa
   bodyLimit: 5 * 1048576,
 });
 
-app.apiVersion = '3.1.8';
-app.apiSubVersion = '2020.12.10-01';
+app.apiVersion = '3.1.9';
+app.apiSubVersion = '2020.12.30-01';
 app.register(router);
 
 app.register(require('fastify-formbody'));
@@ -250,6 +250,7 @@ function createConnectionOption(config: any) {
         user: config.user,
         password: config.password,
         database: config.dbName,
+        timezone: "Asia/Bangkok"
       },
       pool: {
         min: 0,

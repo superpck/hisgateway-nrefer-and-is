@@ -30,6 +30,7 @@ const router = (fastify, { }, next) => {
       serviceName: "isonline",   // for isonline only
       his_provider: process.env.HIS_PROVIDER,
       hospcode: process.env.HOSPCODE,
+      timer: (+moment().get('hour')) * 60 + (+moment().get('minute'))
       // session: cookieValue
     });
   })

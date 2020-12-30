@@ -98,9 +98,9 @@ function sendMoph(req, reply, db) {
         const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
         sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
         const resultToken = yield getNReferToken(apiKey, secretKey);
-        if (resultToken && resultToken.statusCode === 200 && resultToken.token) {
+        if (resultToken && resultToken.statusCode == 200 && resultToken.token) {
             nReferToken = resultToken.token;
-            sentContent += `token ${resultToken.token}\r`;
+            sentContent += `token ${nReferToken}\r`;
         }
         else {
             console.log('refer get token error', resultToken.message);
@@ -122,12 +122,13 @@ function sendMoph(req, reply, db) {
                 oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
             }
         }
-        if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-12-01 11:18:00') {
+        if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-12-19 16:01:00') {
             let oldDate = moment().startOf('month').format('YYYY-MM-DD HH:mm:ss');
-            oldDate = '2017-09-30';
-            while (oldDate > '2015-09-30') {
+            oldDate = '2020-12-10';
+            while (oldDate < dateNow) {
                 const referOut_ = yield getRefer_out(db, oldDate);
-                oldDate = moment(oldDate).subtract(1, 'days').format('YYYY-MM-DD');
+                const referResult_ = yield getReferResult(db, oldDate);
+                oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
             }
         }
         const referOut_ = getRefer_out(db, dateNow);
@@ -745,9 +746,9 @@ function referSending(path, dataArray) {
             hisProvider: process.env.HIS_PROVIDER
         });
         const options = {
-            hostname: process.env.NREFER_URL,
-            port: process.env.NREFER_PORT,
-            path: process.env.NREFER_PATH + path,
+            hostname: hostDetail[0],
+            port: hostDetail[1],
+            path: urlPath + path,
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
