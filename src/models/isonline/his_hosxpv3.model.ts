@@ -42,7 +42,7 @@ export class HisHosxpv3Model {
             .leftJoin(`ovstdiag`, 'ovstdiag.vn', 'opdscreen.vn')
             .leftJoin(`ipt`, 'ipt.vn', 'opdscreen.vn')
             .leftJoin(`referin`, 'referin.vn', 'opdscreen.vn')
-            .leftJoin(`er_emergency_type`, `er_emergency_type.er_emergency_type`, `er_nursing_detail.er_accident_type_id`)
+            .leftJoin(`er_emergency_type`, `er_emergency_type.er_emergency_type`, `er_regist.er_emergency_type`)
             .leftJoin(`accident_place_type`, `accident_place_type.accident_place_type_id`, `er_nursing_detail.accident_place_type_id`)
             .leftJoin(`accident_transport_type`, `accident_transport_type.accident_transport_type_id`, `er_nursing_detail.accident_transport_type_id`)
             .leftJoin(`accident_person_type`, `accident_person_type.accident_person_type_id`, `er_nursing_detail.accident_person_type_id`)
@@ -54,7 +54,7 @@ export class HisHosxpv3Model {
                 'opdscreen.pulse as pr', 'opdscreen.rr', 'ovst.vstdate as hdate', 'ovst.vsttime as htime',
                 'er_nursing_detail.gcs_e as eye', 'er_nursing_detail.gcs_v as verbal',
                 'er_nursing_detail.gcs_m as motor',
-                'er_emergency_type.export_code as cause',
+                'er_nursing_detail.er_accident_type_id as cause',
                 'accident_place_type.export_code as apoint',
                 'accident_transport_type.export_code as injt',
                 'accident_person_type.export_code as injp',
@@ -73,7 +73,7 @@ export class HisHosxpv3Model {
                 'er_nursing_detail.accident_type_4 as ais1',
                 'er_nursing_detail.accident_type_5 as ais2',
                 'er_regist.finish_time as disc_date_er',
-                'er_regist.er_emergency_type as cause_t',
+                'er_emergency_type.export_code as cause_t',
                 'ipt.ward as wardcode',
                 'referin.refer_hospcode as htohosp'
             )

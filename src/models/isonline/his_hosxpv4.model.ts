@@ -40,6 +40,7 @@ export class HisHosxpv4Model {
             .leftJoin(`patient`, 'patient.hn', 'opdscreen.hn')
             .leftJoin(`er_regist`, 'er_regist.vn', 'ovst.vn')
             .leftJoin(`er_nursing_detail`, 'er_nursing_detail.vn', 'opdscreen.vn')
+            .leftJoin(`er_emergency_type`, `er_emergency_type.er_emergency_type`, `er_regist.er_emergency_type`)
             .leftJoin(`accident_transport_type`, 'er_nursing_detail.accident_transport_type_id', 'accident_transport_type.accident_transport_type_id')
             .select('opdscreen.hn', 'opdscreen.vn as visitno', 'opdscreen.vstdate as date',
                 'opdscreen.vsttime as time',
@@ -66,7 +67,7 @@ export class HisHosxpv4Model {
                 'er_nursing_detail.accident_place_type_id as apoint',
                 'er_nursing_detail.accident_place as apointname',
                 'er_regist.finish_time as disc_date_er',
-                'er_regist.er_emergency_type as cause_t'
+                'er_emergency_type.export_code as cause_t'
             )
             .where(where)
             .limit(maxLimit);
