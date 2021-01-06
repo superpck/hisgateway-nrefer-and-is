@@ -53,7 +53,7 @@
 5.2 > git commit -m "คำอธิบายสิ่งที่แก้ไข"
 5.3 > git push origin <branch name>
 5.4 กรณี push ไม่ได้ ให้ทำการ git pull ก่อน
-``
+```
 
 # 6.ข้อควรระวัง
 ```
