@@ -28,8 +28,8 @@ const app = fastify({
     },
     bodyLimit: 5 * 1048576,
 });
-app.apiVersion = '3.1.9';
-app.apiSubVersion = '2021.01.06-01';
+app.apiVersion = '3.1.10';
+app.apiSubVersion = '2021.03.30-01';
 app.register(router_1.default);
 app.register(require('fastify-formbody'));
 app.register(require('fastify-cors'), {});
