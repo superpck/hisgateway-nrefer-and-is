@@ -99,7 +99,7 @@ export class PccHisJhcisModel {
                 , 'lib.drugname', 'visit.visitdate as date_serv', 'visit.timestart as time_serv'
                 , 'lib.pack', 'lib.unitsell as unit_sell', 'lib.unitusage as unit_use', 'lib.cost', 'lib.sell as price'
                 , 'lib.drugcaution as caution', 'lib.drugcode24 as code24'
-                , 'lib.tcode as tmt', 'lib.drugproperties as comment')
+                , 'lib.tcode','lib.tmtcode as tmt', 'lib.drugproperties as comment')
             .where('drug.visitno', "=", visitNo)
             .where('lib.drugtype', "=", '01')
             .orderBy('visit.visitdate', 'desc')
@@ -115,7 +115,7 @@ export class PccHisJhcisModel {
                 , 'lib.drugname', 'visit.visitdate as date_serv', 'visit.timestart as time_serv'
                 , 'lib.pack', 'lib.unitsell as unit', 'lib.unitusage as unit_use', 'lib.cost', 'lib.sell as price'
                 , 'lib.drugcaution as caution', 'lib.drugcode24 as code24'
-                , 'lib.tcode as tmt', 'lib.drugproperties as comment')
+                , 'lib.tcode','lib.tmtcode as tmt', 'lib.drugproperties as comment')
             .where('visit.pid', "=", pid)
             .where('lib.drugtype', "=", '01')
             .orderBy('visit.visitdate', 'desc')
