@@ -173,6 +173,7 @@ class IswinModel {
         return knex.raw(Sql);
     }
     saveIs(knex, ref, arrData) {
+        delete arrData['lastupdate'];
         if (ref > 0) {
             return knex('is').update(arrData)
                 .where('ref', '=', ref);

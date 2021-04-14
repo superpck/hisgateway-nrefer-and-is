@@ -255,11 +255,16 @@ class HisEzhospModel {
                 , concat(ipd.admite,' ',ipd.time) as datetime_admit
                 , concat(refer.refer_date,' ',refer.refer_time) as datetime_refer
                 , visit.clinic as clinic_refer, refer.refer_hcode as hosp_destination
-                , vs.cc as CHIEFCOMP
+                , refer.sendto as destination_req, vs.cc as CHIEFCOMP
                 , vs.pi as PRESENTILLNESS, vs.pe AS PHYSICALEXAM
                 , vs.nurse_ph as PASTHISTORY, visit.dx1 as DIAGLAST
                 , case when visit.dep=1 then 3 else 1 end as ptype
-                , '5' as emergency, '99' as ptypedis, '1' as causeout
+                , case when refer.severity=5 then '1'
+                    when refer.severity=4 then '2'
+                    when refer.severity=3 then '3'
+                    when refer.severity=2 then '4'
+                    else '5' end as emergency
+                , '99' as ptypedis, '1' as causeout
                 , concat('ว',visit.dr) as provider
                 , now() as d_update
             from refer_out as refer 

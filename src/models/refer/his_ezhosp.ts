@@ -333,7 +333,11 @@ export class HisEzhospModel {
                 , vs.pi as PRESENTILLNESS, vs.pe AS PHYSICALEXAM
                 , vs.nurse_ph as PASTHISTORY, visit.dx1 as DIAGLAST
                 , case when visit.dep=1 then 3 else 1 end as ptype
-                , case when visit.emg=0 OR ISNULL(visit.emg) then '5' else visit.emg end as emergency
+                , case when refer.severity=5 then '1'
+                    when refer.severity=4 then '2'
+                    when refer.severity=3 then '3'
+                    when refer.severity=2 then '4'
+                    else '5' end as emergency
                 , '99' as ptypedis, '1' as causeout
                 , concat('ว',visit.dr) as provider
                 , now() as d_update
