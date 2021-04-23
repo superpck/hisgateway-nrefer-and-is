@@ -38,9 +38,11 @@ export class HisEzhospModel {
                 , 'refer.hn', 'pt.no_card as cid', 'refer.vn as seq', 'refer.an'
                 , 'pt.title as prename', 'pt.name as fname', 'pt.surname as lname'
                 , 'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx'
-                , 'vs.cc as CHIEFCOMP', 'vs.nurse_ph as PH'
-                , 'vs.pi as PI', 'vs.pe AS PE'
+                , 'vs.pi as PI'
             )
+            .select(db.raw('case when refer.history_ill then refer.history_ill else vs.nurse_ph end as PH'))
+            .select(db.raw('case when refer.history_exam then refer.history_exam else vs.pe end as PE'))
+            .select(db.raw('case when refer.current_ill then refer.current_ill else vs.cc end as CHIEFCOMP'))
             .where('refer.refer_date', date)
             .where('refer.hcode', hospCode)
             .orderBy('refer.refer_date')

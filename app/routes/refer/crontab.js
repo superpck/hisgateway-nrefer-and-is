@@ -122,15 +122,6 @@ function sendMoph(req, reply, db) {
                 oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
             }
         }
-        if (moment().locale('th').format('YYYY-MM-DD HH:mm:ss') < '2020-12-19 16:01:00') {
-            let oldDate = moment().startOf('month').format('YYYY-MM-DD HH:mm:ss');
-            oldDate = '2020-12-10';
-            while (oldDate < dateNow) {
-                const referOut_ = yield getRefer_out(db, oldDate);
-                const referResult_ = yield getReferResult(db, oldDate);
-                oldDate = moment(oldDate).add(1, 'days').format('YYYY-MM-DD');
-            }
-        }
         const referOut_ = getRefer_out(db, dateNow);
         const referResult_ = getReferResult(db, dateNow);
         const referOut = yield referOut_;
