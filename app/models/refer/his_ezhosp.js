@@ -40,7 +40,10 @@ class HisEzhospModel {
             .leftJoin('hospdata.opd_vs as vs', 'refer.vn', 'vs.vn')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select(db.raw('concat(refer_date, " " , refer_time) as refer_date'))
-            .select('refer_no as referid', 'refer.refer_hcode as hosp_destination', 'refer.hn', 'pt.no_card as cid', 'refer.vn as seq', 'refer.an', 'pt.title as prename', 'pt.name as fname', 'pt.surname as lname', 'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx', 'vs.cc as CHIEFCOMP', 'vs.nurse_ph as PH', 'vs.pi as PI', 'vs.pe AS PE')
+            .select('refer_no as referid', 'refer.refer_hcode as hosp_destination', 'refer.hn', 'pt.no_card as cid', 'refer.vn as seq', 'refer.an', 'pt.title as prename', 'pt.name as fname', 'pt.surname as lname', 'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx', 'vs.pi as PI')
+            .select(db.raw('case when refer.history_ill then refer.history_ill else vs.nurse_ph end as PH'))
+            .select(db.raw('case when refer.history_exam then refer.history_exam else vs.pe end as PE'))
+            .select(db.raw('case when refer.current_ill then refer.current_ill else vs.cc end as CHIEFCOMP'))
             .where('refer.refer_date', date)
             .where('refer.hcode', hospCode)
             .orderBy('refer.refer_date')
@@ -255,11 +258,16 @@ class HisEzhospModel {
                 , concat(ipd.admite,' ',ipd.time) as datetime_admit
                 , concat(refer.refer_date,' ',refer.refer_time) as datetime_refer
                 , visit.clinic as clinic_refer, refer.refer_hcode as hosp_destination
-                , vs.cc as CHIEFCOMP
+                , refer.sendto as destination_req, vs.cc as CHIEFCOMP
                 , vs.pi as PRESENTILLNESS, vs.pe AS PHYSICALEXAM
                 , vs.nurse_ph as PASTHISTORY, visit.dx1 as DIAGLAST
                 , case when visit.dep=1 then 3 else 1 end as ptype
-                , '5' as emergency, '99' as ptypedis, '1' as causeout
+                , case when refer.severity=5 then '1'
+                    when refer.severity=4 then '2'
+                    when refer.severity=3 then '3'
+                    when refer.severity=2 then '4'
+                    else '5' end as emergency
+                , '99' as ptypedis, '1' as causeout
                 , concat('ว',visit.dr) as provider
                 , now() as d_update
             from refer_out as refer 
