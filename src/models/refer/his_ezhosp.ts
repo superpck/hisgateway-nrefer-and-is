@@ -29,13 +29,14 @@ export class HisEzhospModel {
     // select รายชื่อเพื่อแสดงทะเบียน
     getReferOut(db: Knex, date, hospCode = hcode) {
         return db('hospdata.refer_out as refer')
-            .leftJoin('hospdata.patient as pt', 'refer.hn', 'pt.hn')
+            .leftJoin('hospdata.opd_visit as visit', 'refer.vn', 'visit.vn')
+            .leftJoin('hospdata.patient as pt', 'visit.hn', 'pt.hn')
             .leftJoin('hospdata.opd_vs as vs', 'refer.vn', 'vs.vn')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select(db.raw('concat(refer_date, " " , refer_time) as refer_date'))
             .select('refer_no as referid'
                 , 'refer.refer_hcode as hosp_destination'
-                , 'refer.hn', 'pt.no_card as cid', 'refer.vn as seq', 'refer.an'
+                , 'visit.hn', 'pt.no_card as cid', 'refer.vn as seq', 'refer.an'
                 , 'pt.title as prename', 'pt.name as fname', 'pt.surname as lname'
                 , 'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx'
                 , 'vs.pi as PI'
