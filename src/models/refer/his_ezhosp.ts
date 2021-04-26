@@ -43,8 +43,8 @@ export class HisEzhospModel {
             .select(db.raw('case when isnull(refer.history_ill) OR refer.history_ill="" then vs.nurse_ph else refer.history_ill end as PH'))
             .select(db.raw('case when isnull(refer.history_exam) or refer.history_exam="" then vs.pe else refer.history_exam end as PE'))
             .select(db.raw('case when isnull(refer.current_ill)or refer.current_ill="" then vs.cc else refer.current_ill end as CHIEFCOMP'))
-            .whereRaw(`(refer.refer_date="${date}" OR refer.lastupdate BETWEEN "${date}" and "${date} 23:59:59")`)
             .where('refer.hcode', hospCode)
+            .whereRaw(`(refer.refer_date="${date}" OR refer.lastupdate BETWEEN "${date} 00:00:00" and "${date} 23:59:59")`)
             .orderBy('refer.refer_date')
             .limit(maxLimit);
     }

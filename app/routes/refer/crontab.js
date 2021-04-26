@@ -133,7 +133,7 @@ function getRefer_out(db, date) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const referout = yield hisModel.getReferOut(db, date, hcode);
-            console.log('******** >> referout', referout.length);
+            console.log('******** >> referout', referout.length, ' case');
             sentContent += `\rsave refer_history ${date} \r`;
             sentContent += `\rsave refer service data ${date} \r`;
             let index = 0;

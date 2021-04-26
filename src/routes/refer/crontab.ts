@@ -138,7 +138,7 @@ async function sendMoph(req, reply, db) {
 async function getRefer_out(db, date) {
   try {
     const referout = await hisModel.getReferOut(db, date, hcode);
-    console.log('******** >> referout', referout.length);
+    console.log('******** >> referout', referout.length,' case');
     sentContent += `\rsave refer_history ${date} \r`;
     sentContent += `\rsave refer service data ${date} \r`;
     let index = 0;
