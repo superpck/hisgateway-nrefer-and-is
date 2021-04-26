@@ -165,11 +165,12 @@ export class HisEzhospModel {
                 , 'result.lab_code as LOCALCODE', 'result.icdcm as INVESTCODE'
                 , 'result.lab_name as INVESTNAME'
                 , 'result.result as INVESTVALUE', 'result.unit as UNIT'
-                , 'result.result_obj as INVESTRESULT'
                 , 'result.minresult as NORMAL_MIN', 'result.maxresult as NORMAL_MAX'
                 , 'result.date_result as DATETIME_REPORT')
-            .select(db.raw('CONCAT(result.date," ",result.time) as D_UPDATE'))
+            .select(db.raw('CONCAT(result.date," ",result.time) as D_UPDATE, CONVERT(result_obj USING tis620) as INVESTRESULT'))
             .where(columnName, "=", searchNo)
+            .orderBy('result.lab_code')
+            .orderBy('result.date_result')
             .limit(maxLimit);
 
         // `LOINC` varchar(20) DEFAULT NULL,
@@ -186,13 +187,14 @@ export class HisEzhospModel {
             .select('result.hn as PID', 'result.vn as SEQ', 'result.pid as CID'
                 , 'an as AN', 'result.type_result as LH'
                 , 'result.lab_code as LOCALCODE', 'result.icdcm as INVESTCODE'
-                , 'result.lab_name as INVESTNAME'
+                , 'result.lab_name as INVESTNAME','result.result'
                 , 'result.result as INVESTVALUE', 'result.unit as UNIT'
-                , 'result.result_obj as INVESTRESULT'
                 , 'result.minresult as NORMAL_MIN', 'result.maxresult as NORMAL_MAX'
                 , 'result.date_result as DATETIME_REPORT')
-            .select(db.raw('CONCAT(result.date," ",result.time) as D_UPDATE'))
+            .select(db.raw('CONCAT(result.date," ",result.time) as D_UPDATE, CONVERT(result_obj USING tis620) as INVESTRESULT'))
             .where(columnName, "=", searchNo)
+            .orderBy('result.lab_code')
+            .orderBy('result.date_result')
             .limit(maxLimit);
 
         // `LOINC` varchar(20) DEFAULT NULL,

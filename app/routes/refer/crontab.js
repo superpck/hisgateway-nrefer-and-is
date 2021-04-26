@@ -599,6 +599,7 @@ function getLabResult(db, row, sentResult) {
         if (rowsLabResult && rowsLabResult.length) {
             for (const r of rowsLabResult) {
                 const cHOSPCODE = r.HOSPCODE || r.hospcode || process.env.HOSPCODE;
+                const investvalue = r.INVESTVALUE || r.investvalue || '';
                 const investresult = r.INVESTRESULT || r.investresult || '';
                 yield rowsSave.push({
                     HOSPCODE: cHOSPCODE,
@@ -615,7 +616,7 @@ function getLabResult(db, row, sentResult) {
                     LOINC: r.LOINC || r.loinc || '',
                     INVESTNAME: r.INVESTNAME || r.investname || '',
                     DATETIME_REPORT: r.DATETIME_REPORT || r.datetime_report || '',
-                    INVESTVALUE: investresult.toString(),
+                    INVESTVALUE: investvalue.toString(),
                     LH: r.LH || r.lh || '',
                     UNIT: r.UNIT || r.unit || '',
                     NORMAL_MIN: r.NORMAL_MIN || r.normal_min || '',
