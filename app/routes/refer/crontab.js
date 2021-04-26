@@ -93,10 +93,10 @@ let apiVersion = '-';
 let subVersion = '-';
 function sendMoph(req, reply, db) {
     return __awaiter(this, void 0, void 0, function* () {
-        const dateNow = moment().locale('th').format('YYYY-MM-DD');
+        const dateNow = moment().format('YYYY-MM-DD');
         const apiKey = process.env.NREFER_APIKEY || 'api-key';
         const secretKey = process.env.NREFER_SECRETKEY || 'secret-key';
-        sentContent = moment().locale('th').format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
+        sentContent = moment().format('YYYY-MM-DD HH:mm:ss') + ' data:' + dateNow + "\r\n";
         const resultToken = yield getNReferToken(apiKey, secretKey);
         if (resultToken && resultToken.statusCode == 200 && resultToken.token) {
             nReferToken = resultToken.token;
@@ -108,11 +108,11 @@ function sendMoph(req, reply, db) {
             writeResult(resultText, sentContent);
             return false;
         }
-        const hourNow = +moment().locale('th').get('hours');
-        const minuteNow = +moment().locale('th').get('minutes');
+        const hourNow = +moment().get('hours');
+        const minuteNow = +moment().get('minutes');
         if ((hourNow == 1 || hourNow == 8 || hourNow == 12 || hourNow == 18 || hourNow == 22)
             && minuteNow - 1 < +process.env.NREFER_AUTO_SEND_EVERY_MINUTE) {
-            const date = moment().locale('th').subtract(1, 'days').format('YYYY-MM-DD');
+            const date = moment().subtract(1, 'days').format('YYYY-MM-DD');
             yield getRefer_out(db, date);
             yield getReferResult(db, date);
         }
@@ -133,6 +133,7 @@ function getRefer_out(db, date) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const referout = yield hisModel.getReferOut(db, date, hcode);
+            console.log('******** >> referout', referout.length);
             sentContent += `\rsave refer_history ${date} \r`;
             sentContent += `\rsave refer service data ${date} \r`;
             let index = 0;
@@ -166,9 +167,9 @@ function getRefer_out(db, date) {
                 yield getLabResult(db, row, sentResult);
                 index += 1;
                 if (referout.length <= index) {
-                    sentContent += moment().locale('th').format('HH:mm:ss.SSS') + ' crontab finished...\r\r';
+                    sentContent += moment().format('HH:mm:ss.SSS') + ' crontab finished...\r\r';
                     yield writeResult(resultText, sentContent);
-                    console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'finished...');
+                    console.log(moment().format('HH:mm:ss.SSS'), 'finished...');
                 }
             }
             console.log(process.env.HOSPCODE, ' nrefer sent ', sentResult);
@@ -176,7 +177,7 @@ function getRefer_out(db, date) {
         }
         catch (error) {
             console.log('crontab error:', error.message);
-            sentContent += moment().locale('th').format('HH:mm:ss.SSS') + 'crontab error ' + error.message + '\r\r';
+            sentContent += moment().format('HH:mm:ss.SSS') + 'crontab error ' + error.message + '\r\r';
             return [];
         }
     });
@@ -216,9 +217,9 @@ function getReferResult(db, date) {
                 const procedureIpd = yield getProcedureIpd(db, an);
                 index += 1;
                 if (referResult.length <= index) {
-                    sentContent += moment().locale('th').format('HH:mm:ss.SSS') + ' crontab finished...\r\r';
+                    sentContent += moment().format('HH:mm:ss.SSS') + ' crontab finished...\r\r';
                     yield writeResult(resultText, sentContent);
-                    console.log(moment().locale('th').format('HH:mm:ss.SSS'), 'finished...');
+                    console.log(moment().format('HH:mm:ss.SSS'), 'finished...');
                 }
             }
             console.log(process.env.HOSPCODE, ' nrefer result', sentResultResult);
@@ -226,14 +227,14 @@ function getReferResult(db, date) {
         }
         catch (error) {
             console.log('crontab error:', error.message);
-            sentContent += moment().locale('th').format('HH:mm:ss.SSS') + 'crontab error ' + error.message + '\r\r';
+            sentContent += moment().format('HH:mm:ss.SSS') + 'crontab error ' + error.message + '\r\r';
             return [];
         }
     });
 }
 function sendReferOut(row, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const d_update = moment().format('YYYY-MM-DD HH:mm:ss');
         if (row) {
             const hcode = row.HOSPCODE || row.hospcode;
             const referId = row.REFERID || row.referid;
@@ -294,7 +295,7 @@ function sendReferOut(row, sentResult) {
 }
 function sendReferResult(row, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const d_update = moment().format('YYYY-MM-DD HH:mm:ss');
         if (row) {
             const data = {
                 HOSPCODE: row.HOSPCODE,
@@ -331,7 +332,7 @@ function sendReferResult(row, sentResult) {
 }
 function getPerson(db, pid, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const d_update = moment().format('YYYY-MM-DD HH:mm:ss');
         const rows = yield hisModel.getPerson(db, 'hn', pid, hcode);
         sentContent += '  - person = ' + rows.length + '\r';
         if (rows && rows.length) {
@@ -375,7 +376,7 @@ function getPerson(db, pid, sentResult) {
 function getAddress(db, pid, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
         if (pid) {
-            const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+            const d_update = moment().format('YYYY-MM-DD HH:mm:ss');
             const rows = yield hisModel.getAddress(db, 'hn', pid, hcode);
             sentContent += '  - address = ' + (rows ? rows.length : 0) + '\r';
             if (rows && rows.length) {
@@ -421,7 +422,7 @@ function getService(db, visitNo, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
         const rows = yield hisModel.getService(db, 'visitNo', visitNo, hcode);
         sentContent += '  - service = ' + rows.length + '\r';
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const d_update = moment().format('YYYY-MM-DD HH:mm:ss');
         if (rows && rows.length) {
             for (const row of rows) {
                 const data = yield {
@@ -512,7 +513,7 @@ function getDiagnosisOpd(db, visitNo, sentResult) {
 }
 function getProcedureOpd(db, visitNo, sentResult) {
     return __awaiter(this, void 0, void 0, function* () {
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const d_update = moment().format('YYYY-MM-DD HH:mm:ss');
         const rows = yield hisModel.getProcedureOpd(db, visitNo, hcode);
         sentContent += '  - procedure_opd = ' + rows.length + '\r';
         let rowSave = [];
@@ -593,7 +594,7 @@ function getLabResult(db, row, sentResult) {
         const referID = row.REFERID || row.referid || row.REFERID_SOURCE;
         const rowsLabResult = yield hisModel.getLabResult(db, 'visitNo', visitNo, referID, hcode);
         let rowsSave = [];
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const d_update = moment().format('YYYY-MM-DD HH:mm:ss');
         sentContent += '  - lab result = ' + rowsLabResult.length + '\r';
         if (rowsLabResult && rowsLabResult.length) {
             for (const r of rowsLabResult) {
@@ -638,7 +639,7 @@ function getLabResult(db, row, sentResult) {
 }
 function getAdmission(db, visitNo) {
     return __awaiter(this, void 0, void 0, function* () {
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const d_update = moment().format('YYYY-MM-DD HH:mm:ss');
         const rows = yield hisModel.getAdmission(db, 'visitNo', visitNo, hcode);
         sentContent += '  - admission = ' + rows.length + '\r';
         if (rows && rows.length) {
@@ -692,7 +693,7 @@ function getProcedureIpd(db, an) {
         if (!an) {
             return [];
         }
-        const d_update = moment().locale('th').format('YYYY-MM-DD HH:mm:ss');
+        const d_update = moment().format('YYYY-MM-DD HH:mm:ss');
         const rows = yield hisModel.getProcedureIpd(db, an, hcode);
         sentContent += '  - procedure_ipd = ' + rows.length + '\r';
         let rowSave = [];

@@ -40,10 +40,10 @@ export class HisEzhospModel {
                 , 'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx'
                 , 'vs.pi as PI'
             )
-            .select(db.raw('case when refer.history_ill then refer.history_ill else vs.nurse_ph end as PH'))
-            .select(db.raw('case when refer.history_exam then refer.history_exam else vs.pe end as PE'))
-            .select(db.raw('case when refer.current_ill then refer.current_ill else vs.cc end as CHIEFCOMP'))
-            .where('refer.refer_date', date)
+            .select(db.raw('case when isnull(refer.history_ill) OR refer.history_ill="" then vs.nurse_ph else refer.history_ill end as PH'))
+            .select(db.raw('case when isnull(refer.history_exam) or refer.history_exam="" then vs.pe else refer.history_exam end as PE'))
+            .select(db.raw('case when isnull(refer.current_ill)or refer.current_ill="" then vs.cc else refer.current_ill end as CHIEFCOMP'))
+            .whereRaw(`(refer.refer_date="${date}" OR refer.lastupdate BETWEEN "${date}" and "${date} 23:59:59")`)
             .where('refer.hcode', hospCode)
             .orderBy('refer.refer_date')
             .limit(maxLimit);
