@@ -36,16 +36,17 @@ class HisEzhospModel {
     }
     getReferOut(db, date, hospCode = hcode) {
         return db('hospdata.refer_out as refer')
-            .leftJoin('hospdata.patient as pt', 'refer.hn', 'pt.hn')
+            .leftJoin('hospdata.opd_visit as visit', 'refer.vn', 'visit.vn')
+            .leftJoin('hospdata.patient as pt', 'visit.hn', 'pt.hn')
             .leftJoin('hospdata.opd_vs as vs', 'refer.vn', 'vs.vn')
             .select(db.raw('"' + hcode + '" as hospcode'))
             .select(db.raw('concat(refer_date, " " , refer_time) as refer_date'))
-            .select('refer_no as referid', 'refer.refer_hcode as hosp_destination', 'refer.hn', 'pt.no_card as cid', 'refer.vn as seq', 'refer.an', 'pt.title as prename', 'pt.name as fname', 'pt.surname as lname', 'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx', 'vs.pi as PI')
-            .select(db.raw('case when refer.history_ill then refer.history_ill else vs.nurse_ph end as PH'))
-            .select(db.raw('case when refer.history_exam then refer.history_exam else vs.pe end as PE'))
-            .select(db.raw('case when refer.current_ill then refer.current_ill else vs.cc end as CHIEFCOMP'))
-            .where('refer.refer_date', date)
+            .select('refer_no as referid', 'refer.refer_hcode as hosp_destination', 'visit.hn', 'pt.no_card as cid', 'refer.vn as seq', 'refer.an', 'pt.title as prename', 'pt.name as fname', 'pt.surname as lname', 'pt.birth as dob', 'pt.sex', 'refer.icd10 as dx', 'vs.pi as PI')
+            .select(db.raw('case when isnull(refer.history_ill) OR refer.history_ill="" then vs.nurse_ph else refer.history_ill end as PH'))
+            .select(db.raw('case when isnull(refer.history_exam) or refer.history_exam="" then vs.pe else refer.history_exam end as PE'))
+            .select(db.raw('case when isnull(refer.current_ill)or refer.current_ill="" then vs.cc else refer.current_ill end as CHIEFCOMP'))
             .where('refer.hcode', hospCode)
+            .whereRaw(`(refer.refer_date="${date}" OR refer.lastupdate BETWEEN "${date} 00:00:00" and "${date} 23:59:59")`)
             .orderBy('refer.refer_date')
             .limit(maxLimit);
     }
